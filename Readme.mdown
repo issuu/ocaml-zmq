@@ -17,6 +17,10 @@ ocaml setup.ml -build
 
 ocaml setup.ml -install
 
+## Uninstall
+
+ocaml setup.ml -uninstall
+
 ## TODO
 
 * Refine exceptions
