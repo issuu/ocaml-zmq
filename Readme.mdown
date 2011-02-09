@@ -4,22 +4,24 @@ OCaml bindings for ZMQ 2.0
 
 ## Requirements
 
-OCaml 3.12
-Findlib http://projects.camlcity.org/projects/findlib.html
-ocaml-uint https://github.com/andrenth/ocaml-uint
-zmq 2.0.10
+* [OCaml 3.12](http://caml.inria.fr/)
+* [Findlib](http://projects.camlcity.org/projects/findlib.html)
+* [ocaml-uint](https://github.com/andrenth/ocaml-uint)
+* [ZMQ 2.0.10](http://www.zeromq.org/intro:get-the-software)
 
 ## Install
 
 ocaml setup.ml -configure
+
 ocaml setup.ml -build
+
 ocaml setup.ml -install
 
 ## TODO
 
-Refine exceptions
-Socket pools
-Code clean up
+* Refine exceptions
+* Socket pools
+* Code clean up
 
 ## License
 
