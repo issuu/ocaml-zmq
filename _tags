@@ -1,0 +1,13 @@
+# OASIS_START
+# DO NOT EDIT (digest: 65cb9f3c67a1aa172a7a1d732ad1f3ce)
+# Library ZMQ
+"src": include
+<src/ZMQ.{cma,cmxa}>: oasis_library_zmq_cclib
+"src/libZMQ.lib": oasis_library_zmq_cclib
+"src/dllZMQ.dll": oasis_library_zmq_cclib
+"src/libZMQ.a": oasis_library_zmq_cclib
+"src/dllZMQ.so": oasis_library_zmq_cclib
+<src/ZMQ.{cma,cmxa}>: use_libZMQ
+<src/*.ml{,i}>: pkg_uint.uint64
+"src/stubs-zmq.c": pkg_uint.uint64
+# OASIS_STOP
