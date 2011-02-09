@@ -1,27 +1,27 @@
-= Readme
+# Readme
 
 OCaml bindings for ZMQ 2.0
 
-== Requirements
+## Requirements
 
 OCaml 3.12
 Findlib http://projects.camlcity.org/projects/findlib.html
 ocaml-uint https://github.com/andrenth/ocaml-uint
 zmq 2.0.10
 
-== Install
+## Install
 
 ocaml setup.ml -configure
 ocaml setup.ml -build
 ocaml setup.ml -install
 
-== TODO
+## TODO
 
 Refine exceptions
 Socket pools
 Code clean up
 
-== License
+## License
 
 Copyright (C) 2011 by Pedro Borges and contributors
 
