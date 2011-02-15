@@ -1,2 +1,6 @@
 .DS_Store
 _build
+*.swp
+setup.data
+setup.log
+

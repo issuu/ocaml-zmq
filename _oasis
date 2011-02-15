@@ -10,8 +10,18 @@ Library "ZMQ"
   Path:       src
   BuildTools: ocamlbuild
   Modules:    ZMQ
-  CSources: stubs-zmq.c
+  CSources: stubs-zmq.c,
+            caml_zmq/socket.h,
+            caml_zmq/socket.c,
+            caml_zmq/context.h,
+            caml_zmq/context.c,
+            caml_zmq/fail.h,
+            caml_zmq/fail.c,
+            caml_uint/uint64.h,
+            caml_uint/uint64.c
+
   BuildDepends: uint.uint64
   CCLib: -lzmq
+  CCOpt: -Isrc
   CompiledObject: best
 
