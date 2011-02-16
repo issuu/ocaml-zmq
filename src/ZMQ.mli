@@ -38,7 +38,7 @@ type set_get_option =
   | `Swap of int64
   | `Affinity of Uint64.t
   | `Identity of string
-	| `Rate of int64 
+  | `Rate of int64 
   | `Recovery_interval of int64
   | `Multicast_loop of int64
   | `Send_buffer of Uint64.t

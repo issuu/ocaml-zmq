@@ -23,7 +23,7 @@ exception ZMQ_exception of error * string
 
 let _ =
   Callback.register_exception "zmq exception" (ZMQ_exception(EUNKNOWN,"Unkown error"))
-  
+
 type socket_kind = 
     Pair
   | Pub
@@ -41,7 +41,7 @@ type set_get_option =
   | `Swap of int64
   | `Affinity of Uint64.t
   | `Identity of string
-	| `Rate of int64 
+  | `Rate of int64 
   | `Recovery_interval of int64
   | `Multicast_loop of int64
   | `Send_buffer of Uint64.t
@@ -64,7 +64,7 @@ type get_option_tag =
   | `Recovery_interval
   | `Multicast_loop
   | `Send_buffer
-	| `Recieve_buffer
+  | `Recieve_buffer
   | `Recieve_more
   ]
 

@@ -24,68 +24,68 @@
 #include "caml_uint/uint64.h"
 
 CAMLprim value caml_zmq_version(value unit) {
-	CAMLparam1 (unit);
-	CAMLlocal1 (version_tuple);
+    CAMLparam1 (unit);
+    CAMLlocal1 (version_tuple);
 
-	int major, minor, patch;
-	zmq_version(&major, &minor, &patch);
+    int major, minor, patch;
+    zmq_version(&major, &minor, &patch);
 
-	version_tuple = caml_alloc_tuple(3);
-	Store_field(version_tuple, 0, Val_int(major));
-	Store_field(version_tuple, 1, Val_int(minor));
-	Store_field(version_tuple, 2, Val_int(patch));
+    version_tuple = caml_alloc_tuple(3);
+    Store_field(version_tuple, 0, Val_int(major));
+    Store_field(version_tuple, 1, Val_int(minor));
+    Store_field(version_tuple, 2, Val_int(patch));
 
-	CAMLreturn (version_tuple);
+    CAMLreturn (version_tuple);
 }
 
 CAMLprim value caml_zmq_init(value num_threads) {
-	CAMLparam1 (num_threads);
-	CAMLlocal1 (ctx_value);
-	void *ctx = zmq_init(Int_val(num_threads));
-	caml_zmq_raise_if(ctx == NULL);
-	ctx_value = caml_zmq_copy_context(ctx);
-	CAMLreturn (ctx_value);
+    CAMLparam1 (num_threads);
+    CAMLlocal1 (ctx_value);
+    void *ctx = zmq_init(Int_val(num_threads));
+    caml_zmq_raise_if(ctx == NULL);
+    ctx_value = caml_zmq_copy_context(ctx);
+    CAMLreturn (ctx_value);
 }
 
 CAMLprim value caml_zmq_term(value ctx) {
-	CAMLparam1 (ctx);
-	int result = zmq_term(CAML_ZMQ_Context_val(ctx));
-	caml_zmq_raise_if(result == -1);
-	CAMLreturn (Val_unit);
+    CAMLparam1 (ctx);
+    int result = zmq_term(CAML_ZMQ_Context_val(ctx));
+    caml_zmq_raise_if(result == -1);
+    CAMLreturn (Val_unit);
 }
 
 /* Order must match OCaml's variant declaration */
 static int socket_type_for_kind[] =  {
-	ZMQ_PAIR,
-	ZMQ_PUB,
-	ZMQ_SUB,
-	ZMQ_REQ,
-	ZMQ_REP,
-	ZMQ_XREQ,
-	ZMQ_XREP,
-	ZMQ_PULL,
-	ZMQ_PUSH
+    ZMQ_PAIR,
+    ZMQ_PUB,
+    ZMQ_SUB,
+    ZMQ_REQ,
+    ZMQ_REP,
+    ZMQ_XREQ,
+    ZMQ_XREP,
+    ZMQ_PULL,
+    ZMQ_PUSH
 };
 
 CAMLprim value caml_zmq_socket(value ctx, value socket_kind) {
-	CAMLparam2 (ctx, socket_kind);
-	CAMLlocal1 (sock_value);
-	void *socket;
+    CAMLparam2 (ctx, socket_kind);
+    CAMLlocal1 (sock_value);
+    void *socket;
 
-	if (Int_val(socket_kind) < 0 || Int_val(socket_kind) > 8)
+    if (Int_val(socket_kind) < 0 || Int_val(socket_kind) > 8)
         caml_failwith("Invalid variant range");
-	
+
     socket = zmq_socket(CAML_ZMQ_Context_val(ctx), socket_type_for_kind[Int_val(socket_kind)]);
-	caml_zmq_raise_if(socket == NULL);
-	sock_value = caml_zmq_copy_socket(socket);
-	CAMLreturn (sock_value);
+    caml_zmq_raise_if(socket == NULL);
+    sock_value = caml_zmq_copy_socket(socket);
+    CAMLreturn (sock_value);
 }
 
 CAMLprim value caml_zmq_close(value socket) {
-	CAMLparam1 (socket);
-	int result = zmq_close(CAML_ZMQ_Socket_val(socket));
-	caml_zmq_raise_if(result == -1);
-	CAMLreturn (Val_unit);
+    CAMLparam1 (socket);
+    int result = zmq_close(CAML_ZMQ_Socket_val(socket));
+    caml_zmq_raise_if(result == -1);
+    CAMLreturn (Val_unit);
 }
 
 int caml_zmq_setsockopt_uint64(value socket, int option_name, value socket_option) {
@@ -121,7 +121,6 @@ int caml_zmq_setsockopt_bytes(value socket, int option_name, value socket_option
                                     option_size));
 }
 
-
 struct caml_zmq_set_dispacher_row {
     char *option_id;
     int option_name;
@@ -143,10 +142,8 @@ static struct caml_zmq_set_dispacher_row const caml_zmq_set_dispacher[] = {
     { NULL               , 0               , NULL                        }
 };
 
-#define CAML_ZMQ_NONE (2)
-
 CAMLprim value caml_zmq_setsockopt(value socket, value sockopt) {
-	CAMLparam2 (socket, sockopt);
+    CAMLparam2 (socket, sockopt);
     CAMLlocal1 (variant_hash);
     int result;
     int i;
@@ -160,11 +157,9 @@ CAMLprim value caml_zmq_setsockopt(value socket, value sockopt) {
     if(caml_zmq_set_dispacher[i].option_id == NULL) {
         caml_failwith("Invalid option");
     }
-	caml_zmq_raise_if(result == -1);
-	CAMLreturn (Val_unit);
+    caml_zmq_raise_if(result == -1);
+    CAMLreturn (Val_unit);
 }
-
-#undef CAML_ZMQ_NONE
 
 value caml_zmq_getsockopt_uint64(value socket, int option_name) {
     CAMLparam1 (socket);
@@ -216,11 +211,11 @@ static struct caml_zmq_get_dispacher_row const caml_zmq_get_dispacher[] = {
 };
 
 CAMLprim value caml_zmq_getsockoption(value socket, value socket_option_tag) {
-	CAMLparam2 (socket, socket_option_tag);
-	CAMLlocal1 (option);
+    CAMLparam2 (socket, socket_option_tag);
+    CAMLlocal1 (option);
     int i;
     option = caml_alloc_tuple(2);
-	Store_field(option, 0, socket_option_tag);
+    Store_field(option, 0, socket_option_tag);
     
     for (i = 0; caml_zmq_get_dispacher[i].option_id != NULL; i++) {
         if (caml_hash_variant(caml_zmq_get_dispacher[i].option_id) == socket_option_tag) {
@@ -233,83 +228,76 @@ CAMLprim value caml_zmq_getsockoption(value socket, value socket_option_tag) {
     if(caml_zmq_get_dispacher[i].option_id == NULL)
         caml_failwith("Invalid option");
 
-	CAMLreturn (option);
+    CAMLreturn (option);
 }
 
 CAMLprim value caml_zmq_bind(value socket, value string_address) {
-	CAMLparam2 (socket, string_address);
-	
-	int result = zmq_bind(CAML_ZMQ_Socket_val(socket), String_val(string_address));
-	caml_zmq_raise_if (result == -1);
-
-	CAMLreturn(Val_unit);
+    CAMLparam2 (socket, string_address);
+    int result = zmq_bind(CAML_ZMQ_Socket_val(socket), String_val(string_address));
+    caml_zmq_raise_if (result == -1);
+    CAMLreturn(Val_unit);
 }
 
 CAMLprim value caml_zmq_connect(value socket, value string_address) {
-	CAMLparam2 (socket, string_address);
-	
-	int result = zmq_connect(CAML_ZMQ_Socket_val(socket), String_val(string_address));
-	caml_zmq_raise_if (result == -1);
-
-	CAMLreturn(Val_unit);
+    CAMLparam2 (socket, string_address);
+    int result = zmq_connect(CAML_ZMQ_Socket_val(socket), String_val(string_address));
+    caml_zmq_raise_if (result == -1);
+    CAMLreturn(Val_unit);
 }
 
-static int snd_rcv_options_table[] = {
-	0,
-	ZMQ_NOBLOCK,
-	ZMQ_SNDMORE
-};
+static int snd_rcv_options_table[] = { 0, ZMQ_NOBLOCK, ZMQ_SNDMORE };
 
 CAMLprim value caml_zmq_send(value socket, value string, value snd_options) {
-	CAMLparam3 (socket, string, snd_options);
-	void *sock = CAML_ZMQ_Socket_val(socket);
+    CAMLparam3 (socket, string, snd_options);
+    void *sock = CAML_ZMQ_Socket_val(socket);
     zmq_msg_t msg;
-	int option;
+    int option;
     int result;
 
     if (Int_val(snd_options) < 0 || Int_val(snd_options) > 2)
         caml_failwith("Invalid variant range");
 
     option = snd_rcv_options_table[Int_val(snd_options)];
-	result = zmq_msg_init_size(&msg, caml_string_length(string));
-	caml_zmq_raise_if (result == -1);
-	/* Doesn't copy '\0' */
-	memcpy ((void *) zmq_msg_data (&msg), String_val(string), caml_string_length(string));
+    result = zmq_msg_init_size(&msg, caml_string_length(string));
+    caml_zmq_raise_if (result == -1);
+    /* Doesn't copy '\0' */
+    memcpy ((void *) zmq_msg_data (&msg), String_val(string), caml_string_length(string));
 
-	caml_release_runtime_system();
-	result = zmq_send (sock, &msg, option);
-	caml_acquire_runtime_system();
-	caml_zmq_raise_if (result == -1);
+    caml_release_runtime_system();
+    result = zmq_send (sock, &msg, option);
+    caml_acquire_runtime_system();
+    
+    caml_zmq_raise_if (result == -1);
     result = zmq_msg_close (&msg);
-	caml_zmq_raise_if (result == -1);
-	
-	CAMLreturn(Val_unit);
+    caml_zmq_raise_if (result == -1);
+    
+    CAMLreturn(Val_unit);
 }
 
 CAMLprim value caml_zmq_recv(value socket, value rcv_options) {
-	CAMLparam2 (socket, rcv_options);
-	CAMLlocal1 (message);
-	zmq_msg_t request;
-	void *sock = CAML_ZMQ_Socket_val(socket);
+    CAMLparam2 (socket, rcv_options);
+    CAMLlocal1 (message);
+    zmq_msg_t request;
+    void *sock = CAML_ZMQ_Socket_val(socket);
     int option;
     int result;
     size_t size;
     if (Int_val(rcv_options) < 0 || Int_val(rcv_options) > 2)
         caml_failwith("Invalid variant range");
 
-	option = snd_rcv_options_table[Int_val(rcv_options)];
-	result = zmq_msg_init (&request);
-	caml_zmq_raise_if (result == -1);
+    option = snd_rcv_options_table[Int_val(rcv_options)];
+    result = zmq_msg_init (&request);
+    caml_zmq_raise_if (result == -1);
 
-	caml_release_runtime_system();
-	result = zmq_recv (sock, &request, option);
-	caml_acquire_runtime_system();
-	caml_zmq_raise_if (result == -1);
+    caml_release_runtime_system();
+    result = zmq_recv (sock, &request, option);
+    caml_acquire_runtime_system();
 
-	size = zmq_msg_size (&request);
-	message = caml_alloc_string(size + 1);
-	memcpy (String_val(message), zmq_msg_data (&request), size);
-	String_val(message)[size] = '\0';
-	CAMLreturn (message);
+    caml_zmq_raise_if (result == -1);
+    size = zmq_msg_size (&request);
+    message = caml_alloc_string(size + 1);
+    memcpy (String_val(message), zmq_msg_data (&request), size);
+    String_val(message)[size] = '\0';
+    CAMLreturn (message);
 }
 
