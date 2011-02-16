@@ -252,7 +252,7 @@ CAMLprim value caml_zmq_send(value socket, value string, value snd_options) {
     void *sock = CAML_ZMQ_Socket_val(socket);
     zmq_msg_t msg;
     int option;
-    int result;
+    int result, close_result;
 
     if (Int_val(snd_options) < 0 || Int_val(snd_options) > 2)
         caml_failwith("Invalid variant range");
@@ -266,10 +266,10 @@ CAMLprim value caml_zmq_send(value socket, value string, value snd_options) {
     caml_release_runtime_system();
     result = zmq_send (sock, &msg, option);
     caml_acquire_runtime_system();
-    
+
+    close_result = zmq_msg_close (&msg);
     caml_zmq_raise_if (result == -1);
-    result = zmq_msg_close (&msg);
-    caml_zmq_raise_if (result == -1);
+    caml_zmq_raise_if (close_result == -1);
     
     CAMLreturn(Val_unit);
 }
@@ -298,6 +298,8 @@ CAMLprim value caml_zmq_recv(value socket, value rcv_options) {
     message = caml_alloc_string(size + 1);
     memcpy (String_val(message), zmq_msg_data (&request), size);
     String_val(message)[size] = '\0';
+    result = zmq_msg_close(&request);
+    caml_zmq_raise_if (result == -1);
     CAMLreturn (message);
 }
 
