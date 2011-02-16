@@ -1,34 +1,34 @@
-# Readme
+Readme
+======
 
 OCaml bindings for ZMQ 2.0
 
-## Requirements
-
+Requirements
+------------
 * [OCaml 3.12](http://caml.inria.fr/)
 * [Findlib](http://projects.camlcity.org/projects/findlib.html)
 * [ocaml-uint](https://github.com/andrenth/ocaml-uint)
 * [ZMQ 2.0.10](http://www.zeromq.org/intro:get-the-software)
 
-## Install
-
+Install
+-------
 ocaml setup.ml -configure
-
 ocaml setup.ml -build
-
 ocaml setup.ml -install
 
-## Uninstall
-
+Uninstall
+---------
 ocaml setup.ml -uninstall
 
-## TODO
-
+TODO
+----
 * Refine exceptions
-* Socket pools
+* Socket polls
 * Code clean up
 
-## License
-
+License
+-------
+<pre>
 Copyright (C) 2011 by Pedro Borges and contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -47,11 +47,13 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+</pre>
 
 ## OCaml-UInt License
 
+<pre>
 Copyright (c) 2010 Andre Nathan andre@sneakymustard.com
-                   Jeff Shaw shawjef3@msu.edu
+                   Jeff Shaw    shawjef3@msu.edu
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -70,4 +72,9 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
+</pre>
+
+Thanks
+------
+To the guys from the #ocaml channel, gildor, thelema, kaustuv and many others, and the ocaml-uint programmers.
 
