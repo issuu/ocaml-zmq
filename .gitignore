@@ -3,4 +3,8 @@ _build
 *.swp
 setup.data
 setup.log
-
+*.o
+*.cmx
+*.swo
+*.cmi
+*.swn
