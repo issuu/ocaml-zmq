@@ -1,19 +1,19 @@
 # OASIS_START
-# DO NOT EDIT (digest: 4511a2d132efce246bbe837c6fd81332)
-# Library ZMQ
+# DO NOT EDIT (digest: f18ac799eafa5a463728fb134ddfdf7b)
+# Library ZMQB
 "src": include
-<src/*.ml{,i}>: oasis_library_zmq_ccopt
-"src/stubs-zmq.c": oasis_library_zmq_ccopt
-"src/caml_zmq/socket.c": oasis_library_zmq_ccopt
-"src/caml_zmq/context.c": oasis_library_zmq_ccopt
-"src/caml_zmq/fail.c": oasis_library_zmq_ccopt
-"src/caml_uint/uint64.c": oasis_library_zmq_ccopt
-<src/ZMQ.{cma,cmxa}>: oasis_library_zmq_cclib
-"src/libZMQ.lib": oasis_library_zmq_cclib
-"src/dllZMQ.dll": oasis_library_zmq_cclib
-"src/libZMQ.a": oasis_library_zmq_cclib
-"src/dllZMQ.so": oasis_library_zmq_cclib
-<src/ZMQ.{cma,cmxa}>: use_libZMQ
+<src/*.ml{,i}>: oasis_library_zmqb_ccopt
+"src/stubs-zmq.c": oasis_library_zmqb_ccopt
+"src/caml_zmq/socket.c": oasis_library_zmqb_ccopt
+"src/caml_zmq/context.c": oasis_library_zmqb_ccopt
+"src/caml_zmq/fail.c": oasis_library_zmqb_ccopt
+"src/caml_uint/uint64.c": oasis_library_zmqb_ccopt
+<src/ZMQB.{cma,cmxa}>: oasis_library_zmqb_cclib
+"src/libZMQB.lib": oasis_library_zmqb_cclib
+"src/dllZMQB.dll": oasis_library_zmqb_cclib
+"src/libZMQB.a": oasis_library_zmqb_cclib
+"src/dllZMQB.so": oasis_library_zmqb_cclib
+<src/ZMQB.{cma,cmxa}>: use_libZMQB
 <src/*.ml{,i}>: pkg_uint.uint64
 "src/stubs-zmq.c": pkg_uint.uint64
 "src/caml_zmq/socket.c": pkg_uint.uint64

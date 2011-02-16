@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: fb3f50eb232632400049e3706fed0ac3) *)
+(* DO NOT EDIT (digest: 88a167170a510457753fceeee37b4df2) *)
 module OASISGettext = struct
 # 21 "/Users/Pedro/Downloads/oasis-0.2.0/src/oasis/OASISGettext.ml"
   
@@ -451,10 +451,10 @@ end
 open Ocamlbuild_plugin;;
 let package_default =
   {
-     MyOCamlbuildBase.lib_ocaml = [("src/ZMQ", ["src"])];
+     MyOCamlbuildBase.lib_ocaml = [("src/ZMQB", ["src"])];
      lib_c =
        [
-          ("ZMQ",
+          ("ZMQB",
             "src",
             [
                "src/caml_zmq/socket.h";
@@ -465,11 +465,11 @@ let package_default =
        ];
      flags =
        [
-          (["oasis_library_zmq_ccopt"; "compile"],
+          (["oasis_library_zmqb_ccopt"; "compile"],
             [(OASISExpr.EBool true, S [A "-ccopt"; A "-Isrc"])]);
-          (["oasis_library_zmq_cclib"; "link"],
+          (["oasis_library_zmqb_cclib"; "link"],
             [(OASISExpr.EBool true, S [A "-cclib"; A "-lzmq"])]);
-          (["oasis_library_zmq_cclib"; "ocamlmklib"; "c"],
+          (["oasis_library_zmqb_cclib"; "ocamlmklib"; "c"],
             [(OASISExpr.EBool true, S [A "-lzmq"])])
        ];
      }

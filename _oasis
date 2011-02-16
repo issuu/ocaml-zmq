@@ -1,14 +1,15 @@
 OASISFormat: 0.2
-Name:        ZMQ
+Name:        ZMQB
 Version:     0.0.1
 Synopsis:    Bindings for the ZMQ library
 Authors:     Pedro Borges
 License:     MIT
 Plugins:     META (0.2)
 
-Library "ZMQ"
+Library "ZMQB"
   Path:       src
   BuildTools: ocamlbuild
+  FindlibName: ZMQ
   Modules:    ZMQ
   CSources: stubs-zmq.c,
             caml_zmq/socket.h,
@@ -24,4 +25,3 @@ Library "ZMQ"
   CCLib: -lzmq
   CCOpt: -Isrc
   CompiledObject: best
-
