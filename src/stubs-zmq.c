@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdio.h>
 
 #include <caml/mlvalues.h>
 #include <caml/alloc.h>
@@ -295,9 +296,8 @@ CAMLprim value caml_zmq_recv(value socket, value rcv_options) {
 
     caml_zmq_raise_if (result == -1);
     size = zmq_msg_size (&request);
-    message = caml_alloc_string(size + 1);
+    message = caml_alloc_string(size);
     memcpy (String_val(message), zmq_msg_data (&request), size);
-    String_val(message)[size] = '\0';
     result = zmq_msg_close(&request);
     caml_zmq_raise_if (result == -1);
     CAMLreturn (message);
