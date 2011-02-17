@@ -15,12 +15,6 @@ let total_temp = ref 0 in
 let update_nbr = 100 in
 for i = 0 to pred update_nbr do
   let str = ZMQ.recv subscriber ZMQ.None in
-  Printf.printf "[%s] leng %d\n%!" str (length (split str));
-  Printf.printf "%d\n%!" (int_of_string (nth (split str) 0 ));
-  Printf.printf "%d\n%!" (int_of_string (nth (split str) 1 ));
-  Printf.printf "%d\n%!" (String.length (nth (split str) 2));
-  Printf.printf "|%s|\n%!" (nth (split str) 2);
-  Printf.printf "%d\n%!" (int_of_string (nth (split str) 2 ));
   match map int_of_string (split str) with
   | [ _; temperature; _] -> total_temp := !total_temp + temperature;
   | _ -> ();
