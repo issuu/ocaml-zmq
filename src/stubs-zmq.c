@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #include <caml/mlvalues.h>
 #include <caml/alloc.h>
@@ -24,6 +25,12 @@
 
 #include "caml_uint/uint64.h"
 
+#define CAML_ZMQ_ARRAY_SIZE(a) (sizeof(a)/sizeof(a[0]))
+
+/**
+ * Version
+ */
+
 CAMLprim value caml_zmq_version(value unit) {
     CAMLparam1 (unit);
     CAMLlocal1 (version_tuple);
@@ -39,6 +46,10 @@ CAMLprim value caml_zmq_version(value unit) {
     CAMLreturn (version_tuple);
 }
 
+/**
+ * Init
+ */
+
 CAMLprim value caml_zmq_init(value num_threads) {
     CAMLparam1 (num_threads);
     CAMLlocal1 (ctx_value);
@@ -48,6 +59,10 @@ CAMLprim value caml_zmq_init(value num_threads) {
     CAMLreturn (ctx_value);
 }
 
+/**
+ * Term
+ */
+
 CAMLprim value caml_zmq_term(value ctx) {
     CAMLparam1 (ctx);
     int result = zmq_term(CAML_ZMQ_Context_val(ctx));
@@ -55,8 +70,12 @@ CAMLprim value caml_zmq_term(value ctx) {
     CAMLreturn (Val_unit);
 }
 
-/* Order must match OCaml's variant declaration */
-static int socket_type_for_kind[] =  {
+/**
+ * Socket
+ */
+
+/* Order must match OCaml's kind declaration */
+static int const socket_type_for_kind[] =  {
     ZMQ_PAIR,
     ZMQ_PUB,
     ZMQ_SUB,
@@ -82,6 +101,10 @@ CAMLprim value caml_zmq_socket(value ctx, value socket_kind) {
     CAMLreturn (sock_value);
 }
 
+/**
+ * Close
+ */
+
 CAMLprim value caml_zmq_close(value socket) {
     CAMLparam1 (socket);
     int result = zmq_close(CAML_ZMQ_Socket_val(socket));
@@ -89,148 +112,124 @@ CAMLprim value caml_zmq_close(value socket) {
     CAMLreturn (Val_unit);
 }
 
-int caml_zmq_setsockopt_uint64(value socket, int option_name, value socket_option) {
-    CAMLparam2 (socket, socket_option);
-    uint64 mark = CAML_UINT_Uint64_val(Field(socket_option, 1));
-    void *option_value = (void *) &mark;
-    size_t option_size = sizeof (mark);
-    CAMLreturnT(int, zmq_setsockopt(CAML_ZMQ_Socket_val(socket),
-                                    option_name,
-                                    option_value,
-                                    option_size));
-}
+/**
+ * Set socket options
+ */
 
-int caml_zmq_setsockopt_int64(value socket, int option_name, value socket_option) {
-    CAMLparam2 (socket, socket_option);
-    int64 mark = Int64_val(Field(socket_option, 1));
-    void *option_value = (void *) &mark;
-    size_t option_size = sizeof (mark);
-    CAMLreturnT(int, zmq_setsockopt(CAML_ZMQ_Socket_val(socket),
-                                    option_name,
-                                    option_value,
-                                    option_size));
-}
-
-int caml_zmq_setsockopt_bytes(value socket, int option_name, value socket_option) {
-    CAMLparam2 (socket, socket_option);
-    char *unsubs = String_val(Field(socket_option, 1));
-    void *option_value = (void *) unsubs;
-    size_t option_size = strlen(unsubs);
-    CAMLreturnT(int, zmq_setsockopt(CAML_ZMQ_Socket_val(socket),
-                                    option_name,
-                                    option_value,
-                                    option_size));
-}
-
-struct caml_zmq_set_dispacher_row {
-    char *option_id;
-    int option_name;
-    int (*option)(value, int, value);
+static int const native_uint64_option_for[] = {
+    ZMQ_HWM,
+    ZMQ_AFFINITY,
+    ZMQ_SNDBUF,
+    ZMQ_RCVBUF
 };
 
-static struct caml_zmq_set_dispacher_row const caml_zmq_set_dispacher[] = {
-    { "High_water_mark"  , ZMQ_HWM         , &caml_zmq_setsockopt_uint64 },
-    { "Swap"             , ZMQ_SWAP        , &caml_zmq_setsockopt_int64  },
-    { "Affinity"         , ZMQ_AFFINITY    , &caml_zmq_setsockopt_uint64 },
-    { "Identity"         , ZMQ_IDENTITY    , &caml_zmq_setsockopt_bytes  },
-    { "Subscribe"        , ZMQ_SUBSCRIBE   , &caml_zmq_setsockopt_bytes  },
-    { "Unsubscribe"      , ZMQ_UNSUBSCRIBE , &caml_zmq_setsockopt_bytes  },
-    { "Rate"             , ZMQ_RATE        , &caml_zmq_setsockopt_int64  },
-    { "Recovery_interval", ZMQ_RECOVERY_IVL, &caml_zmq_setsockopt_int64  },
-    { "Multicast_loop"   , ZMQ_MCAST_LOOP  , &caml_zmq_setsockopt_int64  },
-    { "Send_buffer"      , ZMQ_SNDBUF      , &caml_zmq_setsockopt_uint64 },
-    { "Recieve_buffer"   , ZMQ_RCVBUF      , &caml_zmq_setsockopt_uint64 },
-    { NULL               , 0               , NULL                        }
-};
+CAMLprim value caml_zmq_set_uint64_option(value socket, value option_name, value socket_option) {
+    CAMLparam3 (socket, option_name, socket_option);
 
-CAMLprim value caml_zmq_setsockopt(value socket, value sockopt) {
-    CAMLparam2 (socket, sockopt);
-    CAMLlocal1 (variant_hash);
-    int result;
-    int i;
-    variant_hash = Field(sockopt, 0);
-    for (i = 0; caml_zmq_set_dispacher[i].option_id != NULL; i++) {
-        if(caml_hash_variant(caml_zmq_set_dispacher[i].option_id) == variant_hash) {
-            result = caml_zmq_set_dispacher[i].option(socket, caml_zmq_set_dispacher[i].option_name, sockopt);
-            break;
-        }
-    }
-    if(caml_zmq_set_dispacher[i].option_id == NULL) {
-        caml_failwith("Invalid option");
-    }
-    caml_zmq_raise_if(result == -1);
+    uint64 mark = CAML_UINT_Uint64_val(socket_option);
+    void *option_value = (void *) &mark;
+    size_t option_size = sizeof (mark);
+    int result = zmq_setsockopt(CAML_ZMQ_Socket_val(socket),
+                                native_uint64_option_for[Int_val(option_name)],
+                                option_value,
+                                option_size);
+    
+    caml_zmq_raise_if (result == -1);
+
     CAMLreturn (Val_unit);
 }
 
-value caml_zmq_getsockopt_uint64(value socket, int option_name) {
-    CAMLparam1 (socket);
+static int const native_int64_option_for[] = {
+    ZMQ_SWAP,
+    ZMQ_RATE,
+    ZMQ_RECOVERY_IVL,
+    ZMQ_MCAST_LOOP,
+    ZMQ_RCVMORE
+};
+
+CAMLprim value caml_zmq_set_int64_option(value socket, value option_name, value socket_option) {
+    CAMLparam3 (socket, option_name, socket_option);
+
+    int64 mark = Int64_val(Field(socket_option, 1));
+    void *option_value = (void *) &mark;
+    size_t option_size = sizeof (mark);
+    int result = zmq_setsockopt(CAML_ZMQ_Socket_val(socket),
+                                native_int64_option_for[Int_val(option_name)],
+                                option_value,
+                                option_size);
+
+    caml_zmq_raise_if (result == -1);
+
+    CAMLreturn (Val_unit);
+}
+
+static int const native_bytes_option_for[] = {
+    ZMQ_IDENTITY,
+    ZMQ_SUBSCRIBE,
+    ZMQ_UNSUBSCRIBE
+};
+
+
+int caml_zmq_set_bytes_option(value socket, value option_name, value socket_option) {
+    CAMLparam3 (socket, option_name, socket_option);
+
+    char *unsubs = String_val(socket_option);
+    void *option_value = (void *) unsubs;
+    size_t option_size = caml_string_length(socket_option);
+    int result = zmq_setsockopt(CAML_ZMQ_Socket_val(socket),
+                                native_bytes_option_for[Int_val(option_name)],
+                                option_value,
+                                option_size);
+
+    caml_zmq_raise_if (result == -1);
+
+    CAMLreturn (Val_unit);   
+}
+
+/**
+ * Get socket options
+ */
+
+CAMLprim value caml_zmq_get_uint64_option(value socket, value option_name) {
+    CAMLparam2 (socket, option_name);
     uint64 mark;
     size_t mark_size = sizeof (mark);
-    int result = zmq_getsockopt (CAML_ZMQ_Socket_val(socket), option_name, &mark, &mark_size);
+    int result = zmq_getsockopt (CAML_ZMQ_Socket_val(socket),
+                                 native_uint64_option_for[Int_val(option_name)],
+                                 &mark,
+                                 &mark_size);
     caml_zmq_raise_if (result == -1);
     CAMLreturn (caml_uint_copy_uint64(mark));
 }
 
-value caml_zmq_getsockopt_int64(value socket, int option_name) {
-    CAMLparam1 (socket);
+CAMLprim value caml_zmq_get_int64_option(value socket, value option_name) {
+    CAMLparam2 (socket, option_name);
     int64 mark;
     size_t mark_size = sizeof (mark);
-    int result = zmq_getsockopt (CAML_ZMQ_Socket_val(socket), option_name, &mark, &mark_size);
+    int result = zmq_getsockopt (CAML_ZMQ_Socket_val(socket),
+                                 native_int64_option_for[Int_val(option_name)],
+                                 &mark,
+                                 &mark_size);
     caml_zmq_raise_if (result == -1);
     CAMLreturn (caml_copy_int64(mark));
 }
 
-value caml_zmq_getsockopt_bytes(value socket, int option_name) {
-    CAMLparam1 (socket);
+CAMLprim value caml_zmq_get_bytes_option(value socket, value option_name) {
+    CAMLparam2 (socket, option_name);
     char buffer[256];
     size_t buffer_size = sizeof (buffer);
-    int result = zmq_getsockopt (CAML_ZMQ_Socket_val(socket), option_name, buffer, &buffer_size);
+    int result = zmq_getsockopt (CAML_ZMQ_Socket_val(socket),
+                                 native_bytes_option_for[Int_val(option_name)],
+                                 buffer,
+                                 &buffer_size);
     buffer[result] = '\0';
     caml_zmq_raise_if (result == -1);    
     CAMLreturn (caml_copy_string(buffer));
 }
 
-
-struct caml_zmq_get_dispacher_row {
-    char *option_id;
-    int option_name;
-    value (*option)(value, int);
-};
-
-static struct caml_zmq_get_dispacher_row const caml_zmq_get_dispacher[] = {
-    { "High_water_mark"  , ZMQ_HWM         , &caml_zmq_getsockopt_uint64 },
-    { "Swap"             , ZMQ_SWAP        , &caml_zmq_getsockopt_int64  },
-    { "Affinity"         , ZMQ_AFFINITY    , &caml_zmq_getsockopt_uint64 },
-    { "Identity"         , ZMQ_IDENTITY    , &caml_zmq_getsockopt_bytes  },
-    { "Rate"             , ZMQ_RATE        , &caml_zmq_getsockopt_int64  },
-    { "Recovery_interval", ZMQ_RECOVERY_IVL, &caml_zmq_getsockopt_int64  },
-    { "Multicast_loop"   , ZMQ_MCAST_LOOP  , &caml_zmq_getsockopt_int64  },
-    { "Send_buffer"      , ZMQ_SNDBUF      , &caml_zmq_getsockopt_uint64 },
-    { "Recieve_buffer"   , ZMQ_RCVBUF      , &caml_zmq_getsockopt_uint64 },
-    { "Recieve_more"     , ZMQ_RCVMORE     , &caml_zmq_getsockopt_int64  },
-    { NULL               , 0               , NULL                        }
-};
-
-CAMLprim value caml_zmq_getsockoption(value socket, value socket_option_tag) {
-    CAMLparam2 (socket, socket_option_tag);
-    CAMLlocal1 (option);
-    int i;
-    option = caml_alloc_tuple(2);
-    Store_field(option, 0, socket_option_tag);
-    
-    for (i = 0; caml_zmq_get_dispacher[i].option_id != NULL; i++) {
-        if (caml_hash_variant(caml_zmq_get_dispacher[i].option_id) == socket_option_tag) {
-            Store_field(option,
-                        1,
-                        caml_zmq_get_dispacher[i].option(socket, caml_zmq_get_dispacher[i].option_name));
-            break;
-        }
-    }
-    if(caml_zmq_get_dispacher[i].option_id == NULL)
-        caml_failwith("Invalid option");
-
-    CAMLreturn (option);
-}
+/**
+ * Bind
+ */
 
 CAMLprim value caml_zmq_bind(value socket, value string_address) {
     CAMLparam2 (socket, string_address);
@@ -239,6 +238,10 @@ CAMLprim value caml_zmq_bind(value socket, value string_address) {
     CAMLreturn(Val_unit);
 }
 
+/**
+ * Connect 
+ */
+
 CAMLprim value caml_zmq_connect(value socket, value string_address) {
     CAMLparam2 (socket, string_address);
     int result = zmq_connect(CAML_ZMQ_Socket_val(socket), String_val(string_address));
@@ -246,48 +249,79 @@ CAMLprim value caml_zmq_connect(value socket, value string_address) {
     CAMLreturn(Val_unit);
 }
 
-static int snd_rcv_options_table[] = { 0, ZMQ_NOBLOCK, ZMQ_SNDMORE };
+/**
+ * Send
+ */
+
+/* Order must match Socket.snd_option declaration */
+static int const native_snd_option_for_caml_snd_option[] = {
+    0,
+    ZMQ_NOBLOCK,
+    ZMQ_SNDMORE
+};
+
+static bool is_caml_snd_option_valid(int caml_snd_option) {
+    return caml_snd_option > -1
+           && caml_snd_option
+              < (int) CAML_ZMQ_ARRAY_SIZE(native_snd_option_for_caml_snd_option);
+}
 
 CAMLprim value caml_zmq_send(value socket, value string, value snd_options) {
     CAMLparam3 (socket, string, snd_options);
+
+    int caml_snd_option = Int_val(snd_options);
+    if (!is_caml_snd_option_valid(caml_snd_option))
+        caml_failwith("Invalid send option.");
+    
     void *sock = CAML_ZMQ_Socket_val(socket);
     zmq_msg_t msg;
-    int option;
-    int result, close_result;
-
-    if (Int_val(snd_options) < 0 || Int_val(snd_options) > 2)
-        caml_failwith("Invalid variant range");
-
-    option = snd_rcv_options_table[Int_val(snd_options)];
-    result = zmq_msg_init_size(&msg, caml_string_length(string));
+    int result = zmq_msg_init_size(&msg, caml_string_length(string));
     caml_zmq_raise_if (result == -1);
+
     /* Doesn't copy '\0' */
     memcpy ((void *) zmq_msg_data (&msg), String_val(string), caml_string_length(string));
+    int option = native_snd_option_for_caml_snd_option[caml_snd_option];
 
     caml_release_runtime_system();
     result = zmq_send (sock, &msg, option);
     caml_acquire_runtime_system();
 
-    close_result = zmq_msg_close (&msg);
+    int close_result = zmq_msg_close (&msg);
     caml_zmq_raise_if (result == -1);
     caml_zmq_raise_if (close_result == -1);
     
     CAMLreturn(Val_unit);
 }
 
+/**
+ * Receive
+ */
+
+/* Order must match Socket.recv_option declaration */
+static int const native_rcv_option_for_caml_rcv_option[] = {
+    0,
+    ZMQ_NOBLOCK
+};
+
+static bool is_caml_rcv_option_valid(int caml_rcv_option) {
+    return caml_rcv_option > -1
+           && caml_rcv_option
+              < (int) CAML_ZMQ_ARRAY_SIZE(native_rcv_option_for_caml_rcv_option);
+}
+
 CAMLprim value caml_zmq_recv(value socket, value rcv_options) {
     CAMLparam2 (socket, rcv_options);
     CAMLlocal1 (message);
-    zmq_msg_t request;
-    void *sock = CAML_ZMQ_Socket_val(socket);
-    int option;
-    int result;
-    size_t size;
-    if (Int_val(rcv_options) < 0 || Int_val(rcv_options) > 2)
-        caml_failwith("Invalid variant range");
 
-    option = snd_rcv_options_table[Int_val(rcv_options)];
-    result = zmq_msg_init (&request);
+    int caml_rcv_option = Int_val(rcv_options);
+    if (!is_caml_rcv_option_valid(caml_rcv_option))
+        caml_failwith("Invalid receive option.");
+
+    void *sock = CAML_ZMQ_Socket_val(socket);
+    int option = native_rcv_option_for_caml_rcv_option[caml_rcv_option];
+
+    zmq_msg_t request;
+    int result = zmq_msg_init (&request);
     caml_zmq_raise_if (result == -1);
 
     caml_release_runtime_system();
@@ -295,7 +329,8 @@ CAMLprim value caml_zmq_recv(value socket, value rcv_options) {
     caml_acquire_runtime_system();
 
     caml_zmq_raise_if (result == -1);
-    size = zmq_msg_size (&request);
+
+    size_t size = zmq_msg_size (&request);
     message = caml_alloc_string(size);
     memcpy (String_val(message), zmq_msg_data (&request), size);
     result = zmq_msg_close(&request);
@@ -303,3 +338,33 @@ CAMLprim value caml_zmq_recv(value socket, value rcv_options) {
     CAMLreturn (message);
 }
 
+/**
+ * Devices
+ */
+
+/* Order must match Device.kind declaration */
+static int const native_device_for_caml_device[] = {
+    ZMQ_STREAMER,
+    ZMQ_FORWARDER,
+    ZMQ_QUEUE
+};
+
+static bool is_caml_device_valid(int caml_device) {
+    return caml_device > -1
+           && caml_device < (int) CAML_ZMQ_ARRAY_SIZE(native_device_for_caml_device);
+}
+
+CAMLprim value caml_zmq_device(value device_kind, value socket1, value socket2) {
+    CAMLparam3 (device_kind, socket1, socket2);
+    int caml_device = Int_val(device_kind);
+
+    if (!is_caml_device_valid(caml_device))
+        caml_failwith("Invalid device kind");
+
+    int result = zmq_device(native_device_for_caml_device[caml_device],
+                            CAML_ZMQ_Socket_val(socket1),
+                            CAML_ZMQ_Socket_val(socket2));
+
+    caml_zmq_raise_if(result == -1);
+    CAMLreturn (Val_unit);
+}

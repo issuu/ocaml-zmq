@@ -1,6 +1,6 @@
 OASISFormat: 0.2
 Name:        ZMQB
-Version:     0.0.1
+Version:     0.0.3
 Synopsis:    Bindings for the ZMQ library
 Authors:     Pedro Borges
 License:     MIT
@@ -23,5 +23,6 @@ Library "ZMQB"
 
   BuildDepends: uint.uint64
   CCLib: -lzmq
-  CCOpt: -Isrc
+  CCOpt: -Isrc -Wall -W -Wextra -O2
   CompiledObject: best
+

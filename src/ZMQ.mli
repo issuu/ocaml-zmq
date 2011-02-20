@@ -1,8 +1,6 @@
 (* Copyright (c) 2011 Pedro Borges and contributors *)
 
-type context
-type socket
-
+(** Module Exceptions *)
 type error =
     EINVAL
   | EFAULT
@@ -21,66 +19,92 @@ type error =
 
 exception ZMQ_exception of error * string
 
-type socket_kind = 
-    Pair
-  | Pub
-  | Sub
-  | Req
-  | Rep
-  | XReq
-  | XRep
-  | Pull
-  | Push
+(** Context *)
+type context
 
-type set_get_option = 
-  [
-    `High_water_mark of Uint64.t
-  | `Swap of int64
-  | `Affinity of Uint64.t
-  | `Identity of string
-  | `Rate of int64 
-  | `Recovery_interval of int64
-  | `Multicast_loop of int64
-  | `Send_buffer of Uint64.t
-  | `Recieve_buffer of Uint64.t
-  ]
-
-type set_option =
-  [ set_get_option | `Subscribe of string | `Unsubscribe of string ]
-
-type get_option =
-  [ set_get_option | `Recieve_more of int64 ]
-
-type get_option_tag =
-  [
-    `High_water_mark
-  | `Swap
-  | `Affinity
-  | `Identity
-  | `Rate
-  | `Recovery_interval
-  | `Multicast_loop
-  | `Send_buffer
-  | `Recieve_buffer
-  | `Recieve_more
-  ]
-
-type send_recv_option =
-  None | No_block | Snd_more
+(** Creation and Destruction *)
+val init : ?io_threads:int -> unit -> context
+val term : context -> unit
 
 val version : unit -> int * int * int
 
-val init : int -> context
-val term : context -> unit
+module Socket :
+sig
+  type 'a t
+  type 'a kind
 
-val socket : context -> socket_kind -> socket
-val close : socket -> unit
+  type pair
+  type pub
+  type sub
+  type req
+  type rep
+  type xreq
+  type xrep
+  type pull
+  type push
 
-val setsockopt : socket -> set_option -> unit
-val getsockoption : socket -> get_option_tag -> get_option
-val bind : socket -> string -> unit
-val connect : socket -> string -> unit
+  val pair : pair kind
+  val pub  : pub kind
+  val sub  : sub kind
+  val req  : req kind
+  val rep  : rep kind
+  val xreq : xreq kind
+  val xrep : xrep kind
+  val pull : pull kind
+  val push : push kind
 
-val send : socket -> string -> send_recv_option -> unit
-val recv : socket -> send_recv_option -> string
+  (** Creation and Destruction *)
+  val create : context -> 'a kind -> 'a t
+  val close : 'a t -> unit 
 
+  (** Wiring *)
+  val connect : 'a t -> string -> unit
+  val bind : 'a t -> string -> unit
+
+  (** Send and Receive *)
+  type recv_option = R_none | R_no_block
+  val recv : ?opt:recv_option -> 'a t -> string
+
+  type snd_option = S_none | S_no_block | S_more
+  val send : ?opt:snd_option -> 'a t -> string -> unit
+
+  (** Option Setters *)
+  exception Invalid_identity of string
+  val set_indentity : 'a t -> string -> unit
+  val set_high_water_mark : 'a t -> Uint64.t -> unit
+  val set_swap : 'a t -> int64 -> unit
+  val set_affinity : 'a t -> Uint64.t -> unit
+  val set_rate : 'a t -> int64 -> unit
+  val set_recovery_interval : 'a t -> int64 -> unit
+  val set_multicast_loop : 'a t -> bool -> unit
+  val set_recv_buffer_size : 'a t -> Uint64.t -> unit
+  val set_snd_buffer_size : 'a t -> Uint64.t -> unit
+
+  val subscribe : sub t -> string -> unit
+  val unsubscribe : sub t -> string -> unit
+
+  (** Option Getters *)
+  val has_more : 'a t -> bool
+  val high_water_mark : 'a t -> Uint64.t
+  val swap : 'a t -> int64
+  val affinity : 'a t -> Uint64.t
+  val identity : 'a t -> string
+  val rate : 'a t -> int64
+  val recovery_interval : 'a t -> int64
+  val multicast_loop : 'a t -> int64
+  val snd_buffer_size : 'a t -> Uint64.t
+  val recv_buffer_size : 'a t -> Uint64.t
+end
+
+
+module Device :
+sig
+
+  type kind = 
+      Streamer
+    | Forwarder
+    | Queue
+
+  val create: kind -> 'a Socket.t -> 'a Socket.t -> unit
+  
+end

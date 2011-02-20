@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: 88a167170a510457753fceeee37b4df2) *)
+(* DO NOT EDIT (digest: ff18f9cf45c3d49a941c3260fd14461d) *)
 module OASISGettext = struct
 # 21 "/Users/Pedro/Downloads/oasis-0.2.0/src/oasis/OASISGettext.ml"
   
@@ -466,7 +466,22 @@ let package_default =
      flags =
        [
           (["oasis_library_zmqb_ccopt"; "compile"],
-            [(OASISExpr.EBool true, S [A "-ccopt"; A "-Isrc"])]);
+            [
+               (OASISExpr.EBool true,
+                 S
+                   [
+                      A "-ccopt";
+                      A "-Isrc";
+                      A "-ccopt";
+                      A "-Wall";
+                      A "-ccopt";
+                      A "-W";
+                      A "-ccopt";
+                      A "-Wextra";
+                      A "-ccopt";
+                      A "-O2"
+                   ])
+            ]);
           (["oasis_library_zmqb_cclib"; "link"],
             [(OASISExpr.EBool true, S [A "-cclib"; A "-lzmq"])]);
           (["oasis_library_zmqb_cclib"; "ocamlmklib"; "c"],
