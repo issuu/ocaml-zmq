@@ -360,10 +360,15 @@ CAMLprim value caml_zmq_device(value device_kind, value socket1, value socket2) 
 
     if (!is_caml_device_valid(caml_device))
         caml_failwith("Invalid device kind");
+	
+    void *native_socket1 = CAML_ZMQ_Socket_val(socket1);
+    void *native_socket2 = CAML_ZMQ_Socket_val(socket2);
 
+    caml_release_runtime_system();  
     int result = zmq_device(native_device_for_caml_device[caml_device],
-                            CAML_ZMQ_Socket_val(socket1),
-                            CAML_ZMQ_Socket_val(socket2));
+                            native_socket1,
+			    native_socket2);
+    caml_acquire_runtime_system();
 
     caml_zmq_raise_if(result == -1);
     CAMLreturn (Val_unit);
