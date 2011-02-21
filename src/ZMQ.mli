@@ -100,11 +100,8 @@ end
 module Device :
 sig
 
-  type kind = 
-      Streamer
-    | Forwarder
-    | Queue
+  val streamer  : Socket.pull Socket.t -> Socket.push Socket.t -> unit
+  val forwarder : Socket.sub  Socket.t -> Socket.pub  Socket.t -> unit
+  val queue     : Socket.xrep Socket.t -> Socket.xreq Socket.t -> unit
 
-  val create: kind -> 'a Socket.t -> 'a Socket.t -> unit
-  
 end

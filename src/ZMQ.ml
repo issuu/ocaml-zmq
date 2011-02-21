@@ -209,6 +209,10 @@ module Device = struct
     | Queue
 
   external create :
-    kind -> 'a Socket.t -> 'a Socket.t -> unit = "caml_zmq_device"
-  
+    kind -> 'a Socket.t -> 'b Socket.t -> unit = "caml_zmq_device"
+ 
+  let streamer frontend backend = create Streamer frontend backend
+  let forwarder frontend backend = create Forwarder frontend backend
+  let queue frontend backend = create Queue frontend backend
+
 end
