@@ -1,33 +1,30 @@
 Readme
 ======
 
-OCaml bindings for ZMQ 2.0
+OCaml bindings for ZMQ 2.1
 
 Requirements
 ------------
 * [OCaml 3.12](http://caml.inria.fr/)
 * [Findlib](http://projects.camlcity.org/projects/findlib.html)
 * [ocaml-uint](https://github.com/andrenth/ocaml-uint)
-* [ZMQ 2.0.10](http://www.zeromq.org/intro:get-the-software)
+* [ZMQ 2.1.*](http://www.zeromq.org/intro:get-the-software)
 
 Install
 -------
-ocaml setup.ml -configure  
-ocaml setup.ml -build  
-ocaml setup.ml -install  
+make all
+make install
 
 Uninstall
 ---------
-ocaml setup.ml -uninstall
+make uninstall
 
 Roadmap
 ----
-* Implement socket polls
 * Implement every zguide example
 * Look at the exception format again
 * Stabilize the interface
 * Release final version
-* Make branch for ZMQ 2.1
 
 License
 -------
@@ -36,4 +33,3 @@ See LICENSE
 Thanks
 ------
 To the guys from the #ocaml channel, gildor, thelema, kaustuv and many others, and the ocaml-uint programmers.
-
