@@ -16,6 +16,7 @@ type error =
   | ENOTSUP
   | EFSM
   | ENOMEM
+  | EINTR
   | EUNKNOWN
 
 exception ZMQ_exception of error * string
@@ -38,32 +39,33 @@ external version : unit -> int * int * int = "caml_zmq_version"
 
 module Socket = struct
 
-  type 'a t
+  type +'a t
 
   (** This is an int so we know which socket we
     * are building inside the external functions *)
 
   type 'a kind = int
 
-  type pair
-  type pub
-  type sub
-  type req
-  type rep
-  type xreq
-  type xrep
-  type pull
-  type push
+  type generic
+  type pair   = private generic
+  type pub    = private generic
+  type sub    = private generic
+  type req    = private generic
+  type rep    = private generic
+  type dealer = private generic
+  type router = private generic
+  type pull   = private generic
+  type push   = private generic
 
-  let pair = 0
-  let pub  = 1
-  let sub  = 2
-  let req  = 3
-  let rep  = 4
-  let xreq = 5
-  let xrep = 6
-  let pull = 7
-  let push = 8
+  let pair   = 0
+  let pub    = 1
+  let sub    = 2
+  let req    = 3
+  let rep    = 4
+  let dealer = 5
+  let router = 6
+  let pull   = 7
+  let push   = 8
 
   (** Creation and Destruction *)
   external create : context -> 'a kind -> 'a t = "caml_zmq_socket"
@@ -90,6 +92,7 @@ module Socket = struct
       Swap
     | Rate
     | Recovery_interval
+    | Recovery_interval_msec
     | Multicast_loop
     | Receive_more
 
@@ -111,7 +114,16 @@ module Socket = struct
     | Receive_buffer
 
   external set_uint64_option :
-    'a t -> uint64_option -> Uint64.t -> unit = "caml_zmq_set_uint64_option"  
+    'a t -> uint64_option -> Uint64.t -> unit = "caml_zmq_set_uint64_option"
+
+  type int_option = 
+      Linger
+    | Reconnect_interval
+    | Reconnect_interval_max
+    | Backlog
+
+  external set_int_option :
+    'a t -> int_option -> int -> unit = "caml_zmq_set_int_option"
 
   (** Option Setters *)
   let set_high_water_mark socket new_mark =
@@ -146,6 +158,9 @@ module Socket = struct
   let set_recovery_interval socket new_rinterval =
     set_int64_option socket Recovery_interval new_rinterval
 
+  let set_recovery_interval_msec socket new_rinterval =
+    set_int64_option socket Recovery_interval_msec new_rinterval
+
   let set_multicast_loop socket new_mcast_loop =
     let int64_val = if new_mcast_loop then 1L else 0L in
       set_int64_option socket Multicast_loop int64_val
@@ -156,6 +171,17 @@ module Socket = struct
   let set_snd_buffer_size socket new_size =
     set_uint64_option socket Send_buffer new_size
 
+  let set_linger socket new_linger =
+    set_int_option socket Linger new_linger
+
+  let set_reconnect_interval socket new_interval =
+    set_int_option socket Reconnect_interval new_interval
+
+  let set_reconnect_interval_max socket new_max =
+    set_int_option socket Reconnect_interval_max new_max
+  
+  let set_backlog socket new_back =
+    set_int_option socket Backlog new_back
 
   (** Native Option Getters (private) *)
   external get_int64_option :
@@ -166,6 +192,9 @@ module Socket = struct
 
   external get_uint64_option :
     'a t -> uint64_option -> Uint64.t = "caml_zmq_get_uint64_option"
+
+  external get_int_option :
+    'a t -> int_option -> int = "caml_zmq_get_int_option"
 
   (** Option Getters *)
   let has_more socket =
@@ -190,6 +219,9 @@ module Socket = struct
   let recovery_interval socket =
     get_int64_option socket Recovery_interval
 
+  let recovery_interval_msec socket = 
+    get_int64_option socket Recovery_interval_msec
+
   let multicast_loop socket =
     get_int64_option socket Multicast_loop
 
@@ -199,6 +231,20 @@ module Socket = struct
   let recv_buffer_size socket =
     get_uint64_option socket Receive_buffer
 
+  let linger socket =
+    get_int_option socket Linger
+
+  let reconnect_interval socket =
+    get_int_option socket Reconnect_interval
+
+  let reconnect_interval_max socket =
+    get_int_option socket Reconnect_interval_max
+
+  let backlog socket =
+    get_int_option socket Backlog
+
+  type event = No_event | Poll_in | Poll_out | Poll_in_out
+  external events : 'a t -> event = "caml_zmq_get_events"
 end
 
 module Device = struct

@@ -25,7 +25,8 @@ static int const caml_zmq_error_table[] = {
     EAGAIN,
     ENOTSUP,
     EFSM,
-    ENOMEM
+    ENOMEM,
+    EINTR
 };
 
 /* This must be the last value of the variant. */

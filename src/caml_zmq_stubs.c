@@ -81,8 +81,8 @@ static int const socket_type_for_kind[] =  {
     ZMQ_SUB,
     ZMQ_REQ,
     ZMQ_REP,
-    ZMQ_XREQ,
-    ZMQ_XREP,
+    ZMQ_DEALER,
+    ZMQ_ROUTER,
     ZMQ_PULL,
     ZMQ_PUSH
 };
@@ -143,6 +143,7 @@ static int const native_int64_option_for[] = {
     ZMQ_SWAP,
     ZMQ_RATE,
     ZMQ_RECOVERY_IVL,
+    ZMQ_RECOVERY_IVL_MSEC,
     ZMQ_MCAST_LOOP,
     ZMQ_RCVMORE
 };
@@ -186,6 +187,30 @@ int caml_zmq_set_bytes_option(value socket, value option_name, value socket_opti
     CAMLreturn (Val_unit);   
 }
 
+static int const native_int_option_for[] = {
+    ZMQ_LINGER,
+    ZMQ_RECONNECT_IVL,
+    ZMQ_RECONNECT_IVL_MAX,
+    ZMQ_BACKLOG
+};
+
+CAMLprim value caml_zmq_set_int_option(value socket, value option_name, value socket_option) {
+    CAMLparam3 (socket, option_name, socket_option);
+
+    int mark = Int_val(socket_option);
+    void *option_value = (void *) &mark;
+    size_t option_size = sizeof (mark);
+    int result = zmq_setsockopt(CAML_ZMQ_Socket_val(socket),
+                                native_int_option_for[Int_val(option_name)],
+                                option_value,
+                                option_size);
+
+    caml_zmq_raise_if (result == -1);
+
+    CAMLreturn (Val_unit);
+}
+
+
 /**
  * Get socket options
  */
@@ -226,6 +251,40 @@ CAMLprim value caml_zmq_get_bytes_option(value socket, value option_name) {
     caml_zmq_raise_if (result == -1);    
     CAMLreturn (caml_copy_string(buffer));
 }
+
+CAMLprim value caml_zmq_get_int_option(value socket, value option_name) {
+    CAMLparam2 (socket, option_name);
+    int mark;
+    size_t mark_size = sizeof (mark);
+    int result = zmq_getsockopt (CAML_ZMQ_Socket_val(socket),
+                                 native_int_option_for[Int_val(option_name)],
+                                 &mark,
+                                 &mark_size);
+    caml_zmq_raise_if (result == -1);
+    CAMLreturn (Val_int(mark));
+}
+
+CAMLprim value caml_zmq_get_events(value socket) {
+    CAMLparam1 (socket);
+    uint32_t event = 0;
+    size_t event_size = sizeof (event);
+    int result = zmq_getsockopt (CAML_ZMQ_Socket_val(socket),
+                                 ZMQ_EVENTS,
+                                 &event,
+                                 &event_size);
+    caml_zmq_raise_if (result == -1);
+    int event_type = 0; /* No_event */
+    if (event & ZMQ_POLLIN) {
+        event_type = 1; /* Poll_in */
+        if (event & ZMQ_POLLOUT) {
+            event_type = 3; /* Poll_in_out */
+        }
+    } else if (event & ZMQ_POLLOUT) {
+        event_type = 2; /* Poll_out */
+    }
+    CAMLreturn (Val_int(event));
+}
+
 
 /**
  * Bind

@@ -15,6 +15,7 @@ type error =
   | ENOTSUP
   | EFSM
   | ENOMEM
+  | EINTR
   | EUNKNOWN
 
 exception ZMQ_exception of error * string
@@ -30,28 +31,29 @@ val version : unit -> int * int * int
 
 module Socket :
 sig
-  type 'a t
+  type +'a t
   type 'a kind
 
-  type pair
-  type pub
-  type sub
-  type req
-  type rep
-  type xreq
-  type xrep
-  type pull
-  type push
+  type generic
+  type pair   = private generic
+  type pub    = private generic
+  type sub    = private generic
+  type req    = private generic
+  type rep    = private generic
+  type dealer = private generic
+  type router = private generic
+  type pull   = private generic
+  type push   = private generic
 
-  val pair : pair kind
-  val pub  : pub kind
-  val sub  : sub kind
-  val req  : req kind
-  val rep  : rep kind
-  val xreq : xreq kind
-  val xrep : xrep kind
-  val pull : pull kind
-  val push : push kind
+  val pair   : pair kind
+  val pub    : pub kind
+  val sub    : sub kind
+  val req    : req kind
+  val rep    : rep kind
+  val dealer : dealer kind
+  val router : router kind
+  val pull   : pull kind
+  val push   : push kind
 
   (** Creation and Destruction *)
   val create : context -> 'a kind -> 'a t
@@ -76,9 +78,14 @@ sig
   val set_affinity : 'a t -> Uint64.t -> unit
   val set_rate : 'a t -> int64 -> unit
   val set_recovery_interval : 'a t -> int64 -> unit
+  val set_recovery_interval_msec : 'a t -> int64 -> unit
   val set_multicast_loop : 'a t -> bool -> unit
   val set_recv_buffer_size : 'a t -> Uint64.t -> unit
   val set_snd_buffer_size : 'a t -> Uint64.t -> unit
+  val set_linger : 'a t -> int -> unit
+  val set_reconnect_interval : 'a t -> int -> unit
+  val set_reconnect_interval_max : 'a t -> int -> unit
+  val set_backlog : 'a t -> int -> unit
 
   val subscribe : sub t -> string -> unit
   val unsubscribe : sub t -> string -> unit
@@ -91,17 +98,29 @@ sig
   val identity : 'a t -> string
   val rate : 'a t -> int64
   val recovery_interval : 'a t -> int64
+  val recovery_interval_msec : 'a t -> int64
   val multicast_loop : 'a t -> int64
   val snd_buffer_size : 'a t -> Uint64.t
   val recv_buffer_size : 'a t -> Uint64.t
+  val linger : 'a t -> int
+  val reconnect_interval : 'a t -> int 
+  val reconnect_interval_max : 'a t -> int
+  val backlog : 'a t -> int
+
+  type event = No_event | Poll_in | Poll_out | Poll_in_out
+  val events : 'a t -> event
+
+  (** val kind: 'a t -> ? *)
+  (** val fd : 'a t -> int ? incompatible with windows *)
+
 end
 
 
 module Device :
 sig
 
-  val streamer  : Socket.pull Socket.t -> Socket.push Socket.t -> unit
-  val forwarder : Socket.sub  Socket.t -> Socket.pub  Socket.t -> unit
-  val queue     : Socket.xrep Socket.t -> Socket.xreq Socket.t -> unit
+  val streamer  : Socket.pull Socket.t   -> Socket.push Socket.t   -> unit
+  val forwarder : Socket.sub  Socket.t   -> Socket.pub  Socket.t   -> unit
+  val queue     : Socket.router Socket.t -> Socket.dealer Socket.t -> unit
 
 end
