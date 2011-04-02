@@ -19,11 +19,11 @@
 
 #include <zmq.h>
 
-#include "caml_zmq/fail.h"
-#include "caml_zmq/context.h"
-#include "caml_zmq/socket.h"
+#include "fail.h"
+#include "context.h"
+#include "socket.h"
 
-#include "caml_uint/uint64.h"
+#include "uint64.h"
 
 #define CAML_ZMQ_ARRAY_SIZE(a) (sizeof(a)/sizeof(a[0]))
 

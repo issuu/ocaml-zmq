@@ -2,7 +2,7 @@
  * Copyright (c) 2011 Pedro Borges and contributors
  */
 
-#include "caml_zmq/fail.h"
+#include "fail.h"
 
 #include <zmq.h>
 

@@ -2,7 +2,7 @@
  * Copyright (c) 2011 Pedro Borges and contributors
  */
 
-#include "caml_zmq/context.h"
+#include "context.h"
 
 #include <caml/custom.h>
 #include <caml/memory.h>

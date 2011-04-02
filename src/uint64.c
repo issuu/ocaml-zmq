@@ -3,7 +3,7 @@
  *                    Jeff Shaw <shawjef3@msu.edu>
  */
 
-#include "caml_uint/uint64.h"
+#include "uint64.h"
 
 #include <stdint.h>
 

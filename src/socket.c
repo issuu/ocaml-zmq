@@ -2,7 +2,7 @@
  * Copyright (c) 2011 Pedro Borges and contributors
  */
 
-#include "caml_zmq/socket.h"
+#include "socket.h"
 
 #include <caml/memory.h>
 #include <caml/custom.h>
