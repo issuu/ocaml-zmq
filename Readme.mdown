@@ -12,7 +12,7 @@ Requirements
 
 Install
 -------
-make all
+make all  
 make install
 
 Uninstall
