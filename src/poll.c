@@ -86,17 +86,20 @@ CAMLprim value caml_zmq_poll(value poll, value timeout) {
     caml_acquire_runtime_system();
 
     caml_zmq_raise_if(num_event_sockets == -1);
-    
-    poll_itemarray = caml_alloc_tuple(num_event_sockets);
-    int i, j;
-    for(i = 0, j = 0; i < num_event_sockets; i++) {
-        while(!((items[j].revents | ZMQ_POLLIN) || (items[j].revents | ZMQ_POLLOUT))) {
-            j++;
+    if(num_event_sockets == 0) { /* It's invalid to allocate a zero sized array */
+        poll_itemarray = Atom(0);
+    } else {
+        poll_itemarray = caml_alloc_tuple(num_event_sockets);
+        int i, j;
+        for(i = 0, j = 0; i < num_event_sockets; i++) {
+            while(!((items[j].revents | ZMQ_POLLIN) || (items[j].revents | ZMQ_POLLOUT))) {
+                j++;
+            }
+            curr_elem = caml_alloc_tuple(2);
+            Store_field(curr_elem, 0, caml_zmq_copy_socket(items[j].socket));
+            Store_field(curr_elem, 1, CAML_ZMQ_Val_mask(items[j].revents));
+            Store_field(poll_itemarray, i, curr_elem);
         }
-        curr_elem = caml_alloc_tuple(2);
-        Store_field(curr_elem, 0, caml_zmq_copy_socket(items[j].socket));
-        Store_field(curr_elem, 1, CAML_ZMQ_Val_mask(items[j].revents));
-        Store_field(poll_itemarray, i, curr_elem);
     }
 
     CAMLreturn (poll_itemarray);
