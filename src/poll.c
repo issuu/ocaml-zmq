@@ -99,6 +99,7 @@ CAMLprim value caml_zmq_poll(value poll, value timeout) {
             Store_field(curr_elem, 0, caml_zmq_copy_socket(items[j].socket));
             Store_field(curr_elem, 1, CAML_ZMQ_Val_mask(items[j].revents));
             Store_field(poll_itemarray, i, curr_elem);
+            j++;
         }
     }
 
