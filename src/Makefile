@@ -9,7 +9,7 @@ LIB_NAME= ZMQ
 LIB_NAME_ALT= ZMQB
 META_FILE= META
 DEPS= -package uint.uint64
-OBJS= socket.o fail.o context.o uint64.o caml_zmq_stubs.o
+OBJS= socket.o fail.o context.o uint64.o caml_zmq_stubs.o poll.o
 INSTALL_FILES=*.mli *.cmi *.cma *.cmx *.cmxa *.a *.so
 
 all: native bytecode

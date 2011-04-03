@@ -119,8 +119,22 @@ end
 module Device :
 sig
 
-  val streamer  : Socket.pull Socket.t   -> Socket.push Socket.t   -> unit
-  val forwarder : Socket.sub  Socket.t   -> Socket.pub  Socket.t   -> unit
+  val streamer  :   Socket.pull Socket.t ->   Socket.push Socket.t -> unit
+  val forwarder :    Socket.sub Socket.t ->    Socket.pub Socket.t -> unit
   val queue     : Socket.router Socket.t -> Socket.dealer Socket.t -> unit
+
+end
+
+module Poll :
+sig
+  
+  type t
+
+  type event_mask = In | Out | In_out
+  type 'a poll_item = ('a Socket.t * event_mask)
+
+  val of_poll_items : 'a poll_item array -> t
+
+  val poll : ?timeout: int -> t -> 'a poll_item array
 
 end

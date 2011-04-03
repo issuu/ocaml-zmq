@@ -432,3 +432,8 @@ CAMLprim value caml_zmq_device(value device_kind, value socket1, value socket2) 
     caml_zmq_raise_if(result == -1);
     CAMLreturn (Val_unit);
 }
+
+/**
+ * Poll check poll.h
+ */
+

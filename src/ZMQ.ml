@@ -262,3 +262,18 @@ module Device = struct
   let queue frontend backend = create Queue frontend backend
 
 end
+
+module Poll = struct
+  
+  type t
+
+  type event_mask = In | Out | In_out
+  type 'a poll_item = ('a Socket.t * event_mask)
+
+  external of_poll_items : 'a poll_item array -> t = "caml_zmq_poll_of_pollitem_array"
+
+  external native_poll: t -> int -> 'a poll_item array = "caml_zmq_poll"
+
+  let poll ?(timeout = -1) items = 
+    native_poll items timeout
+end
