@@ -80,7 +80,7 @@ module Socket = struct
 
   external native_recv : 'a t -> recv_option -> string = "caml_zmq_recv"
   let recv ?(opt = R_none) socket = native_recv socket opt
-  
+
   type snd_option = S_none | S_no_block | S_more
 
   external native_send : 'a t -> string -> snd_option-> unit = "caml_zmq_send"
@@ -97,17 +97,17 @@ module Socket = struct
     | Receive_more
 
   external set_int64_option :
-    'a t -> int64_option -> int64 -> unit = "caml_zmq_set_int64_option"  
-  
+    'a t -> int64_option -> int64 -> unit = "caml_zmq_set_int64_option"
+
   type bytes_option =
       Identity
     | Subscribe
     | Unsubscribe
 
   external set_bytes_option :
-    'a t -> bytes_option -> string -> unit = "caml_zmq_set_bytes_option"  
+    'a t -> bytes_option -> string -> unit = "caml_zmq_set_bytes_option"
 
-  type uint64_option = 
+  type uint64_option =
       High_water_mark
     | Affinity
     | Send_buffer
@@ -116,11 +116,12 @@ module Socket = struct
   external set_uint64_option :
     'a t -> uint64_option -> Uint64.t -> unit = "caml_zmq_set_uint64_option"
 
-  type int_option = 
+  type int_option =
       Linger
     | Reconnect_interval
     | Reconnect_interval_max
     | Backlog
+    | FD
 
   external set_int_option :
     'a t -> int_option -> int -> unit = "caml_zmq_set_int_option"
@@ -151,7 +152,7 @@ module Socket = struct
 
   let unsubscribe socket old_subscription =
     set_bytes_option socket Unsubscribe old_subscription
-  
+
   let set_rate socket new_rate =
     set_int64_option socket Rate new_rate
 
@@ -179,7 +180,7 @@ module Socket = struct
 
   let set_reconnect_interval_max socket new_max =
     set_int_option socket Reconnect_interval_max new_max
-  
+
   let set_backlog socket new_back =
     set_int_option socket Backlog new_back
 
@@ -219,7 +220,7 @@ module Socket = struct
   let recovery_interval socket =
     get_int64_option socket Recovery_interval
 
-  let recovery_interval_msec socket = 
+  let recovery_interval_msec socket =
     get_int64_option socket Recovery_interval_msec
 
   let multicast_loop socket =
@@ -243,20 +244,23 @@ module Socket = struct
   let backlog socket =
     get_int_option socket Backlog
 
+  let get_fd socket =
+    ((Obj.magic (get_int_option socket FD)):Unix.file_descr)
+
   type event = No_event | Poll_in | Poll_out | Poll_in_out
   external events : 'a t -> event = "caml_zmq_get_events"
 end
 
 module Device = struct
 
-  type kind = 
+  type kind =
       Streamer
     | Forwarder
     | Queue
 
   external create :
     kind -> 'a Socket.t -> 'b Socket.t -> unit = "caml_zmq_device"
- 
+
   let streamer frontend backend = create Streamer frontend backend
   let forwarder frontend backend = create Forwarder frontend backend
   let queue frontend backend = create Queue frontend backend
@@ -264,7 +268,7 @@ module Device = struct
 end
 
 module Poll = struct
-  
+
   type t
 
   type event_mask = In | Out | In_out
@@ -274,6 +278,6 @@ module Poll = struct
 
   external native_poll: t -> int -> 'a poll_item array = "caml_zmq_poll"
 
-  let poll ?(timeout = -1) items = 
+  let poll ?(timeout = -1) items =
     native_poll items timeout
 end

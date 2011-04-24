@@ -8,7 +8,7 @@ LIB_NAME= ZMQ
 # fooling the linker in later stages
 LIB_NAME_ALT= ZMQB
 META_FILE= META
-DEPS= -package uint.uint64
+DEPS= -package unix,uint.uint64
 OBJS= socket.o fail.o context.o uint64.o caml_zmq_stubs.o poll.o
 INSTALL_FILES=*.mli *.cmi *.cma *.cmx *.cmxa *.a *.so
 
@@ -45,5 +45,5 @@ install: all
 
 uninstall:
 	$(OCAMLFIND) remove $(LIB_NAME)
-	
+
 .PHONY: clean

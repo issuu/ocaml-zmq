@@ -133,7 +133,7 @@ CAMLprim value caml_zmq_set_uint64_option(value socket, value option_name, value
                                 native_uint64_option_for[Int_val(option_name)],
                                 option_value,
                                 option_size);
-    
+
     caml_zmq_raise_if (result == -1);
 
     CAMLreturn (Val_unit);
@@ -184,14 +184,15 @@ int caml_zmq_set_bytes_option(value socket, value option_name, value socket_opti
 
     caml_zmq_raise_if (result == -1);
 
-    CAMLreturn (Val_unit);   
+    CAMLreturn (Val_unit);
 }
 
 static int const native_int_option_for[] = {
     ZMQ_LINGER,
     ZMQ_RECONNECT_IVL,
     ZMQ_RECONNECT_IVL_MAX,
-    ZMQ_BACKLOG
+    ZMQ_BACKLOG,
+    ZMQ_FD
 };
 
 CAMLprim value caml_zmq_set_int_option(value socket, value option_name, value socket_option) {
@@ -248,7 +249,7 @@ CAMLprim value caml_zmq_get_bytes_option(value socket, value option_name) {
                                  buffer,
                                  &buffer_size);
     buffer[result] = '\0';
-    caml_zmq_raise_if (result == -1);    
+    caml_zmq_raise_if (result == -1);
     CAMLreturn (caml_copy_string(buffer));
 }
 
@@ -298,7 +299,7 @@ CAMLprim value caml_zmq_bind(value socket, value string_address) {
 }
 
 /**
- * Connect 
+ * Connect
  */
 
 CAMLprim value caml_zmq_connect(value socket, value string_address) {
@@ -331,7 +332,7 @@ CAMLprim value caml_zmq_send(value socket, value string, value snd_options) {
     int caml_snd_option = Int_val(snd_options);
     if (!is_caml_snd_option_valid(caml_snd_option))
         caml_failwith("Invalid send option.");
-    
+
     void *sock = CAML_ZMQ_Socket_val(socket);
     zmq_msg_t msg;
     int result = zmq_msg_init_size(&msg, caml_string_length(string));
@@ -348,7 +349,7 @@ CAMLprim value caml_zmq_send(value socket, value string, value snd_options) {
     int close_result = zmq_msg_close (&msg);
     caml_zmq_raise_if (result == -1);
     caml_zmq_raise_if (close_result == -1);
-    
+
     CAMLreturn(Val_unit);
 }
 
@@ -419,11 +420,11 @@ CAMLprim value caml_zmq_device(value device_kind, value socket1, value socket2) 
 
     if (!is_caml_device_valid(caml_device))
         caml_failwith("Invalid device kind");
-	
+
     void *native_socket1 = CAML_ZMQ_Socket_val(socket1);
     void *native_socket2 = CAML_ZMQ_Socket_val(socket2);
 
-    caml_release_runtime_system();  
+    caml_release_runtime_system();
     int result = zmq_device(native_device_for_caml_device[caml_device],
                             native_socket1,
 			    native_socket2);

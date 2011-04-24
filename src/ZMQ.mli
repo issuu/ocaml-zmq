@@ -57,7 +57,7 @@ sig
 
   (** Creation and Destruction *)
   val create : context -> 'a kind -> 'a t
-  val close : 'a t -> unit 
+  val close : 'a t -> unit
 
   (** Wiring *)
   val connect : 'a t -> string -> unit
@@ -103,9 +103,10 @@ sig
   val snd_buffer_size : 'a t -> Uint64.t
   val recv_buffer_size : 'a t -> Uint64.t
   val linger : 'a t -> int
-  val reconnect_interval : 'a t -> int 
+  val reconnect_interval : 'a t -> int
   val reconnect_interval_max : 'a t -> int
   val backlog : 'a t -> int
+  val get_fd : 'a t -> Unix.file_descr
 
   type event = No_event | Poll_in | Poll_out | Poll_in_out
   val events : 'a t -> event
@@ -127,7 +128,7 @@ end
 
 module Poll :
 sig
-  
+
   type t
 
   type event_mask = In | Out | In_out
