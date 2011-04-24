@@ -121,7 +121,6 @@ module Socket = struct
     | Reconnect_interval
     | Reconnect_interval_max
     | Backlog
-    | FD
 
   external set_int_option :
     'a t -> int_option -> int -> unit = "caml_zmq_set_int_option"
@@ -244,8 +243,7 @@ module Socket = struct
   let backlog socket =
     get_int_option socket Backlog
 
-  let get_fd socket =
-    ((Obj.magic (get_int_option socket FD)):Unix.file_descr)
+  external get_fd : 'a t -> Unix.file_descr = "caml_zmq_get_fd"
 
   type event = No_event | Poll_in | Poll_out | Poll_in_out
   external events : 'a t -> event = "caml_zmq_get_events"

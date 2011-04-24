@@ -1,5 +1,5 @@
 # Specifications for the "ZMQ" library:
-requires = "uint.uint64"
+requires = "uint.uint64, unix"
 description = "ZMQ bindings for ocaml"
 version = "alpha 0.0.4"
 archive(byte) = "ZMQB.cma"

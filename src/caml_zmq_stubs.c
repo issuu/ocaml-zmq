@@ -17,6 +17,12 @@
 #include <caml/intext.h>
 #include <caml/threads.h>
 
+#if defined(_WIN32) || defined(_WIN64)
+#  include <winsock2.h>
+#  include <windows.h>
+#endif
+
+
 #include <zmq.h>
 
 #include "fail.h"
@@ -191,8 +197,7 @@ static int const native_int_option_for[] = {
     ZMQ_LINGER,
     ZMQ_RECONNECT_IVL,
     ZMQ_RECONNECT_IVL_MAX,
-    ZMQ_BACKLOG,
-    ZMQ_FD
+    ZMQ_BACKLOG
 };
 
 CAMLprim value caml_zmq_set_int_option(value socket, value option_name, value socket_option) {
@@ -285,6 +290,27 @@ CAMLprim value caml_zmq_get_events(value socket) {
     }
     CAMLreturn (Val_int(event));
 }
+
+CAMLprim value caml_zmq_get_fd(value socket) {
+    CAMLparam1 (socket);
+    #if defined(_WIN32) || defined(_WIN64)
+    SOCKET fd;
+    #else
+    int fd;
+    #endif
+    size_t mark_size = sizeof (fd);
+    int result = zmq_getsockopt (CAML_ZMQ_Socket_val(socket),
+                                 ZMQ_FD,
+                                 (void *)&fd,
+                                 &mark_size);
+    caml_zmq_raise_if (result == -1);
+    #if defined(_WIN32) || defined(_WIN64)
+    CAMLreturn (win_alloc_socket(fd));
+    #else
+    CAMLreturn (Val_int(fd));
+    #endif
+}
+
 
 
 /**
