@@ -46,4 +46,6 @@ install: all
 uninstall:
 	$(OCAMLFIND) remove $(LIB_NAME)
 
+reinstall: uninstall install
+
 .PHONY: clean
