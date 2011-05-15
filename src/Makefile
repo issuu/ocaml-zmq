@@ -1,6 +1,6 @@
 OCAMLFIND= ocamlfind
-OCAMLC= ocamlc
-OCAMLOPT= ocamlopt
+OCAMLC= ocamlc -g -ccopt -g
+OCAMLOPT= ocamlopt -g -ccopt -g
 OCAMLMKLIB= ocamlmklib
 
 LIB_NAME= ZMQ
