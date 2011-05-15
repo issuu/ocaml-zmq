@@ -32,7 +32,7 @@ CAMLprim value caml_zmq_poll_of_pollitem_array(value pollitem_array) {
     caml_zmq_raise_if(items == NULL);
     int i;
     for(i = 0; i < n; i++) {
-        current_elem = Field(pollitem_array, n);
+        current_elem = Field(pollitem_array, i);
         items[i].socket = CAML_ZMQ_Socket_val(Field(current_elem, 0));
         items[i].events = CAML_ZMQ_Mask_val(Field(current_elem, 1));
     }
