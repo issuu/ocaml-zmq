@@ -39,23 +39,12 @@ external version : unit -> int * int * int = "caml_zmq_version"
 
 module Socket = struct
 
-  type +'a t
+  type 'a t
 
   (** This is an int so we know which socket we
     * are building inside the external functions *)
 
   type 'a kind = int
-
-  type generic
-  type pair   = private generic
-  type pub    = private generic
-  type sub    = private generic
-  type req    = private generic
-  type rep    = private generic
-  type dealer = private generic
-  type router = private generic
-  type pull   = private generic
-  type push   = private generic
 
   let pair   = 0
   let pub    = 1
