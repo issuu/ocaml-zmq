@@ -34,15 +34,15 @@ sig
   type 'a t
   type 'a kind
 
-  val pair   : [`Pair] kind
-  val pub    : [`Pub] kind
-  val sub    : [`Sub] kind
-  val req    : [`Req] kind
-  val rep    : [`Rep] kind
-  val dealer : [`Dealer] kind
-  val router : [`Router] kind
-  val pull   : [`Pull] kind
-  val push   : [`Push] kind
+  val pair   : [>`Pair] kind
+  val pub    : [>`Pub] kind
+  val sub    : [>`Sub] kind
+  val req    : [>`Req] kind
+  val rep    : [>`Rep] kind
+  val dealer : [>`Dealer] kind
+  val router : [>`Router] kind
+  val pull   : [>`Pull] kind
+  val push   : [>`Push] kind
 
   (** Creation and Destruction *)
   val create : context -> 'a kind -> 'a t
@@ -120,8 +120,7 @@ sig
   type t
 
   type event_mask = In | Out | In_out
-
-  type poll_socket = [<`Pair|`Pub|`Sub|`Req|`Rep|`Dealer|`Router|`Pull|`Push] Socket.t
+  type poll_socket = [`Pair|`Pub|`Sub|`Req|`Rep|`Dealer|`Router|`Pull|`Push] Socket.t
   type poll_item = (poll_socket * event_mask)
 
   val of_poll_items : poll_item array -> t
