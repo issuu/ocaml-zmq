@@ -8,4 +8,5 @@ setup.log
 *.swo
 *.cmi
 *.swn
-
+*.byte
+*.native
