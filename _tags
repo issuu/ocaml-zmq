@@ -1,0 +1,32 @@
+# OASIS_START
+# DO NOT EDIT (digest: e6e8a800542cd56362cc34bbeb34731b)
+# Library ZMQB
+"src": include
+<src/*.ml{,i}>: oasis_library_zmqb_ccopt
+"src/caml_zmq_stubs.c": oasis_library_zmqb_ccopt
+"src/socket.c": oasis_library_zmqb_ccopt
+"src/context.c": oasis_library_zmqb_ccopt
+"src/fail.c": oasis_library_zmqb_ccopt
+"src/poll.c": oasis_library_zmqb_ccopt
+"src/uint64.c": oasis_library_zmqb_ccopt
+<src/ZMQB.{cma,cmxa}>: oasis_library_zmqb_cclib
+"src/libZMQB.lib": oasis_library_zmqb_cclib
+"src/dllZMQB.dll": oasis_library_zmqb_cclib
+"src/libZMQB.a": oasis_library_zmqb_cclib
+"src/dllZMQB.so": oasis_library_zmqb_cclib
+<src/ZMQB.{cma,cmxa}>: use_libZMQB
+<src/*.ml{,i}>: pkg_uint.uint64
+"src/caml_zmq_stubs.c": pkg_uint.uint64
+"src/socket.c": pkg_uint.uint64
+"src/context.c": pkg_uint.uint64
+"src/fail.c": pkg_uint.uint64
+"src/poll.c": pkg_uint.uint64
+"src/uint64.c": pkg_uint.uint64
+# Executable test
+<test/test.{native,byte}>: use_ZMQB
+<test/test.{native,byte}>: pkg_uint.uint64
+<test/test.{native,byte}>: pkg_oUnit
+<test/*.ml{,i}>: use_ZMQB
+<test/*.ml{,i}>: pkg_uint.uint64
+<test/*.ml{,i}>: pkg_oUnit
+# OASIS_STOP

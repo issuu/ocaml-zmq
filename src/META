@@ -1,6 +1,10 @@
-# Specifications for the "ZMQ" library:
-requires = "uint.uint64, unix"
-description = "ZMQ bindings for ocaml"
-version = "alpha 0.0.4"
+# OASIS_START
+# DO NOT EDIT (digest: 01600ee8b071795506563041f7fcbc09)
+version = "0.0.3"
+description = "Bindings for the ZMQ library"
+requires = "uint.uint64"
 archive(byte) = "ZMQB.cma"
 archive(native) = "ZMQB.cmxa"
+exists_if = "ZMQB.cma"
+# OASIS_STOP
+

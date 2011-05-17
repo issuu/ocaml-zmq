@@ -1,0 +1,44 @@
+OASISFormat:  0.2
+Name:         ZMQ
+Version:      0.0.3
+Synopsis:     Bindings for the ZMQ library
+Authors:      Pedro Borges
+License:      MIT
+Plugins:      DevFiles (0.2), META (0.2)
+BuildTools:   ocamlbuild
+
+Library ZMQB
+  Path:           src
+  FindlibName:    ZMQ
+  Modules:        ZMQ
+  CSources:       caml_zmq_stubs.c,
+                  socket.h,
+                  socket.c,
+                  context.h,
+                  context.c,
+                  fail.h,
+                  fail.c,
+                  poll.h,
+                  poll.c,
+                  uint64.h,
+                  uint64.c
+  BuildDepends:   uint.uint64
+  CCLib:          -lzmq
+  CCOpt:          -Wall -W -Wextra -O2
+  CompiledObject: best
+
+Flag tests
+  Description: Build and run tests
+  
+Executable test
+  Path:             test
+  MainIs:           test.ml
+  Install:          false
+  Build$:           flag(tests)
+  BuildDepends:     oUnit (>= 1.1.0), ZMQ
+  CompiledObject:   best
+  
+Test main
+  Run$:    flag(tests)
+  Command: $test
+  
