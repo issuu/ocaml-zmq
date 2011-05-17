@@ -76,8 +76,8 @@ sig
   val set_reconnect_interval_max : 'a t -> int -> unit
   val set_backlog : 'a t -> int -> unit
 
-  val subscribe : [`Sub] t -> string -> unit
-  val unsubscribe : [`Sub] t -> string -> unit
+  val subscribe : [>`Sub] t -> string -> unit
+  val unsubscribe : [>`Sub] t -> string -> unit
 
   (** Option Getters *)
   val has_more : 'a t -> bool
@@ -108,9 +108,9 @@ end
 module Device :
 sig
 
-  val streamer  : [`Pull] Socket.t -> [`Push] Socket.t -> unit
-  val forwarder : [`Sub] Socket.t -> [`Pub] Socket.t -> unit
-  val queue     : [`Router] Socket.t -> [`Dealer] Socket.t -> unit
+  val streamer  : [>`Pull] Socket.t -> [>`Push] Socket.t -> unit
+  val forwarder : [>`Sub] Socket.t -> [>`Pub] Socket.t -> unit
+  val queue     : [>`Router] Socket.t -> [>`Dealer] Socket.t -> unit
 
 end
 
