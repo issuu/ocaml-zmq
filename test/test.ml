@@ -2,7 +2,7 @@ open OUnit;;
 
 let suite = "ZMQ" >::: 
   [
-    zmq_test.suite;
+    Zmq_test.suite;
   ]
 
 let _ = 

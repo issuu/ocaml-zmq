@@ -6,9 +6,10 @@
 #include <caml/fail.h>
 #include <caml/alloc.h>
 
-
 #include "fail.h"
 #include "socket.h"
+
+#include <stdio.h>
 
 static void custom_finalize_poll(value poll) {
     free(CAML_ZMQ_Poll_val(poll)->poll_items);
@@ -85,16 +86,21 @@ CAMLprim value caml_zmq_poll(value poll, value timeout) {
     int num_event_sockets = zmq_poll(items, n, tm);
     caml_acquire_runtime_system();
 
+    printf("caml_zmq_poll: num_events = %d\n", num_event_sockets);
+    
     caml_zmq_raise_if(num_event_sockets == -1);
     if(num_event_sockets == 0) { /* It's invalid to allocate a zero sized array */
         events = Atom(0);
     } else {
         events = caml_alloc(num_event_sockets, 0);
         int i;
-        for(i = 0; i < num_event_sockets; i++) {
-            if (!((items[i].revents | ZMQ_POLLIN) || (items[i].revents | ZMQ_POLLOUT))) {
+        for(i = 0; i < n; i++) {
+            printf("caml_zmq_poll: item #%d = %d\n", i, items[i].revents);
+            if (!((items[i].revents & ZMQ_POLLIN) || (items[i].revents & ZMQ_POLLOUT))) {
+              printf("caml_zmq_poll: no data\n");
               Store_field(events, i, Val_int(0)); /* None */
             } else {
+              printf("caml_zmq_poll: got data\n");
               some = caml_alloc(1, 0);
               Store_field(some, 0, CAML_ZMQ_Val_mask(items[i].revents));
               Store_field(events, i, some);
@@ -102,5 +108,6 @@ CAMLprim value caml_zmq_poll(value poll, value timeout) {
         }
     }
 
+    printf("caml_zmq_poll: returning events...\n");
     CAMLreturn (events);
 }

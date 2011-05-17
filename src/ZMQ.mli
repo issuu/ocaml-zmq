@@ -121,7 +121,7 @@ module Poll : sig
   type poll_socket = [`Pair|`Pub|`Sub|`Req|`Rep|`Dealer|`Router|`Pull|`Push] Socket.t
   type poll_mask = (poll_socket * poll_event)
 
-  val of_poll_items : poll_mask array -> t
+  val mask_of : poll_mask array -> t
   val poll : ?timeout: int -> t -> poll_event option array
 
 end
