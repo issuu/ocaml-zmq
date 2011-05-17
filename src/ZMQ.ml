@@ -258,12 +258,12 @@ module Poll = struct
 
   type t
 
-  type event_mask = In | Out | In_out
+  type poll_event = In | Out | In_out
   type poll_socket = [`Pair|`Pub|`Sub|`Req|`Rep|`Dealer|`Router|`Pull|`Push] Socket.t
-  type poll_item = (poll_socket * event_mask)
+  type poll_mask = (poll_socket * poll_event)
 
-  external of_poll_items : poll_item array -> t = "caml_zmq_poll_of_pollitem_array"
-  external native_poll: t -> int -> poll_item array = "caml_zmq_poll"
+  external of_poll_items : poll_mask array -> t = "caml_zmq_poll_of_pollitem_array"
+  external native_poll: t -> int -> poll_event option array = "caml_zmq_poll"
 
   let poll ?(timeout = -1) items = native_poll items timeout
 

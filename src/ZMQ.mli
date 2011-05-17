@@ -29,8 +29,8 @@ val term : context -> unit
 
 val version : unit -> int * int * int
 
-module Socket :
-sig
+module Socket : sig
+
   type 'a t
   type 'a kind
 
@@ -105,8 +105,7 @@ sig
 
 end
 
-module Device :
-sig
+module Device : sig
 
   val streamer  : [>`Pull] Socket.t -> [>`Push] Socket.t -> unit
   val forwarder : [>`Sub] Socket.t -> [>`Pub] Socket.t -> unit
@@ -114,16 +113,15 @@ sig
 
 end
 
-module Poll :
-sig
+module Poll : sig
 
   type t
 
-  type event_mask = In | Out | In_out
+  type poll_event = In | Out | In_out
   type poll_socket = [`Pair|`Pub|`Sub|`Req|`Rep|`Dealer|`Router|`Pull|`Push] Socket.t
-  type poll_item = (poll_socket * event_mask)
+  type poll_mask = (poll_socket * poll_event)
 
-  val of_poll_items : poll_item array -> t
-  val poll : ?timeout: int -> t -> poll_item array
+  val of_poll_items : poll_mask array -> t
+  val poll : ?timeout: int -> t -> poll_event option array
 
 end
