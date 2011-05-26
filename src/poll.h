@@ -10,7 +10,7 @@ struct caml_zmq_poll {
     int num_elems;
 };
 
-#define CAML_ZMQ_Poll_val(v) (*((struct caml_zmq_poll **) Data_custom_val(v)))
+#define CAML_ZMQ_Poll_val(v) ((struct caml_zmq_poll *) Data_custom_val(v))
 
 value caml_zmq_poll_of_pollitem_array(value pollitem_array);
 value caml_zmq_poll(value poll, value timeout);

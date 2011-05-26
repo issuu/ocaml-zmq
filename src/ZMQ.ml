@@ -39,23 +39,12 @@ external version : unit -> int * int * int = "caml_zmq_version"
 
 module Socket = struct
 
-  type +'a t
+  type 'a t
 
   (** This is an int so we know which socket we
     * are building inside the external functions *)
 
   type 'a kind = int
-
-  type generic
-  type pair   = private generic
-  type pub    = private generic
-  type sub    = private generic
-  type req    = private generic
-  type rep    = private generic
-  type dealer = private generic
-  type router = private generic
-  type pull   = private generic
-  type push   = private generic
 
   let pair   = 0
   let pub    = 1
@@ -269,13 +258,13 @@ module Poll = struct
 
   type t
 
-  type event_mask = In | Out | In_out
-  type 'a poll_item = ('a Socket.t * event_mask)
+  type poll_event = In | Out | In_out
+  type poll_socket = [`Pair|`Pub|`Sub|`Req|`Rep|`Dealer|`Router|`Pull|`Push] Socket.t
+  type poll_mask = (poll_socket * poll_event)
 
-  external of_poll_items : 'a poll_item array -> t = "caml_zmq_poll_of_pollitem_array"
+  external mask_of : poll_mask array -> t = "caml_zmq_poll_of_pollitem_array"
+  external native_poll: t -> int -> poll_event option array = "caml_zmq_poll"
 
-  external native_poll: t -> int -> 'a poll_item array = "caml_zmq_poll"
+  let poll ?(timeout = -1) items = native_poll items timeout
 
-  let poll ?(timeout = -1) items =
-    native_poll items timeout
 end

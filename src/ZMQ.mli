@@ -29,31 +29,20 @@ val term : context -> unit
 
 val version : unit -> int * int * int
 
-module Socket :
-sig
-  type +'a t
+module Socket : sig
+
+  type 'a t
   type 'a kind
 
-  type generic
-  type pair   = private generic
-  type pub    = private generic
-  type sub    = private generic
-  type req    = private generic
-  type rep    = private generic
-  type dealer = private generic
-  type router = private generic
-  type pull   = private generic
-  type push   = private generic
-
-  val pair   : pair kind
-  val pub    : pub kind
-  val sub    : sub kind
-  val req    : req kind
-  val rep    : rep kind
-  val dealer : dealer kind
-  val router : router kind
-  val pull   : pull kind
-  val push   : push kind
+  val pair   : [>`Pair] kind
+  val pub    : [>`Pub] kind
+  val sub    : [>`Sub] kind
+  val req    : [>`Req] kind
+  val rep    : [>`Rep] kind
+  val dealer : [>`Dealer] kind
+  val router : [>`Router] kind
+  val pull   : [>`Pull] kind
+  val push   : [>`Push] kind
 
   (** Creation and Destruction *)
   val create : context -> 'a kind -> 'a t
@@ -87,8 +76,8 @@ sig
   val set_reconnect_interval_max : 'a t -> int -> unit
   val set_backlog : 'a t -> int -> unit
 
-  val subscribe : sub t -> string -> unit
-  val unsubscribe : sub t -> string -> unit
+  val subscribe : [>`Sub] t -> string -> unit
+  val unsubscribe : [>`Sub] t -> string -> unit
 
   (** Option Getters *)
   val has_more : 'a t -> bool
@@ -116,26 +105,23 @@ sig
 
 end
 
+module Device : sig
 
-module Device :
-sig
-
-  val streamer  :   Socket.pull Socket.t ->   Socket.push Socket.t -> unit
-  val forwarder :    Socket.sub Socket.t ->    Socket.pub Socket.t -> unit
-  val queue     : Socket.router Socket.t -> Socket.dealer Socket.t -> unit
+  val streamer  : [>`Pull] Socket.t -> [>`Push] Socket.t -> unit
+  val forwarder : [>`Sub] Socket.t -> [>`Pub] Socket.t -> unit
+  val queue     : [>`Router] Socket.t -> [>`Dealer] Socket.t -> unit
 
 end
 
-module Poll :
-sig
+module Poll : sig
 
   type t
 
-  type event_mask = In | Out | In_out
-  type 'a poll_item = ('a Socket.t * event_mask)
+  type poll_event = In | Out | In_out
+  type poll_socket = [`Pair|`Pub|`Sub|`Req|`Rep|`Dealer|`Router|`Pull|`Push] Socket.t
+  type poll_mask = (poll_socket * poll_event)
 
-  val of_poll_items : 'a poll_item array -> t
-
-  val poll : ?timeout: int -> t -> 'a poll_item array
+  val mask_of : poll_mask array -> t
+  val poll : ?timeout: int -> t -> poll_event option array
 
 end
