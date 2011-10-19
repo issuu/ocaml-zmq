@@ -128,7 +128,7 @@ module Socket = struct
 
   let identity_max_len = 255 and identity_min_len = 1
 
-  let set_indentity socket new_identity =
+  let set_identity socket new_identity =
     let identity_len = String.length new_identity in
       if identity_len < identity_min_len || identity_len > identity_max_len then
         raise (Invalid_identity new_identity)
