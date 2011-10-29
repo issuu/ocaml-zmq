@@ -61,7 +61,7 @@ module Socket : sig
 
   (** Option Setters *)
   exception Invalid_identity of string
-  val set_indentity : 'a t -> string -> unit
+  val set_identity : 'a t -> string -> unit
   val set_high_water_mark : 'a t -> Uint64.t -> unit
   val set_swap : 'a t -> int64 -> unit
   val set_affinity : 'a t -> Uint64.t -> unit
