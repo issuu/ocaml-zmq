@@ -288,7 +288,7 @@ CAMLprim value caml_zmq_get_events(value socket) {
     } else if (event & ZMQ_POLLOUT) {
         event_type = 2; /* Poll_out */
     }
-    CAMLreturn (Val_int(event));
+    CAMLreturn (Val_int(event_type));
 }
 
 CAMLprim value caml_zmq_get_fd(value socket) {
@@ -463,4 +463,3 @@ CAMLprim value caml_zmq_device(value device_kind, value socket1, value socket2) 
 /**
  * Poll check poll.h
  */
-
