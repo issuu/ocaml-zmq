@@ -343,7 +343,8 @@ CAMLprim value caml_zmq_connect(value socket, value string_address) {
 static int const native_snd_option_for_caml_snd_option[] = {
     0,
     ZMQ_NOBLOCK,
-    ZMQ_SNDMORE
+    ZMQ_SNDMORE,
+    ZMQ_NOBLOCK | ZMQ_SNDMORE
 };
 
 static bool is_caml_snd_option_valid(int caml_snd_option) {

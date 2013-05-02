@@ -56,7 +56,7 @@ module Socket : sig
   type recv_option = R_none | R_no_block
   val recv : ?opt:recv_option -> 'a t -> string
 
-  type snd_option = S_none | S_no_block | S_more
+  type snd_option = S_none | S_no_block | S_more | S_more_no_block
   val send : ?opt:snd_option -> 'a t -> string -> unit
 
   (** Option Setters *)
