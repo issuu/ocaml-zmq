@@ -4,9 +4,15 @@ _build
 setup.data
 setup.log
 *.o
+*.so
+*.clib
+*.a
 *.cmx
-*.swo
 *.cmi
+*.cmo
+*.cma
+*.cmxa
+*.swo
 *.swn
 *.byte
 *.native

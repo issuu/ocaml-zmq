@@ -20,6 +20,7 @@ type error =
   | EUNKNOWN
 
 exception ZMQ_exception of error * string
+exception Illegal_argument
 
 let _ =
   Callback.register_exception "zmq exception" (ZMQ_exception(EUNKNOWN,"Unkown error"))
@@ -55,6 +56,8 @@ module Socket = struct
   let router = 6
   let pull   = 7
   let push   = 8
+  let xpub   = 9
+  let xsub   = 10
 
   (** Creation and Destruction *)
   external create : context -> 'a kind -> 'a t = "caml_zmq_socket"
@@ -62,6 +65,7 @@ module Socket = struct
 
   (** Wiring *)
   external connect : 'a t -> string -> unit = "caml_zmq_connect"
+  external disconnect : 'a t -> string -> unit = "caml_zmq_disconnect"
   external bind : 'a t -> string -> unit = "caml_zmq_bind"
 
   (** Send and Receive *)
@@ -78,179 +82,286 @@ module Socket = struct
 
   (** Native Option Setters (private) *)
   type int64_option =
-      Swap
-    | Rate
-    | Recovery_interval
-    | Recovery_interval_msec
-    | Multicast_loop
-    | Receive_more
+  | ZMQ_MAXMSGSIZE
 
   external set_int64_option :
     'a t -> int64_option -> int64 -> unit = "caml_zmq_set_int64_option"
 
-  type bytes_option =
-      Identity
-    | Subscribe
-    | Unsubscribe
+  external get_int64_option :
+    'a t -> int64_option -> int64 = "caml_zmq_get_int64_option"
 
-  external set_bytes_option :
-    'a t -> bytes_option -> string -> unit = "caml_zmq_set_bytes_option"
 
   type uint64_option =
-      High_water_mark
-    | Affinity
-    | Send_buffer
-    | Receive_buffer
+  | ZMQ_AFFINITY
 
   external set_uint64_option :
     'a t -> uint64_option -> Uint64.t -> unit = "caml_zmq_set_uint64_option"
 
-  type int_option =
-      Linger
-    | Reconnect_interval
-    | Reconnect_interval_max
-    | Backlog
+  external get_uint64_option :
+    'a t -> uint64_option -> Uint64.t = "caml_zmq_get_uint64_option"
 
-  external set_int_option :
-    'a t -> int_option -> int -> unit = "caml_zmq_set_int_option"
 
-  (** Option Setters *)
-  let set_high_water_mark socket new_mark =
-    set_uint64_option socket High_water_mark new_mark
+  type bytes_option =
+  | ZMQ_IDENTITY
+  | ZMQ_SUBSCRIBE
+  | ZMQ_UNSUBSCRIBE
+  | ZMQ_LAST_ENDPOINT
+  | ZMQ_TCP_ACCEPT_FILTER
 
-  let set_swap socket new_swap =
-    set_int64_option socket Swap new_swap
-
-  let set_affinity socket new_affinity =
-    set_uint64_option socket Affinity new_affinity
-
-  exception Invalid_identity of string
-
-  let identity_max_len = 255 and identity_min_len = 1
-
-  let set_indentity socket new_identity =
-    let identity_len = String.length new_identity in
-      if identity_len < identity_min_len || identity_len > identity_max_len then
-        raise (Invalid_identity new_identity)
-      else
-        set_bytes_option socket Identity new_identity
-
-  let subscribe socket new_subscription =
-    set_bytes_option socket Subscribe new_subscription
-
-  let unsubscribe socket old_subscription =
-    set_bytes_option socket Unsubscribe old_subscription
-
-  let set_rate socket new_rate =
-    set_int64_option socket Rate new_rate
-
-  let set_recovery_interval socket new_rinterval =
-    set_int64_option socket Recovery_interval new_rinterval
-
-  let set_recovery_interval_msec socket new_rinterval =
-    set_int64_option socket Recovery_interval_msec new_rinterval
-
-  let set_multicast_loop socket new_mcast_loop =
-    let int64_val = if new_mcast_loop then 1L else 0L in
-      set_int64_option socket Multicast_loop int64_val
-
-  let set_recv_buffer_size socket new_size =
-    set_uint64_option socket Receive_buffer new_size
-
-  let set_snd_buffer_size socket new_size =
-    set_uint64_option socket Send_buffer new_size
-
-  let set_linger socket new_linger =
-    set_int_option socket Linger new_linger
-
-  let set_reconnect_interval socket new_interval =
-    set_int_option socket Reconnect_interval new_interval
-
-  let set_reconnect_interval_max socket new_max =
-    set_int_option socket Reconnect_interval_max new_max
-
-  let set_backlog socket new_back =
-    set_int_option socket Backlog new_back
-
-  (** Native Option Getters (private) *)
-  external get_int64_option :
-    'a t -> int64_option -> int64 = "caml_zmq_get_int64_option"
+  external set_bytes_option :
+    'a t -> bytes_option -> string -> unit = "caml_zmq_set_bytes_option"
 
   external get_bytes_option :
     'a t -> bytes_option -> string = "caml_zmq_get_bytes_option"
 
-  external get_uint64_option :
-    'a t -> uint64_option -> Uint64.t = "caml_zmq_get_uint64_option"
+
+  type int_option =
+  | ZMQ_RATE
+  | ZMQ_RECOVERY_IVL
+  | ZMQ_SNDBUF
+  | ZMQ_RCVBUF
+  | ZMQ_RCVMORE
+  | ZMQ_EVENTS
+  | ZMQ_TYPE
+  | ZMQ_LINGER
+  | ZMQ_RECONNECT_IVL
+  | ZMQ_BACKLOG
+  | ZMQ_RECONNECT_IVL_MAX
+  | ZMQ_SNDHWM
+  | ZMQ_RCVHWM
+  | ZMQ_MULTICAST_HOPS
+  | ZMQ_RCVTIMEO
+  | ZMQ_SNDTIMEO
+  | ZMQ_IPV4ONLY
+  | ZMQ_ROUTER_MANDATORY
+  | ZMQ_TCP_KEEPALIVE
+  | ZMQ_TCP_KEEPALIVE_CNT
+  | ZMQ_TCP_KEEPALIVE_IDLE
+  | ZMQ_TCP_KEEPALIVE_INTVL
+  | ZMQ_DELAY_ATTACH_ON_CONNECT
+  | ZMQ_XPUB_VERBOSE
+
+  external set_int_option :
+    'a t -> int_option -> int -> unit = "caml_zmq_set_int_option"
 
   external get_int_option :
     'a t -> int_option -> int = "caml_zmq_get_int_option"
 
-  (** Option Getters *)
+
+  let validate_string_length min max str =
+    match String.length str with
+    | n when n < min -> raise Illegal_argument
+    | n when n > max -> raise Illegal_argument
+    | n -> ()
+
+  let set_max_message_size socket size =
+    set_int64_option socket ZMQ_MAXMSGSIZE (Int64.of_int size)
+
+  let get_max_message_size socket =
+    Int64.to_int (get_int64_option socket ZMQ_MAXMSGSIZE)
+
+  let set_max_message_size socket size =
+    set_uint64_option socket ZMQ_AFFINITY (Uint64.of_int size)
+
+  let get_max_message_size socket size =
+    Uint64.to_int (get_uint64_option socket ZMQ_AFFINITY)
+
+  let set_identity socket identity =
+    validate_string_length 1 255 identity;
+    set_bytes_option socket ZMQ_IDENTITY identity
+
+  let get_identity socket =
+    get_bytes_option socket ZMQ_IDENTITY
+
+  let subscribe socket topic =
+    set_bytes_option socket ZMQ_SUBSCRIBE topic
+
+  let unsubscribe socket topic =
+    set_bytes_option socket ZMQ_UNSUBSCRIBE topic
+
+  let get_last_endpoint socket =
+    get_bytes_option socket ZMQ_LAST_ENDPOINT
+
+  let set_tcp_accept_filter socket filter =
+    set_bytes_option socket ZMQ_TCP_ACCEPT_FILTER filter
+
+  let set_rate socket rate =
+    set_int_option socket ZMQ_RATE rate
+
+  let get_rate socket =
+    get_int_option socket ZMQ_RATE
+
+  let set_recovery_interval socket interval =
+    set_int_option socket ZMQ_RECOVERY_IVL interval
+
+  let get_recovery_interval socket =
+    get_int_option socket ZMQ_RECOVERY_IVL
+
+  let set_send_buffer_size socket size =
+    set_int_option socket ZMQ_SNDBUF size
+
+  let get_send_buffer_size socket =
+    get_int_option socket ZMQ_SNDBUF
+
+  let set_receive_buffer_size socket size =
+    set_int_option socket ZMQ_RCVBUF size
+
+  let get_receive_buffer_size socket =
+    get_int_option socket ZMQ_RCVBUF
+
   let has_more socket =
-    let opt_value = get_int64_option socket Receive_more in
-      opt_value = 1L
+    get_int_option socket ZMQ_RCVMORE != 0
 
-  let high_water_mark socket =
-    get_uint64_option socket High_water_mark
+  let set_linger_period socket period =
+    set_int_option socket ZMQ_LINGER period
 
-  let swap socket =
-    get_int64_option socket Swap
+  let get_linger_period socket =
+    get_int_option socket ZMQ_LINGER
 
-  let affinity socket =
-    get_uint64_option socket Affinity
+  let set_reconnect_interval socket interval =
+    set_int_option socket ZMQ_RECONNECT_IVL interval
 
-  let identity socket =
-    get_bytes_option socket Identity
+  let get_reconnect_interval socket =
+    get_int_option socket ZMQ_RECONNECT_IVL
 
-  let rate socket =
-    get_int64_option socket Rate
+  let set_connection_backlog socket backlog =
+    set_int_option socket ZMQ_BACKLOG backlog
 
-  let recovery_interval socket =
-    get_int64_option socket Recovery_interval
+  let get_connection_backlog socket =
+    get_int_option socket ZMQ_BACKLOG
 
-  let recovery_interval_msec socket =
-    get_int64_option socket Recovery_interval_msec
+  let set_reconnect_interval_max socket interval =
+    set_int_option socket ZMQ_RECONNECT_IVL_MAX interval
 
-  let multicast_loop socket =
-    get_int64_option socket Multicast_loop
+  let get_reconnect_interval_max socket =
+    get_int_option socket ZMQ_RECONNECT_IVL_MAX
 
-  let snd_buffer_size socket =
-    get_uint64_option socket Send_buffer
+  let set_send_high_water_mark socket mark =
+    set_int_option socket ZMQ_SNDHWM mark
 
-  let recv_buffer_size socket =
-    get_uint64_option socket Receive_buffer
+  let get_send_high_water_mark socket =
+    get_int_option socket ZMQ_SNDHWM
 
-  let linger socket =
-    get_int_option socket Linger
+  let set_recevice_high_water_mark socket mark =
+    set_int_option socket ZMQ_RCVHWM mark
 
-  let reconnect_interval socket =
-    get_int_option socket Reconnect_interval
+  let get_recevice_high_water_mark socket =
+    get_int_option socket ZMQ_RCVHWM
 
-  let reconnect_interval_max socket =
-    get_int_option socket Reconnect_interval_max
+  let set_multicast_hops socket hops =
+    set_int_option socket ZMQ_MULTICAST_HOPS hops
 
-  let backlog socket =
-    get_int_option socket Backlog
+  let get_multicast_hops socket =
+    get_int_option socket ZMQ_MULTICAST_HOPS
+
+  let set_receive_timeout socket timeout =
+    set_int_option socket ZMQ_RCVTIMEO timeout
+
+  let get_receive_timeout socket =
+    get_int_option socket ZMQ_RCVTIMEO
+
+  let set_send_timeout socket timeout =
+    set_int_option socket ZMQ_SNDTIMEO timeout
+
+  let get_send_timeout socket =
+    get_int_option socket ZMQ_SNDTIMEO
+
+  let set_ipv4_only socket flag =
+    let value = match flag with true -> 1 | false -> 0 in
+    set_int_option socket ZMQ_IPV4ONLY value
+
+  let get_ipv4_only socket =
+    match get_int_option socket ZMQ_IPV4ONLY with
+    | 0 -> false
+    | _ -> true
+
+  let set_router_mandatory socket flag =
+    let value = match flag with true -> 1 | false -> 0 in
+    set_int_option socket ZMQ_ROUTER_MANDATORY value
+
+  let get_router_mandatory socket =
+    match get_int_option socket ZMQ_ROUTER_MANDATORY with
+    | 0 -> false
+    | _ -> true
+
+  let set_tcp_keepalive socket flag =
+    let value = match flag with
+      | `Default -> -1
+      | `Value true -> 1
+      | `Value false -> 0
+    in
+    set_int_option socket ZMQ_TCP_KEEPALIVE value
+
+  let get_tcp_keepalive socket =
+    match get_int_option socket ZMQ_TCP_KEEPALIVE with
+    | -1 -> `Default
+    | 0 -> `Value false
+    | _ -> `Value true
+
+  let set_tcp_keepalive_idle socket flag =
+    let value = match flag with
+      | `Default -> -1
+      | `Value n when n <= 0 -> raise Illegal_argument
+      | `Value n -> n
+    in
+    set_int_option socket ZMQ_TCP_KEEPALIVE_IDLE value
+
+  let get_tcp_keepalive_idle socket =
+    match get_int_option socket ZMQ_TCP_KEEPALIVE_IDLE with
+    | -1 -> `Default
+    | n when n <= 0 -> raise Illegal_argument
+    | n -> `Value n
+
+  let set_tcp_keepalive_count socket flag =
+    let value = match flag with
+      | `Default -> -1
+      | `Value n when n <= 0 -> raise Illegal_argument
+      | `Value n -> n
+    in
+    set_int_option socket ZMQ_TCP_KEEPALIVE_CNT value
+
+  let get_tcp_keepalive_count socket =
+    match get_int_option socket ZMQ_TCP_KEEPALIVE_CNT with
+    | -1 -> `Default
+    | n when n <= 0 -> raise Illegal_argument
+    | n -> `Value n
+
+  let set_delay_attach_on_connect socket flag =
+    let value = match flag with
+      | true -> 1
+      | false -> 0
+    in
+    set_int_option socket ZMQ_DELAY_ATTACH_ON_CONNECT value
+
+  let get_delay_attach_on_connect socket =
+    match get_int_option socket ZMQ_DELAY_ATTACH_ON_CONNECT with
+    | 0 -> false
+    | _ -> true
+
+  let set_xpub_verbose socket flag =
+    let value = match flag with
+      | true -> 1
+      | false -> 0
+    in
+    set_int_option socket ZMQ_XPUB_VERBOSE value
 
   external get_fd : 'a t -> Unix.file_descr = "caml_zmq_get_fd"
 
-  type event = No_event | Poll_in | Poll_out | Poll_in_out
+  type event = No_event | Poll_in | Poll_out | Poll_in_out | Poll_error
   external events : 'a t -> event = "caml_zmq_get_events"
+
 end
 
-module Device = struct
+module Proxy = struct
+  external zmq_proxy2 :
+    'a Socket.t -> 'b Socket.t -> unit = "caml_zmq_proxy2"
+  external zmq_proxy3 :
+    'a Socket.t -> 'b Socket.t -> 'c Socket.t -> unit = "caml_zmq_proxy3"
 
-  type kind =
-      Streamer
-    | Forwarder
-    | Queue
-
-  external create :
-    kind -> 'a Socket.t -> 'b Socket.t -> unit = "caml_zmq_device"
-
-  let streamer frontend backend = create Streamer frontend backend
-  let forwarder frontend backend = create Forwarder frontend backend
-  let queue frontend backend = create Queue frontend backend
+  let create ?capture frontend backend =
+    match capture with
+    | Some capture -> zmq_proxy3 frontend backend capture
+    | None -> zmq_proxy2 frontend backend
 
 end
 
@@ -259,7 +370,7 @@ module Poll = struct
   type t
 
   type poll_event = In | Out | In_out
-  type poll_socket = [`Pair|`Pub|`Sub|`Req|`Rep|`Dealer|`Router|`Pull|`Push] Socket.t
+  type poll_socket = [`Pair|`Pub|`Sub|`Req|`Rep|`Dealer|`Router|`Pull|`Push|`Xsub|`Xpub] Socket.t
   type poll_mask = (poll_socket * poll_event)
 
   external mask_of : poll_mask array -> t = "caml_zmq_poll_of_pollitem_array"

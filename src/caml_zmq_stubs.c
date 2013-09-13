@@ -90,7 +90,9 @@ static int const socket_type_for_kind[] =  {
     ZMQ_DEALER,
     ZMQ_ROUTER,
     ZMQ_PULL,
-    ZMQ_PUSH
+    ZMQ_PUSH,
+    ZMQ_XPUB,
+    ZMQ_XSUB
 };
 
 CAMLprim value caml_zmq_socket(value ctx, value socket_kind) {
@@ -123,10 +125,7 @@ CAMLprim value caml_zmq_close(value socket) {
  */
 
 static int const native_uint64_option_for[] = {
-    ZMQ_HWM,
-    ZMQ_AFFINITY,
-    ZMQ_SNDBUF,
-    ZMQ_RCVBUF
+    ZMQ_AFFINITY
 };
 
 CAMLprim value caml_zmq_set_uint64_option(value socket, value option_name, value socket_option) {
@@ -146,12 +145,7 @@ CAMLprim value caml_zmq_set_uint64_option(value socket, value option_name, value
 }
 
 static int const native_int64_option_for[] = {
-    ZMQ_SWAP,
-    ZMQ_RATE,
-    ZMQ_RECOVERY_IVL,
-    ZMQ_RECOVERY_IVL_MSEC,
-    ZMQ_MCAST_LOOP,
-    ZMQ_RCVMORE
+    ZMQ_MAXMSGSIZE
 };
 
 CAMLprim value caml_zmq_set_int64_option(value socket, value option_name, value socket_option) {
@@ -173,7 +167,9 @@ CAMLprim value caml_zmq_set_int64_option(value socket, value option_name, value 
 static int const native_bytes_option_for[] = {
     ZMQ_IDENTITY,
     ZMQ_SUBSCRIBE,
-    ZMQ_UNSUBSCRIBE
+    ZMQ_UNSUBSCRIBE,
+    ZMQ_LAST_ENDPOINT,
+    ZMQ_TCP_ACCEPT_FILTER
 };
 
 
@@ -194,10 +190,31 @@ int caml_zmq_set_bytes_option(value socket, value option_name, value socket_opti
 }
 
 static int const native_int_option_for[] = {
+    ZMQ_RATE,
+    ZMQ_RECOVERY_IVL,
+    ZMQ_SNDBUF,
+    ZMQ_RCVBUF,
+    ZMQ_RCVMORE,
+    ZMQ_FD,
+    ZMQ_EVENTS,
+    ZMQ_TYPE,
     ZMQ_LINGER,
     ZMQ_RECONNECT_IVL,
+    ZMQ_BACKLOG,
     ZMQ_RECONNECT_IVL_MAX,
-    ZMQ_BACKLOG
+    ZMQ_SNDHWM,
+    ZMQ_RCVHWM,
+    ZMQ_MULTICAST_HOPS,
+    ZMQ_RCVTIMEO,
+    ZMQ_SNDTIMEO,
+    ZMQ_IPV4ONLY,
+    ZMQ_ROUTER_MANDATORY,
+    ZMQ_TCP_KEEPALIVE,
+    ZMQ_TCP_KEEPALIVE_CNT,
+    ZMQ_TCP_KEEPALIVE_IDLE,
+    ZMQ_TCP_KEEPALIVE_INTVL,
+    ZMQ_DELAY_ATTACH_ON_CONNECT,
+    ZMQ_XPUB_VERBOSE,
 };
 
 CAMLprim value caml_zmq_set_int_option(value socket, value option_name, value socket_option) {
@@ -280,15 +297,21 @@ CAMLprim value caml_zmq_get_events(value socket) {
                                  &event_size);
     caml_zmq_raise_if (result == -1);
     int event_type = 0; /* No_event */
-    if (event & ZMQ_POLLIN) {
-        event_type = 1; /* Poll_in */
-        if (event & ZMQ_POLLOUT) {
-            event_type = 3; /* Poll_in_out */
-        }
-    } else if (event & ZMQ_POLLOUT) {
-        event_type = 2; /* Poll_out */
-    }
-    CAMLreturn (Val_int(event));
+    switch (event) {
+        case ZMQ_POLLIN:
+            event_type = 1;
+            break;
+        case ZMQ_POLLOUT:
+            event_type = 2;
+            break;
+        case ZMQ_POLLIN | ZMQ_POLLOUT:
+            event_type = 3;
+            break;
+        case ZMQ_POLLERR:
+            event_type = 4;
+            break;
+        };
+    CAMLreturn (Val_int(event_type));
 }
 
 CAMLprim value caml_zmq_get_fd(value socket) {
@@ -336,6 +359,17 @@ CAMLprim value caml_zmq_connect(value socket, value string_address) {
 }
 
 /**
+ * Disconnect
+ */
+CAMLprim value caml_zmq_disconnect(value socket, value string_address) {
+    CAMLparam2 (socket, string_address);
+    int result = zmq_disconnect(CAML_ZMQ_Socket_val(socket), String_val(string_address));
+    caml_zmq_raise_if (result == -1);
+    CAMLreturn(Val_unit);
+}
+
+
+/**
  * Send
  */
 
@@ -343,7 +377,8 @@ CAMLprim value caml_zmq_connect(value socket, value string_address) {
 static int const native_snd_option_for_caml_snd_option[] = {
     0,
     ZMQ_NOBLOCK,
-    ZMQ_SNDMORE
+    ZMQ_SNDMORE,
+    ZMQ_NOBLOCK | ZMQ_SNDMORE
 };
 
 static bool is_caml_snd_option_valid(int caml_snd_option) {
@@ -361,15 +396,16 @@ CAMLprim value caml_zmq_send(value socket, value string, value snd_options) {
 
     void *sock = CAML_ZMQ_Socket_val(socket);
     zmq_msg_t msg;
-    int result = zmq_msg_init_size(&msg, caml_string_length(string));
+    int length = caml_string_length(string);
+    int result = zmq_msg_init_size(&msg, length);
     caml_zmq_raise_if (result == -1);
 
     /* Doesn't copy '\0' */
-    memcpy ((void *) zmq_msg_data (&msg), String_val(string), caml_string_length(string));
+    memcpy ((void *) zmq_msg_data (&msg), String_val(string), length);
     int option = native_snd_option_for_caml_snd_option[caml_snd_option];
 
     caml_release_runtime_system();
-    result = zmq_send (sock, &msg, option);
+    result = zmq_msg_send(sock, &msg, option);
     caml_acquire_runtime_system();
 
     int close_result = zmq_msg_close (&msg);
@@ -411,7 +447,7 @@ CAMLprim value caml_zmq_recv(value socket, value rcv_options) {
     caml_zmq_raise_if (result == -1);
 
     caml_release_runtime_system();
-    result = zmq_recv (sock, &request, option);
+    result = zmq_msg_recv (sock, &request, option);
     caml_acquire_runtime_system();
 
     caml_zmq_raise_if (result == -1);
@@ -428,34 +464,33 @@ CAMLprim value caml_zmq_recv(value socket, value rcv_options) {
  * Devices
  */
 
-/* Order must match Device.kind declaration */
-static int const native_device_for_caml_device[] = {
-    ZMQ_STREAMER,
-    ZMQ_FORWARDER,
-    ZMQ_QUEUE
-};
+CAMLprim value caml_zmq_proxy2(value frontend, value backend) {
+    CAMLparam2 (frontend, backend);
 
-static bool is_caml_device_valid(int caml_device) {
-    return caml_device > -1
-           && caml_device < (int) CAML_ZMQ_ARRAY_SIZE(native_device_for_caml_device);
-}
-
-CAMLprim value caml_zmq_device(value device_kind, value socket1, value socket2) {
-    CAMLparam3 (device_kind, socket1, socket2);
-    int caml_device = Int_val(device_kind);
-
-    if (!is_caml_device_valid(caml_device))
-        caml_failwith("Invalid device kind");
-
-    void *native_socket1 = CAML_ZMQ_Socket_val(socket1);
-    void *native_socket2 = CAML_ZMQ_Socket_val(socket2);
+    void *native_frontend = CAML_ZMQ_Socket_val(frontend);
+    void *native_backend = CAML_ZMQ_Socket_val(backend);
 
     caml_release_runtime_system();
-    int result = zmq_device(native_device_for_caml_device[caml_device],
-                            native_socket1,
-			    native_socket2);
+    int result = zmq_proxy(native_frontend, native_backend, NULL);
     caml_acquire_runtime_system();
 
+    /* Will awlays raise an exception */
+    caml_zmq_raise_if(result == -1);
+    CAMLreturn (Val_unit);
+}
+
+CAMLprim value caml_zmq_proxy3(value frontend, value backend, value capture) {
+    CAMLparam3 (frontend, backend, capture);
+
+    void *native_frontend = CAML_ZMQ_Socket_val(frontend);
+    void *native_backend = CAML_ZMQ_Socket_val(backend);
+    void *native_capture = CAML_ZMQ_Socket_val(capture);
+
+    caml_release_runtime_system();
+    int result = zmq_proxy(native_frontend, native_backend, native_capture);
+    caml_acquire_runtime_system();
+
+    /* Will awlays raise an exception */
     caml_zmq_raise_if(result == -1);
     CAMLreturn (Val_unit);
 }
