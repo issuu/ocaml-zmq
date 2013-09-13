@@ -16,3 +16,6 @@ setup.log
 *.swn
 *.byte
 *.native
+Makefile
+myocamlbuild.ml
+setup.ml

@@ -287,8 +287,8 @@ module Socket = struct
   let set_tcp_keepalive socket flag =
     let value = match flag with
       | `Default -> -1
-      | `Value true -> 1
       | `Value false -> 0
+      | `Value true -> 1
     in
     set_int_option socket ZMQ_TCP_KEEPALIVE value
 

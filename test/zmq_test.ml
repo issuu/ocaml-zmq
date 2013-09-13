@@ -7,7 +7,7 @@ open ZMQ.Poll
 let debug fmt =
   Printf.ksprintf (fun s -> print_endline s; flush stdout) fmt
 
-let sleep t = ignore(Unix.select [] [] [] t)
+let sleep t = ignore(Unix.select [] [] [] ((float t) /. 1000.0))
 
 let dump_events l =
   let f  = function
@@ -19,29 +19,67 @@ let dump_events l =
   let l = Array.to_list (Array.map f l) in
   "[|" ^ (String.concat "; " l) ^ "|]"
 
-let test_proxy () =
-  let ctx = init () in
-  let pull_endpoint = "inproc://pull"
-  and pub_endpoint = "inproc://pub" in
-
-  let proxy ctx =
-    let pull = create ctx pull
-    and pub = create ctx pub in
-    bind pull pull_endpoint;
-    bind pub pub_endpoint;
-    (* Start the proxy and start relaying messages *)
-    ZMQ.Proxy.create pull pub
+let test_options () =
+  let socket =
+    let ctx = init () in
+    let s = create ctx push in
+    s
   in
-  let thread = Thread.create proxy ctx in
 
-  let push = create ctx push
-  and sub = create ctx sub in
-  connect sub pub_endpoint;
-  connect push pull_endpoint;
-  send push "Message1";
-  send push "Message2";
-  let message1 = recv sub in
-  let message2 = recv sub in
+  let hmw = 1324 in
+  set_recevice_high_water_mark socket hmw;
+  assert_equal ~msg:"Hightwater mark not set correctly" hmw (get_recevice_high_water_mark socket);
+  let hmw = 1325 in
+  set_send_high_water_mark socket hmw;
+  assert_equal ~msg:"Hightwater mark not set correctly" hmw (get_send_high_water_mark socket);
+  ()
+
+let test_proxy () =
+  let ctx = ZMQ.init () in
+  let pull_endpoint = "inproc://pull"
+  and pub_endpoint = "inproc://pub"
+  and pull = ZMQ.Socket.create ctx pull
+  and pub = ZMQ.Socket.create ctx pub in
+
+
+  let proxy (pull, pub) =
+    ZMQ.Socket.bind pull pull_endpoint;
+    ZMQ.Socket.bind pub pub_endpoint;
+    (* Start the proxy and start relaying messages *)
+    try
+      ZMQ.Proxy.create pull pub;
+      assert_failure "Exception should be raised"
+    with
+      ZMQ.ZMQ_exception _ -> ()
+  in
+
+  let _thread = Thread.create proxy (pull, pub) in
+  sleep 10;
+  let sub =
+    let s = ZMQ.Socket.create ctx sub in
+    ZMQ.Socket.connect s pub_endpoint;
+    ZMQ.Socket.subscribe s "";
+    s
+  and push =
+    let s = ZMQ.Socket.create ctx push in
+    ZMQ.Socket.connect s pull_endpoint;
+    s
+  in
+  (* sleep 100; *)
+
+  let msg1 = "Message1"
+  and msg2 = "Message2" in
+  ZMQ.Socket.send push msg1;
+  ZMQ.Socket.send push msg2;
+  assert_equal msg1 (ZMQ.Socket.recv sub);
+  assert_equal msg2 (ZMQ.Socket.recv sub);
+
+  (** Prolog *)
+  ZMQ.Socket.close sub;
+  ZMQ.Socket.close push;
+  ZMQ.Socket.close pull;
+  ZMQ.Socket.close pub;
+  ZMQ.term ctx;
   ()
 
 let suite =
@@ -100,4 +138,6 @@ let suite =
              close rep;
              term ctx
            ));
+      "get/set socket options" >:: test_options;
+      "proxy" >:: test_proxy
     ]
