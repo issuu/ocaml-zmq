@@ -4,33 +4,58 @@ open ZMQ
 open ZMQ.Socket
 open ZMQ.Poll
 
-let debug fmt = 
-  Printf.ksprintf (fun s -> print_endline s; flush stdout) fmt 
+let debug fmt =
+  Printf.ksprintf (fun s -> print_endline s; flush stdout) fmt
 
 let sleep t = ignore(Unix.select [] [] [] t)
 
-let dump_events l = 
+let dump_events l =
   let f  = function
     | None -> "None"
     | Some In -> "In"
     | Some Out -> " Out"
     | Some In_out -> "In/Out"
-  in 
+  in
   let l = Array.to_list (Array.map f l) in
   "[|" ^ (String.concat "; " l) ^ "|]"
 
-let suite = 
-  "zmq test" >::: 
+let test_proxy () =
+  let ctx = init () in
+  let pull_endpoint = "inproc://pull"
+  and pub_endpoint = "inproc://pub" in
+
+  let proxy ctx =
+    let pull = create ctx pull
+    and pub = create ctx pub in
+    bind pull pull_endpoint;
+    bind pub pub_endpoint;
+    (* Start the proxy and start relaying messages *)
+    ZMQ.Proxy.create pull pub
+  in
+  let thread = Thread.create proxy ctx in
+
+  let push = create ctx push
+  and sub = create ctx sub in
+  connect sub pub_endpoint;
+  connect push pull_endpoint;
+  send push "Message1";
+  send push "Message2";
+  let message1 = recv sub in
+  let message2 = recv sub in
+  ()
+
+let suite =
+  "zmq test" >:::
     [
       "request reply" >::
         (bracket
            (fun () ->
              let ctx = init () in
-             let req = create ctx req 
+             let req = create ctx req
              and rep = create ctx rep in
              ctx, req, rep
            )
-           (fun (_, req, rep) -> 
+           (fun (_, req, rep) ->
              let endpoint = "inproc://endpoint" in
              bind rep endpoint;
              connect req endpoint;
@@ -51,11 +76,11 @@ let suite =
         (bracket
            (fun () ->
              let ctx = init () in
-             let req = create ctx req 
+             let req = create ctx req
              and rep = create ctx rep in
              ctx, req, rep
            )
-           (fun (_, req, rep) -> 
+           (fun (_, req, rep) ->
              let endpoint = "inproc://endpoint" in
              bind rep endpoint;
              connect req endpoint;

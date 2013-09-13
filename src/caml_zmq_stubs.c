@@ -405,7 +405,7 @@ CAMLprim value caml_zmq_send(value socket, value string, value snd_options) {
     int option = native_snd_option_for_caml_snd_option[caml_snd_option];
 
     caml_release_runtime_system();
-    result = zmq_msg_send(sock, &msg, option);
+    result = zmq_msg_send(&msg, sock, option);
     caml_acquire_runtime_system();
 
     int close_result = zmq_msg_close (&msg);
@@ -442,20 +442,20 @@ CAMLprim value caml_zmq_recv(value socket, value rcv_options) {
     void *sock = CAML_ZMQ_Socket_val(socket);
     int option = native_rcv_option_for_caml_rcv_option[caml_rcv_option];
 
-    zmq_msg_t request;
-    int result = zmq_msg_init (&request);
+    zmq_msg_t msg;
+    int result = zmq_msg_init (&msg);
     caml_zmq_raise_if (result == -1);
 
     caml_release_runtime_system();
-    result = zmq_msg_recv (sock, &request, option);
+    result = zmq_msg_recv (&msg, sock, option);
     caml_acquire_runtime_system();
 
     caml_zmq_raise_if (result == -1);
 
-    size_t size = zmq_msg_size (&request);
+    size_t size = zmq_msg_size (&msg);
     message = caml_alloc_string(size);
-    memcpy (String_val(message), zmq_msg_data (&request), size);
-    result = zmq_msg_close(&request);
+    memcpy (String_val(message), zmq_msg_data (&msg), size);
+    result = zmq_msg_close(&msg);
     caml_zmq_raise_if (result == -1);
     CAMLreturn (message);
 }
@@ -498,4 +498,3 @@ CAMLprim value caml_zmq_proxy3(value frontend, value backend, value capture) {
 /**
  * Poll check poll.h
  */
-

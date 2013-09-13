@@ -76,7 +76,7 @@ module Socket = struct
 
   type snd_option = S_none | S_no_block | S_more
 
-  external native_send : 'a t -> string -> snd_option-> unit = "caml_zmq_send"
+  external native_send : 'a t -> string -> snd_option -> unit = "caml_zmq_send"
   let send ?(opt = S_none) socket message = native_send socket message opt
 
 

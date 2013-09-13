@@ -29,7 +29,7 @@ Library ZMQB
 
 Flag tests
   Description: Build and run tests
-  
+
 Executable test
   Path:             test
   MainIs:           test.ml
@@ -37,8 +37,9 @@ Executable test
   Build$:           flag(tests)
   BuildDepends:     oUnit (>= 1.1.0), ZMQ
   CompiledObject:   best
-  
+  ByteOpt:          -thread
+  NativeOpt:        -thread
+
 Test main
   Run$:    flag(tests)
   Command: $test
-  

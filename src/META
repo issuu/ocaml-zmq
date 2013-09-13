@@ -1,10 +1,12 @@
 # OASIS_START
-# DO NOT EDIT (digest: 01600ee8b071795506563041f7fcbc09)
+# DO NOT EDIT (digest: 10b0395ab3459ec3860ab0449d86768d)
 version = "0.0.3"
 description = "Bindings for the ZMQ library"
 requires = "uint.uint64"
 archive(byte) = "ZMQB.cma"
+archive(byte, plugin) = "ZMQB.cma"
 archive(native) = "ZMQB.cmxa"
+archive(native, plugin) = "ZMQB.cmxs"
 exists_if = "ZMQB.cma"
 # OASIS_STOP
 
