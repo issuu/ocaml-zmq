@@ -64,7 +64,9 @@ module Socket : sig
 
   (** Option Getter and Setters *)
   val set_max_message_size : 'a t -> int -> unit
-  val get_max_message_size : 'a t -> 'b -> int
+  val get_max_message_size : 'a t -> int
+  val set_affinity : 'a t -> int -> unit
+  val get_affinity : 'a t -> int
   val set_identity : [ `Req | `Rep | `Router] t -> string -> unit
   val get_identity : [ `Req | `Rep | `Router] t -> string
   val subscribe : [`Sub] t -> string -> unit

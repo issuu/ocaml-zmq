@@ -131,13 +131,11 @@ static int const native_uint64_option_for[] = {
 CAMLprim value caml_zmq_set_uint64_option(value socket, value option_name, value socket_option) {
     CAMLparam3 (socket, option_name, socket_option);
 
-    uint64 mark = CAML_UINT_Uint64_val(socket_option);
-    void *option_value = (void *) &mark;
-    size_t option_size = sizeof (mark);
+    uint64 val = CAML_UINT_Uint64_val(socket_option);
     int result = zmq_setsockopt(CAML_ZMQ_Socket_val(socket),
                                 native_uint64_option_for[Int_val(option_name)],
-                                option_value,
-                                option_size);
+                                &val,
+                                sizeof(val));
 
     caml_zmq_raise_if (result == -1);
 
@@ -150,14 +148,11 @@ static int const native_int64_option_for[] = {
 
 CAMLprim value caml_zmq_set_int64_option(value socket, value option_name, value socket_option) {
     CAMLparam3 (socket, option_name, socket_option);
-
-    int64 mark = Int64_val(Field(socket_option, 1));
-    void *option_value = (void *) &mark;
-    size_t option_size = sizeof (mark);
+    int64 val = Int64_val(Field(socket_option, 1));
     int result = zmq_setsockopt(CAML_ZMQ_Socket_val(socket),
                                 native_int64_option_for[Int_val(option_name)],
-                                option_value,
-                                option_size);
+                                &val,
+                                sizeof(val));
 
     caml_zmq_raise_if (result == -1);
 
@@ -176,8 +171,7 @@ static int const native_bytes_option_for[] = {
 int caml_zmq_set_bytes_option(value socket, value option_name, value socket_option) {
     CAMLparam3 (socket, option_name, socket_option);
 
-    char *unsubs = String_val(socket_option);
-    void *option_value = (void *) unsubs;
+    char *option_value = String_val(socket_option);
     size_t option_size = caml_string_length(socket_option);
     int result = zmq_setsockopt(CAML_ZMQ_Socket_val(socket),
                                 native_bytes_option_for[Int_val(option_name)],
@@ -220,13 +214,11 @@ static int const native_int_option_for[] = {
 CAMLprim value caml_zmq_set_int_option(value socket, value option_name, value socket_option) {
     CAMLparam3 (socket, option_name, socket_option);
 
-    int mark = Int_val(socket_option);
-    void *option_value = (void *) &mark;
-    size_t option_size = sizeof (mark);
+    int val = Int_val(socket_option);
     int result = zmq_setsockopt(CAML_ZMQ_Socket_val(socket),
                                 native_int_option_for[Int_val(option_name)],
-                                option_value,
-                                option_size);
+                                &val,
+                                sizeof(val));
 
     caml_zmq_raise_if (result == -1);
 

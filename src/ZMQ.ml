@@ -160,10 +160,10 @@ module Socket = struct
   let get_max_message_size socket =
     Int64.to_int (get_int64_option socket ZMQ_MAXMSGSIZE)
 
-  let set_max_message_size socket size =
+  let set_affinity socket size =
     set_uint64_option socket ZMQ_AFFINITY (Uint64.of_int size)
 
-  let get_max_message_size socket size =
+  let get_affinity socket =
     Uint64.to_int (get_uint64_option socket ZMQ_AFFINITY)
 
   let set_identity socket identity =
