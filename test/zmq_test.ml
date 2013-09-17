@@ -19,6 +19,18 @@ let dump_events l =
   let l = Array.to_list (Array.map f l) in
   "[|" ^ (String.concat "; " l) ^ "|]"
 
+(**
+   This function does not test the C bindings, but rather the ast type socket types
+*)
+let test_types () =
+  let ctx = init () in
+  let types = [ ZMQ.Socket.pull; ZMQ.Socket.push; ZMQ.Socket.pub; ZMQ.Socket.pair ] in
+  let sockets = List.map (fun t -> ZMQ.Socket.create ctx t) types in
+  List.iter (fun s -> ZMQ.Socket.set_affinity s 3) sockets;
+  List.iter ZMQ.Socket.close sockets;
+  ()
+
+
 let test_options () =
   let socket =
     let ctx = init () in
@@ -55,7 +67,7 @@ let test_proxy () =
     (* Start the proxy and start relaying messages *)
     try
       ZMQ.Proxy.create pull pub;
-      assert_failure "Exception should be raised"
+      assert_failure "Proxy.create must raise an exception when completed"
     with
       ZMQ.ZMQ_exception _ -> ()
   in
@@ -72,8 +84,6 @@ let test_proxy () =
     ZMQ.Socket.connect s pull_endpoint;
     s
   in
-  (* sleep 100; *)
-
   let msg1 = "Message1"
   and msg2 = "Message2" in
   ZMQ.Socket.send push msg1;
@@ -81,7 +91,7 @@ let test_proxy () =
   assert_equal msg1 (ZMQ.Socket.recv sub);
   assert_equal msg2 (ZMQ.Socket.recv sub);
 
-  (** Prolog *)
+  (** Epilog *)
   ZMQ.Socket.close sub;
   ZMQ.Socket.close push;
   ZMQ.Socket.close pull;
@@ -122,27 +132,31 @@ let suite =
            (fun () ->
              let ctx = init () in
              let req = create ctx req
-             and rep = create ctx rep in
-             ctx, req, rep
+             and rep = create ctx rep
+             and sub = create ctx sub in
+             ctx, req, rep, sub
            )
-           (fun (_, req, rep) ->
+           (fun (_, req, rep, sub) ->
              let endpoint = "inproc://endpoint" in
+
              bind rep endpoint;
              connect req endpoint;
-             let mask = mask_of [| req, In_out; rep, In_out |] in
-             assert_equal [| Some Out; None |] (poll ~timeout:1000 mask);
+             subscribe sub "";
+             let mask = mask_of [| req, In_out; rep, In_out; sub, In_out |] in
+             assert_equal [| Some Out; None; None |] (poll ~timeout:1000 mask);
              send req "request";
-             assert_equal [| None; Some In |] (poll ~timeout:1000 mask);
+             assert_equal [| None; Some In; None |] (poll ~timeout:1000 mask);
              let msg = recv ~opt:R_no_block rep in
              assert_equal "request" msg;
              send rep "reply";
-             assert_equal [| Some In; None |] (poll ~timeout:1000 mask);
+             assert_equal [| Some In; None; None |] (poll ~timeout:1000 mask);
              let msg = recv req in
              assert_equal "reply" msg;
            )
-           (fun (ctx, req, rep) ->
+           (fun (ctx, req, rep, sub) ->
              close req;
              close rep;
+             close sub;
              term ctx
            ));
       "get/set socket options" >:: test_options;
