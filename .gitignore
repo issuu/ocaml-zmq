@@ -19,3 +19,4 @@ setup.log
 Makefile
 myocamlbuild.ml
 setup.ml
+src/META
