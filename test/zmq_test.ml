@@ -19,18 +19,6 @@ let dump_events l =
   let l = Array.to_list (Array.map f l) in
   "[|" ^ (String.concat "; " l) ^ "|]"
 
-(**
-   This function does not test the C bindings, but rather the ast type socket types
-*)
-let test_types () =
-  let ctx = init () in
-  let types = [ ZMQ.Socket.pull; ZMQ.Socket.push; ZMQ.Socket.pub; ZMQ.Socket.pair ] in
-  let sockets = List.map (fun t -> ZMQ.Socket.create ctx t) types in
-  List.iter (fun s -> ZMQ.Socket.set_affinity s 3) sockets;
-  List.iter ZMQ.Socket.close sockets;
-  ()
-
-
 let test_options () =
   let socket =
     let ctx = init () in
