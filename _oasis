@@ -1,6 +1,6 @@
 OASISFormat:  0.2
 Name:         ZMQ
-Version:      0.0.3
+Version:      3.2
 Synopsis:     Bindings for the ZMQ library
 Authors:      Pedro Borges
 License:      MIT
