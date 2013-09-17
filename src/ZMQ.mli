@@ -67,10 +67,10 @@ module Socket : sig
   val get_max_message_size : 'a t -> int
   val set_affinity : 'a t -> int -> unit
   val get_affinity : 'a t -> int
-  val set_identity : [ `Req | `Rep | `Router] t -> string -> unit
-  val get_identity : [ `Req | `Rep | `Router] t -> string
-  val subscribe : [`Sub] t -> string -> unit
-  val unsubscribe : [`Sub] t -> string -> unit
+  val set_identity : [> `Req | `Rep | `Router] t -> string -> unit
+  val get_identity : [> `Req | `Rep | `Router] t -> string
+  val subscribe : [> `Sub] t -> string -> unit
+  val unsubscribe : [> `Sub] t -> string -> unit
   val get_last_endpoint : 'a t -> string
   val set_tcp_accept_filter : 'a t -> string -> unit
   val set_rate : 'a t -> int -> unit
@@ -106,13 +106,13 @@ module Socket : sig
   val get_router_mandatory : 'a t -> bool
   val set_tcp_keepalive : 'a t -> [ `Default | `Value of bool ] -> unit
   val get_tcp_keepalive : 'a t -> [ `Default | `Value of bool ]
-  val set_tcp_keepalive_idle : 'a t -> [< `Default | `Value of int ] -> unit
+  val set_tcp_keepalive_idle : 'a t -> [ `Default | `Value of int ] -> unit
   val get_tcp_keepalive_idle : 'a t -> [ `Default | `Value of int ]
   val set_tcp_keepalive_count : 'a t -> [ `Default | `Value of int ] -> unit
   val get_tcp_keepalive_count : 'a t -> [ `Default | `Value of int ]
   val set_delay_attach_on_connect : 'a t -> bool -> unit
   val get_delay_attach_on_connect : 'a t -> bool
-  val set_xpub_verbose : [`XPub] t -> bool -> unit
+  val set_xpub_verbose : [> `XPub] t -> bool -> unit
 
   val get_fd : 'a t -> Unix.file_descr
 
@@ -122,7 +122,7 @@ module Socket : sig
 end
 
 module Proxy : sig
-  val create: ?capture:[`Pub|`Dealer|`Push|`Pair] Socket.t -> 'a Socket.t -> 'b Socket.t -> unit
+  val create: ?capture:[> `Pub|`Dealer|`Push|`Pair] Socket.t -> 'a Socket.t -> 'b Socket.t -> unit
 end
 
 module Poll : sig
@@ -130,10 +130,9 @@ module Poll : sig
   type t
 
   type poll_event = In | Out | In_out
-  type poll_socket = [`Pair|`Pub|`Sub|`Req|`Rep|`Dealer|`Router|`Pull|`Push|`Xsub|`Xpub] Socket.t
-  type poll_mask = (poll_socket * poll_event)
+  type 'a poll_mask = ('a Socket.t * poll_event)
 
-  val mask_of : poll_mask array -> t
+  val mask_of : 'a poll_mask array -> t
   val poll : ?timeout: int -> t -> poll_event option array
 
 end
