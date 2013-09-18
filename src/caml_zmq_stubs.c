@@ -189,7 +189,6 @@ static int const native_int_option_for[] = {
     ZMQ_SNDBUF,
     ZMQ_RCVBUF,
     ZMQ_RCVMORE,
-    ZMQ_FD,
     ZMQ_EVENTS,
     ZMQ_TYPE,
     ZMQ_LINGER,
