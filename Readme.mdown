@@ -1,18 +1,20 @@
 Readme
 ======
 
-OCaml bindings for ZMQ 2.1
+OCaml bindings for ZMQ 3.2
 
 Requirements
 ------------
-* [OCaml 3.12](http://caml.inria.fr/)
+* [OCaml >= 3.12](http://caml.inria.fr/)
 * [Findlib](http://projects.camlcity.org/projects/findlib.html)
 * [ocaml-uint](https://github.com/andrenth/ocaml-uint)
-* [ZMQ 2.1.*](http://www.zeromq.org/intro:get-the-software)
+* [ZMQ 3.2.*](http://www.zeromq.org/intro:get-the-software)
+* [oasis](http://oasis.forge.ocamlcore.org/)
 
 Install
 -------
-make all  
+oasis setup
+make all
 make install
 
 Uninstall
