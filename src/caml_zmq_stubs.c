@@ -288,20 +288,16 @@ CAMLprim value caml_zmq_get_events(value socket) {
                                  &event_size);
     caml_zmq_raise_if (result == -1);
     int event_type = 0; /* No_event */
-    switch (event) {
-        case ZMQ_POLLIN:
-            event_type = 1;
-            break;
-        case ZMQ_POLLOUT:
-            event_type = 2;
-            break;
-        case ZMQ_POLLIN | ZMQ_POLLOUT:
-            event_type = 3;
-            break;
-        case ZMQ_POLLERR:
-            event_type = 4;
-            break;
-        };
+    if (event & ZMQ_POLLIN) {
+        event_type = 1; /* Poll_in */
+        if (event & ZMQ_POLLOUT) {
+            event_type = 3; /* Poll_in_out */
+        }
+    } else if (event & ZMQ_POLLOUT) {
+        event_type = 2; /* Poll_out */
+    } else if (event & ZMQ_POLLERR) {
+        event_type = 4; /* Poll_error */
+    }
     CAMLreturn (Val_int(event_type));
 }
 

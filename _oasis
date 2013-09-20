@@ -1,10 +1,10 @@
-OASISFormat:  0.2
+OASISFormat:  0.3
 Name:         ZMQ
 Version:      3.2
 Synopsis:     Bindings for the ZMQ library
 Authors:      Pedro Borges
 License:      MIT
-Plugins:      DevFiles (0.2), META (0.2)
+Plugins:      DevFiles (0.3), META (0.3)
 BuildTools:   ocamlbuild
 
 Library ZMQB
@@ -27,19 +27,19 @@ Library ZMQB
   CCOpt:          -Wall -W -Wextra -O2
   CompiledObject: best
 
-Flag tests
+Flag runtests
   Description: Build and run tests
 
 Executable test
   Path:             test
   MainIs:           test.ml
   Install:          false
-  Build$:           flag(tests)
+  Build$:           flag(runtests)
   BuildDepends:     oUnit (>= 1.1.0), ZMQ
   CompiledObject:   best
   ByteOpt:          -thread
   NativeOpt:        -thread
 
 Test main
-  Run$:    flag(tests)
+  Run$:    flag(runtests)
   Command: $test
