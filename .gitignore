@@ -20,3 +20,4 @@ Makefile
 myocamlbuild.ml
 setup.ml
 src/META
+_tags
