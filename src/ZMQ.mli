@@ -43,6 +43,8 @@ module Socket : sig
   val router : [>`Router] kind
   val pull   : [>`Pull] kind
   val push   : [>`Push] kind
+  val xsub   : [>`Xsub] kind
+  val xpub   : [>`Xpub] kind
 
   (** Creation and Destruction *)
   val create : context -> 'a kind -> 'a t
@@ -51,6 +53,7 @@ module Socket : sig
   (** Wiring *)
   val connect : 'a t -> string -> unit
   val bind : 'a t -> string -> unit
+  val disconnect : 'a t -> string -> unit
 
   (** Send and Receive *)
   type recv_option = R_none | R_no_block
@@ -59,58 +62,67 @@ module Socket : sig
   type snd_option = S_none | S_no_block | S_more | S_more_no_block
   val send : ?opt:snd_option -> 'a t -> string -> unit
 
-  (** Option Setters *)
-  exception Invalid_identity of string
-  val set_identity : 'a t -> string -> unit
-  val set_high_water_mark : 'a t -> Uint64.t -> unit
-  val set_swap : 'a t -> int64 -> unit
-  val set_affinity : 'a t -> Uint64.t -> unit
-  val set_rate : 'a t -> int64 -> unit
-  val set_recovery_interval : 'a t -> int64 -> unit
-  val set_recovery_interval_msec : 'a t -> int64 -> unit
-  val set_multicast_loop : 'a t -> bool -> unit
-  val set_recv_buffer_size : 'a t -> Uint64.t -> unit
-  val set_snd_buffer_size : 'a t -> Uint64.t -> unit
-  val set_linger : 'a t -> int -> unit
-  val set_reconnect_interval : 'a t -> int -> unit
-  val set_reconnect_interval_max : 'a t -> int -> unit
-  val set_backlog : 'a t -> int -> unit
-
-  val subscribe : [>`Sub] t -> string -> unit
-  val unsubscribe : [>`Sub] t -> string -> unit
-
-  (** Option Getters *)
+  (** Option Getter and Setters *)
+  val set_max_message_size : 'a t -> int -> unit
+  val get_max_message_size : 'a t -> int
+  val set_affinity : 'a t -> int -> unit
+  val get_affinity : 'a t -> int
+  val set_identity : [> `Req | `Rep | `Router] t -> string -> unit
+  val get_identity : [> `Req | `Rep | `Router] t -> string
+  val subscribe : [> `Sub] t -> string -> unit
+  val unsubscribe : [> `Sub] t -> string -> unit
+  val get_last_endpoint : 'a t -> string
+  val set_tcp_accept_filter : 'a t -> string -> unit
+  val set_rate : 'a t -> int -> unit
+  val get_rate : 'a t -> int
+  val set_recovery_interval : 'a t -> int -> unit
+  val get_recovery_interval : 'a t -> int
+  val set_send_buffer_size : 'a t -> int -> unit
+  val get_send_buffer_size : 'a t -> int
+  val set_receive_buffer_size : 'a t -> int -> unit
+  val get_receive_buffer_size : 'a t -> int
   val has_more : 'a t -> bool
-  val high_water_mark : 'a t -> Uint64.t
-  val swap : 'a t -> int64
-  val affinity : 'a t -> Uint64.t
-  val identity : 'a t -> string
-  val rate : 'a t -> int64
-  val recovery_interval : 'a t -> int64
-  val recovery_interval_msec : 'a t -> int64
-  val multicast_loop : 'a t -> int64
-  val snd_buffer_size : 'a t -> Uint64.t
-  val recv_buffer_size : 'a t -> Uint64.t
-  val linger : 'a t -> int
-  val reconnect_interval : 'a t -> int
-  val reconnect_interval_max : 'a t -> int
-  val backlog : 'a t -> int
+  val set_linger_period : 'a t -> int -> unit
+  val get_linger_period : 'a t -> int
+  val set_reconnect_interval : 'a t -> int -> unit
+  val get_reconnect_interval : 'a t -> int
+  val set_connection_backlog : 'a t -> int -> unit
+  val get_connection_backlog : 'a t -> int
+  val set_reconnect_interval_max : 'a t -> int -> unit
+  val get_reconnect_interval_max : 'a t -> int
+  val set_send_high_water_mark : 'a t -> int -> unit
+  val get_send_high_water_mark : 'a t -> int
+  val set_recevice_high_water_mark : 'a t -> int -> unit
+  val get_recevice_high_water_mark : 'a t -> int
+  val set_multicast_hops : 'a t -> int -> unit
+  val get_multicast_hops : 'a t -> int
+  val set_receive_timeout : 'a t -> int -> unit
+  val get_receive_timeout : 'a t -> int
+  val set_send_timeout : 'a t -> int -> unit
+  val get_send_timeout : 'a t -> int
+  val set_ipv4_only : 'a t -> bool -> unit
+  val get_ipv4_only : 'a t -> bool
+  val set_router_mandatory : 'a t -> bool -> unit
+  val get_router_mandatory : 'a t -> bool
+  val set_tcp_keepalive : 'a t -> [ `Default | `Value of bool ] -> unit
+  val get_tcp_keepalive : 'a t -> [ `Default | `Value of bool ]
+  val set_tcp_keepalive_idle : 'a t -> [ `Default | `Value of int ] -> unit
+  val get_tcp_keepalive_idle : 'a t -> [ `Default | `Value of int ]
+  val set_tcp_keepalive_count : 'a t -> [ `Default | `Value of int ] -> unit
+  val get_tcp_keepalive_count : 'a t -> [ `Default | `Value of int ]
+  val set_delay_attach_on_connect : 'a t -> bool -> unit
+  val get_delay_attach_on_connect : 'a t -> bool
+  val set_xpub_verbose : [> `XPub] t -> bool -> unit
+
   val get_fd : 'a t -> Unix.file_descr
 
-  type event = No_event | Poll_in | Poll_out | Poll_in_out
+  type event = No_event | Poll_in | Poll_out | Poll_in_out | Poll_error
   val events : 'a t -> event
-
-  (** val kind: 'a t -> ? *)
-  (** val fd : 'a t -> int ? incompatible with windows *)
 
 end
 
-module Device : sig
-
-  val streamer  : [>`Pull] Socket.t -> [>`Push] Socket.t -> unit
-  val forwarder : [>`Sub] Socket.t -> [>`Pub] Socket.t -> unit
-  val queue     : [>`Router] Socket.t -> [>`Dealer] Socket.t -> unit
-
+module Proxy : sig
+  val create: ?capture:[> `Pub|`Dealer|`Push|`Pair] Socket.t -> 'a Socket.t -> 'b Socket.t -> unit
 end
 
 module Poll : sig
@@ -118,10 +130,9 @@ module Poll : sig
   type t
 
   type poll_event = In | Out | In_out
-  type poll_socket = [`Pair|`Pub|`Sub|`Req|`Rep|`Dealer|`Router|`Pull|`Push] Socket.t
-  type poll_mask = (poll_socket * poll_event)
+  type 'a poll_mask = ('a Socket.t * poll_event)
 
-  val mask_of : poll_mask array -> t
+  val mask_of : 'a poll_mask array -> t
   val poll : ?timeout: int -> t -> poll_event option array
 
 end

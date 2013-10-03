@@ -1,6 +1,6 @@
 OASISFormat:  0.3
 Name:         ZMQ
-Version:      0.0.4
+Version:      3.2
 Synopsis:     Bindings for the ZMQ library
 Authors:      Pedro Borges
 License:      MIT
@@ -29,7 +29,7 @@ Library ZMQB
 
 Flag runtests
   Description: Build and run tests
-  
+
 Executable test
   Path:             test
   MainIs:           test.ml
@@ -37,8 +37,9 @@ Executable test
   Build$:           flag(runtests)
   BuildDepends:     oUnit (>= 1.1.0), ZMQ
   CompiledObject:   best
-  
+  ByteOpt:          -thread
+  NativeOpt:        -thread
+
 Test main
   Run$:    flag(runtests)
   Command: $test
-  

@@ -23,4 +23,3 @@ value caml_zmq_copy_socket(void *zmq_socket) {
     CAML_ZMQ_Socket_val(socket) = zmq_socket;
     CAMLreturn (socket);
 }
-
