@@ -241,10 +241,10 @@ module Socket = struct
   let get_send_high_water_mark socket =
     get_int_option socket ZMQ_SNDHWM
 
-  let set_recevice_high_water_mark socket mark =
+  let set_receive_high_water_mark socket mark =
     set_int_option socket ZMQ_RCVHWM mark
 
-  let get_recevice_high_water_mark socket =
+  let get_receive_high_water_mark socket =
     get_int_option socket ZMQ_RCVHWM
 
   let set_multicast_hops socket hops =
@@ -310,6 +310,21 @@ module Socket = struct
     | -1 -> `Default
     | n when n <= 0 -> raise Illegal_argument
     | n -> `Value n
+
+  let set_tcp_keepalive_interval socket flag =
+    let value = match flag with
+      | `Default -> -1
+      | `Value n when n <= 0 -> raise Illegal_argument
+      | `Value n -> n
+    in
+    set_int_option socket ZMQ_TCP_KEEPALIVE_INTVL value
+
+  let get_tcp_keepalive_interval socket =
+    match get_int_option socket ZMQ_TCP_KEEPALIVE_INTVL with
+    | -1 -> `Default
+    | n when n <= 0 -> raise Illegal_argument
+    | n -> `Value n
+
 
   let set_tcp_keepalive_count socket flag =
     let value = match flag with
