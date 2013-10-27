@@ -20,6 +20,11 @@
 #if defined(_WIN32) || defined(_WIN64)
 #  include <winsock2.h>
 #  include <windows.h>
+#  define fd_type SOCKET
+#  define Val_fd(x) win_alloc_socket(fd)
+#else
+#  define fd_type int
+#  define Val_fd(x) Val_int(x)
 #endif
 
 
@@ -303,22 +308,14 @@ CAMLprim value caml_zmq_get_events(value socket) {
 
 CAMLprim value caml_zmq_get_fd(value socket) {
     CAMLparam1 (socket);
-    #if defined(_WIN32) || defined(_WIN64)
-    SOCKET fd;
-    #else
-    int fd;
-    #endif
+    fd_type fd;
     size_t mark_size = sizeof (fd);
     int result = zmq_getsockopt (CAML_ZMQ_Socket_val(socket),
                                  ZMQ_FD,
                                  (void *)&fd,
                                  &mark_size);
     caml_zmq_raise_if (result == -1);
-    #if defined(_WIN32) || defined(_WIN64)
-    CAMLreturn (win_alloc_socket(fd));
-    #else
-    CAMLreturn (Val_int(fd));
-    #endif
+    CAMLreturn (Val_fd(fd));
 }
 
 
@@ -482,6 +479,124 @@ CAMLprim value caml_zmq_proxy3(value frontend, value backend, value capture) {
     CAMLreturn (Val_unit);
 }
 
-/**
- * Poll check poll.h
- */
+CAMLprim value caml_zmq_socket_monitor(value socket, value address) {
+    CAMLparam2 (socket, address);
+
+    caml_release_runtime_system();
+    int result = zmq_socket_monitor(CAML_ZMQ_Socket_val(socket), String_val(address), ZMQ_EVENT_ALL);
+    caml_acquire_runtime_system();
+
+    /* Will awlays raise an exception */
+    caml_zmq_raise_if(result == -1);
+    CAMLreturn (Val_unit);
+}
+
+enum event_type {
+    CONNECTED = 0,
+    CONNECT_DELAYED,
+    CONNECT_RETRIED,
+    LISTENING,
+    BIND_FAILED,
+    ACCEPTED,
+    ACCEPT_FAILED,
+    CLOSED,
+    CLOSE_FAILED,
+    DISCONNECTED,
+    UNKNOWN,
+};
+
+CAMLprim value caml_zmq_event_recv(value socket, value rcv_options) {
+    CAMLparam2 (socket, rcv_options);
+    CAMLlocal1 (result);
+
+    int caml_rcv_option = Int_val(rcv_options);
+    if (!is_caml_rcv_option_valid(caml_rcv_option))
+        caml_failwith("Invalid receive option.");
+
+    void *sock = CAML_ZMQ_Socket_val(socket);
+    int option = native_rcv_option_for_caml_rcv_option[caml_rcv_option];
+
+    zmq_msg_t msg;
+    zmq_msg_init (&msg);
+    int res = 0;
+    caml_release_runtime_system();
+    res = zmq_recvmsg (sock, &msg, option);
+    caml_acquire_runtime_system();
+
+    caml_zmq_raise_if (res == -1);
+    zmq_event_t event;
+    memcpy(&event, zmq_msg_data (&msg), sizeof(event));
+
+    switch (event.event) {
+    case ZMQ_EVENT_CONNECTED:
+        result = caml_alloc(2, CONNECTED);
+        Store_field(result, 0, caml_copy_string(event.data.connected.addr));
+        Store_field(result, 1, Val_fd(event.data.connected.fd));
+        break;
+    case ZMQ_EVENT_CONNECT_DELAYED:
+        result = caml_alloc(2, CONNECT_DELAYED);
+        Store_field(result, 0, caml_copy_string(event.data.connect_delayed.addr));
+        Store_field(result, 1, Val_int(event.data.connect_delayed.err));
+        Store_field(result, 2, caml_copy_string(zmq_strerror(event.data.connect_delayed.err)));
+        break;
+
+    case ZMQ_EVENT_CONNECT_RETRIED:
+        result = caml_alloc(2, CONNECT_RETRIED);
+        Store_field(result, 0, caml_copy_string(event.data.connect_retried.addr));
+        Store_field(result, 1, Val_int(event.data.connect_retried.interval));
+        break;
+
+    case ZMQ_EVENT_LISTENING:
+        result = caml_alloc(2, LISTENING);
+        Store_field(result, 0, caml_copy_string(event.data.connected.addr));
+        Store_field(result, 1, Val_fd(event.data.connected.fd));
+        break;
+
+    case ZMQ_EVENT_BIND_FAILED:
+        result = caml_alloc(2, BIND_FAILED);
+        Store_field(result, 0, caml_copy_string(event.data.bind_failed.addr));
+        Store_field(result, 1, Val_int(event.data.bind_failed.err));
+        Store_field(result, 2, caml_copy_string(zmq_strerror(event.data.bind_failed.err)));
+        break;
+
+    case ZMQ_EVENT_ACCEPTED:
+        result = caml_alloc(2, ACCEPTED);
+        Store_field(result, 0, caml_copy_string(event.data.accepted.addr));
+        Store_field(result, 1, Val_fd(event.data.accepted.fd));
+        break;
+
+    case ZMQ_EVENT_ACCEPT_FAILED:
+        result = caml_alloc(2, ACCEPT_FAILED);
+        Store_field(result, 0, caml_copy_string(event.data.accept_failed.addr));
+        Store_field(result, 1, Val_int(event.data.accept_failed.err));
+        Store_field(result, 2, caml_copy_string(zmq_strerror(event.data.accept_failed.err)));
+        break;
+
+    case ZMQ_EVENT_CLOSED:
+        result = caml_alloc(2, CLOSED);
+        Store_field(result, 0, caml_copy_string(event.data.closed.addr));
+        Store_field(result, 1, Val_fd(event.data.closed.fd));
+        break;
+
+    case ZMQ_EVENT_CLOSE_FAILED:
+        result = caml_alloc(2, CLOSE_FAILED);
+        Store_field(result, 0, caml_copy_string(event.data.close_failed.addr));
+        Store_field(result, 1, Val_int(event.data.close_failed.err));
+        Store_field(result, 2, caml_copy_string(zmq_strerror(event.data.close_failed.err)));
+        break;
+
+    case ZMQ_EVENT_DISCONNECTED:
+        result = caml_alloc(2, DISCONNECTED);
+        Store_field(result, 0, caml_copy_string(event.data.disconnected.addr));
+        Store_field(result, 1, Val_fd(event.data.disconnected.fd));
+        break;
+
+    default:
+        caml_zmq_raise(EFAULT, "Undefined event type");
+        break;
+    }
+    res = zmq_msg_close(&msg);
+    caml_zmq_raise_if(res == -1);
+
+    CAMLreturn(result);
+}

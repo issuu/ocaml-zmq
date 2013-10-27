@@ -377,3 +377,48 @@ module Poll = struct
   let poll ?(timeout = -1) items = native_poll items timeout
 
 end
+
+module Monitor = struct
+  type t = string
+
+  type address = string
+  type error_no = int
+  type error_text = string
+
+  type event =
+  | Connected of string * Unix.file_descr
+  | Connect_delayed of address * error_no * error_text
+  | Connect_retried of address * int (*interval*)
+  | Listening of address * Unix.file_descr
+  | Bind_failed of address * error_no * error_text
+  | Accepted of address * Unix.file_descr
+  | Accept_failed of address * error_no * error_text
+  | Closed of address * Unix.file_descr
+  | Close_failed of address * error_no * error_text
+  | Disconnected of address * Unix.file_descr
+
+  external socket_monitor: 'a Socket.t -> string -> unit = "caml_zmq_socket_monitor"
+
+  let create socket =
+    (* Construct an anonymous inproc channel name *)
+    let socket_id = Hashtbl.hash (Socket.get_fd socket) in
+    let address = Printf.sprintf "inproc://_socket_monitor-%d-%d.%d"
+      (Unix.getpid ())
+      socket_id
+      (Random.bits ())
+    in
+    socket_monitor socket address;
+    address
+
+  let connect ctx t =
+    let s = Socket.create ctx Socket.pair in
+    Socket.connect s t;
+    s
+
+  external native_recv : 'a Socket.t -> Socket.recv_option -> event = "caml_zmq_event_recv"
+
+  let recv ?(opt = Socket.R_none) socket = native_recv socket opt
+
+
+
+end

@@ -33,26 +33,30 @@ static int const caml_zmq_error_table[] = {
 static int const caml_zmq_EUNKNOWN =
     (sizeof caml_zmq_error_table) / (sizeof caml_zmq_error_table[0]);
 
-void caml_zmq_raise_if(int condition) {
+void caml_zmq_raise(int err_no, const char *err_str) {
     CAMLparam0 ();
     CAMLlocalN(error_parameters, 2);
-    if(condition) {
-        int error_to_raise = caml_zmq_EUNKNOWN;
-        int current_errno = zmq_errno();
-        int i;
-        for (i = 0; i < caml_zmq_EUNKNOWN; i++) {
-            if (current_errno == caml_zmq_error_table[i]) {
-                error_to_raise = i;
-                break;
-            }
+    int error_to_raise = caml_zmq_EUNKNOWN;
+    int i;
+    for (i = 0; i < caml_zmq_EUNKNOWN; i++) {
+        if (err_no == caml_zmq_error_table[i]) {
+            error_to_raise = i;
+            break;
         }
-        error_parameters[0] = Val_int(error_to_raise);
-        error_parameters[1] = caml_copy_string(zmq_strerror(current_errno));
-        caml_raise_with_args(
-            *caml_named_value("zmq exception"),
-            2,
-            error_parameters);
     }
+    error_parameters[0] = Val_int(error_to_raise);
+    error_parameters[1] = caml_copy_string(err_str);
+    caml_raise_with_args(
+                         *caml_named_value("zmq exception"),
+                         2,
+                         error_parameters);
     CAMLreturn0;
 }
 
+void caml_zmq_raise_if(int condition) {
+    if (condition) {
+        int err_no = zmq_errno();
+        const char *err_str = zmq_strerror(err_no);
+        caml_zmq_raise(err_no, err_str);
+    }
+}

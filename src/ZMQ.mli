@@ -136,3 +136,28 @@ module Poll : sig
   val poll : ?timeout: int -> t -> poll_event option array
 
 end
+
+module Monitor : sig
+  type t
+
+  type address = string
+  type error_no = int
+  type error_text = string
+
+  type event =
+  | Connected of string * Unix.file_descr
+  | Connect_delayed of address * error_no * error_text
+  | Connect_retried of address * int (*interval*)
+  | Listening of address * Unix.file_descr
+  | Bind_failed of address * error_no * error_text
+  | Accepted of address * Unix.file_descr
+  | Accept_failed of address * error_no * error_text
+  | Closed of address * Unix.file_descr
+  | Close_failed of address * error_no * error_text
+  | Disconnected of address * Unix.file_descr
+
+  val create: 'a Socket.t -> t
+  val connect: context -> t -> [>`Monitor] Socket.t
+  val recv: ?opt:Socket.recv_option -> [> `Monitor ] Socket.t -> event
+
+end

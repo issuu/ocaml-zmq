@@ -41,13 +41,67 @@ let test_options () =
 
   ()
 
+let test_monitor () =
+  let event_to_string event =
+    let open ZMQ.Monitor in
+    match event with
+    | Connected (addr, _fd) -> Printf.sprintf "Connect: %s" addr
+    | Connect_delayed (addr, error_no, error_text) -> Printf.sprintf "Connect delayed: %s %d %s" addr error_no error_text
+    | Connect_retried (addr, interval) -> Printf.sprintf "retried: %s %d" addr interval
+    | Listening (addr, _fd) -> Printf.sprintf "Listening: %s" addr
+    | Bind_failed (addr, error_no, error_text) -> Printf.sprintf "Bind failed: %s %d %s" addr error_no error_text
+    | Accepted (addr, _fd) -> Printf.sprintf "Accepted: %s" addr
+    | Accept_failed (addr, error_no, error_text) -> Printf.sprintf "Accept failed: %s %d %s" addr error_no error_text
+    | Closed (addr, _fd) -> Printf.sprintf "Closed: %s" addr
+    | Close_failed (addr, error_no, error_text) -> Printf.sprintf "Close failed: %s %d %s" addr error_no error_text
+    | Disconnected (addr, _fd) -> Printf.sprintf "Disconnected: %s" addr
+  in
+
+  let ctx = init () in
+  let endpoint = "tcp://127.0.0.1:51234" in
+  let s1 = ZMQ.Socket.create ctx ZMQ.Socket.pair
+  and s2 = ZMQ.Socket.create ctx ZMQ.Socket.pair in
+  let m1 = let mon_t = ZMQ.Monitor.create s1 in
+           ZMQ.Monitor.connect ctx mon_t
+  and m2 = let mon_t = ZMQ.Monitor.create s2 in
+           ZMQ.Monitor.connect ctx mon_t
+  in
+  (* Start generating events *)
+  ZMQ.Socket.bind s1 endpoint;
+  ZMQ.Socket.connect s2 endpoint;
+  sleep 100;
+
+  ZMQ.Socket.close s2;
+  ZMQ.Socket.close s1;
+  sleep 100;
+
+
+  let assert_events socket events =
+    let printer x = x in
+    let rec cmp str1 str2 =
+      match String.length str1 <= String.length str2 with
+      | true -> String.sub str2 0 (String.length str1) = str1
+      | false -> cmp str2 str1
+    in
+    let assert_event event =
+      let received =
+        (event_to_string (ZMQ.Monitor.recv ~opt:ZMQ.Socket.R_no_block socket));
+      in
+      assert_equal ~msg:"Wrong event received" ~printer ~cmp
+        (Printf.sprintf "%s: %s" event endpoint) received
+      in
+    List.iter assert_event events
+  in
+  assert_events m1 [ "Listening"; "Accepted"; "Closed" ];
+  assert_events m2 [ "Connect delayed"; "Connect" ];
+  ()
+
 let test_proxy () =
   let ctx = ZMQ.init () in
   let pull_endpoint = "inproc://pull"
   and pub_endpoint = "inproc://pub"
   and pull = ZMQ.Socket.create ctx pull
   and pub = ZMQ.Socket.create ctx pub in
-
 
   let proxy (pull, pub) =
     ZMQ.Socket.bind pull pull_endpoint;
@@ -148,5 +202,6 @@ let suite =
              term ctx
            ));
       "get/set socket options" >:: test_options;
-      "proxy" >:: test_proxy
+      "proxy" >:: test_proxy;
+      "monitor" >:: test_monitor
     ]
