@@ -42,21 +42,6 @@ let test_options () =
   ()
 
 let test_monitor () =
-  let event_to_string event =
-    let open ZMQ.Monitor in
-    match event with
-    | Connected (addr, _fd) -> Printf.sprintf "Connect: %s" addr
-    | Connect_delayed (addr, error_no, error_text) -> Printf.sprintf "Connect delayed: %s %d %s" addr error_no error_text
-    | Connect_retried (addr, interval) -> Printf.sprintf "retried: %s %d" addr interval
-    | Listening (addr, _fd) -> Printf.sprintf "Listening: %s" addr
-    | Bind_failed (addr, error_no, error_text) -> Printf.sprintf "Bind failed: %s %d %s" addr error_no error_text
-    | Accepted (addr, _fd) -> Printf.sprintf "Accepted: %s" addr
-    | Accept_failed (addr, error_no, error_text) -> Printf.sprintf "Accept failed: %s %d %s" addr error_no error_text
-    | Closed (addr, _fd) -> Printf.sprintf "Closed: %s" addr
-    | Close_failed (addr, error_no, error_text) -> Printf.sprintf "Close failed: %s %d %s" addr error_no error_text
-    | Disconnected (addr, _fd) -> Printf.sprintf "Disconnected: %s" addr
-  in
-
   let ctx = init () in
   let endpoint = "tcp://127.0.0.1:51234" in
   let s1 = ZMQ.Socket.create ctx ZMQ.Socket.pair
@@ -85,7 +70,7 @@ let test_monitor () =
     in
     let assert_event event =
       let received =
-        (event_to_string (ZMQ.Monitor.recv ~opt:ZMQ.Socket.R_no_block socket));
+        (ZMQ.Monitor.string_of_event (ZMQ.Monitor.recv ~opt:ZMQ.Socket.R_no_block socket));
       in
       assert_equal ~msg:"Wrong event received" ~printer ~cmp
         (Printf.sprintf "%s: %s" event endpoint) received

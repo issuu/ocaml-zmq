@@ -386,7 +386,7 @@ module Monitor = struct
   type error_text = string
 
   type event =
-  | Connected of string * Unix.file_descr
+  | Connected of address * Unix.file_descr
   | Connect_delayed of address * error_no * error_text
   | Connect_retried of address * int (*interval*)
   | Listening of address * Unix.file_descr
@@ -402,7 +402,7 @@ module Monitor = struct
   let create socket =
     (* Construct an anonymous inproc channel name *)
     let socket_id = Hashtbl.hash (Socket.get_fd socket) in
-    let address = Printf.sprintf "inproc://_socket_monitor-%d-%d.%d"
+    let address = Printf.sprintf "inproc://_socket_monitor-%d-%x.%x"
       (Unix.getpid ())
       socket_id
       (Random.bits ())
@@ -419,6 +419,16 @@ module Monitor = struct
 
   let recv ?(opt = Socket.R_none) socket = native_recv socket opt
 
-
+  let string_of_event = function
+    | Connected (addr, _fd) -> Printf.sprintf "Connect: %s" addr
+    | Connect_delayed (addr, error_no, error_text) -> Printf.sprintf "Connect delayed: %s. %d:%s" addr error_no error_text
+    | Connect_retried (addr, interval) -> Printf.sprintf "Connect retried: %s - %d" addr interval
+    | Listening (addr, _fd) -> Printf.sprintf "Listening: %s" addr
+    | Bind_failed (addr, error_no, error_text) -> Printf.sprintf "Bind failed: %s. %d:%s" addr error_no error_text
+    | Accepted (addr, _fd) -> Printf.sprintf "Accepted: %s" addr
+    | Accept_failed (addr, error_no, error_text) -> Printf.sprintf "Accept failed: %s. %d:%s" addr error_no error_text
+    | Closed (addr, _fd) -> Printf.sprintf "Closed: %s" addr
+    | Close_failed (addr, error_no, error_text) -> Printf.sprintf "Close failed: %s. %d:%s" addr error_no error_text
+    | Disconnected (addr, _fd) -> Printf.sprintf "Disconnected: %s" addr
 
 end

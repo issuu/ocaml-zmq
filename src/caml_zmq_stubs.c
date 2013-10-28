@@ -502,9 +502,13 @@ enum event_type {
     CLOSED,
     CLOSE_FAILED,
     DISCONNECTED,
-    UNKNOWN,
 };
 
+/** Receive an event from a monitor socket, and decode it.
+    As the events structure contains a pointer to the address string,
+    we need to decode (and retrieve the address) before releasing the
+    message ressources.
+*/
 CAMLprim value caml_zmq_event_recv(value socket, value rcv_options) {
     CAMLparam2 (socket, rcv_options);
     CAMLlocal1 (result);
@@ -548,8 +552,8 @@ CAMLprim value caml_zmq_event_recv(value socket, value rcv_options) {
 
     case ZMQ_EVENT_LISTENING:
         result = caml_alloc(2, LISTENING);
-        Store_field(result, 0, caml_copy_string(event.data.connected.addr));
-        Store_field(result, 1, Val_fd(event.data.connected.fd));
+        Store_field(result, 0, caml_copy_string(event.data.listening.addr));
+        Store_field(result, 1, Val_fd(event.data.listening.fd));
         break;
 
     case ZMQ_EVENT_BIND_FAILED:

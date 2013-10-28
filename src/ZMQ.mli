@@ -145,7 +145,7 @@ module Monitor : sig
   type error_text = string
 
   type event =
-  | Connected of string * Unix.file_descr
+  | Connected of address * Unix.file_descr
   | Connect_delayed of address * error_no * error_text
   | Connect_retried of address * int (*interval*)
   | Listening of address * Unix.file_descr
@@ -159,5 +159,6 @@ module Monitor : sig
   val create: 'a Socket.t -> t
   val connect: context -> t -> [>`Monitor] Socket.t
   val recv: ?opt:Socket.recv_option -> [> `Monitor ] Socket.t -> event
+  val string_of_event: event -> string
 
 end
