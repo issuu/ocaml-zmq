@@ -26,7 +26,7 @@ let test_options () =
     s
   in
 
-  let test_set_get msg setter getter socket v =
+  let test_set_get_int msg setter getter socket v =
     let default = getter socket in
     setter socket v;
     assert_equal ~msg ~printer:string_of_int v (getter socket);
@@ -35,10 +35,20 @@ let test_options () =
     ()
   in
 
-  test_set_get "Highwatermark" set_recevice_high_water_mark get_recevice_high_water_mark socket 1235;
-  test_set_get "Affinity" set_affinity get_affinity socket 3;
-  test_set_get "Receive timeout" set_receive_timeout get_receive_timeout socket 1000;
+  let test_set_get_value msg setter getter socket v =
+    let default = getter socket in
+    setter socket v;
+    assert_equal ~msg ~printer:(function `Default -> "default" | `Value n -> string_of_int n) v (getter socket);
+    setter socket default;
+    assert_equal ~msg default (getter socket);
+    ()
+  in
 
+
+  test_set_get_int "Highwatermark" set_receive_high_water_mark get_receive_high_water_mark socket 1235;
+  test_set_get_int "Affinity" set_affinity get_affinity socket 3;
+  test_set_get_int "Receive timeout" set_receive_timeout get_receive_timeout socket 1000;
+  test_set_get_value "Tcp keepalive interval" set_tcp_keepalive_interval get_tcp_keepalive_interval socket (`Value 1000);
   ()
 
 let test_monitor () =

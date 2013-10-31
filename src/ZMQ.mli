@@ -92,8 +92,8 @@ module Socket : sig
   val get_reconnect_interval_max : 'a t -> int
   val set_send_high_water_mark : 'a t -> int -> unit
   val get_send_high_water_mark : 'a t -> int
-  val set_recevice_high_water_mark : 'a t -> int -> unit
-  val get_recevice_high_water_mark : 'a t -> int
+  val set_receive_high_water_mark : 'a t -> int -> unit
+  val get_receive_high_water_mark : 'a t -> int
   val set_multicast_hops : 'a t -> int -> unit
   val get_multicast_hops : 'a t -> int
   val set_receive_timeout : 'a t -> int -> unit
@@ -110,6 +110,8 @@ module Socket : sig
   val get_tcp_keepalive_idle : 'a t -> [ `Default | `Value of int ]
   val set_tcp_keepalive_count : 'a t -> [ `Default | `Value of int ] -> unit
   val get_tcp_keepalive_count : 'a t -> [ `Default | `Value of int ]
+  val set_tcp_keepalive_interval : 'a t -> [ `Default | `Value of int ] -> unit
+  val get_tcp_keepalive_interval : 'a t -> [ `Default | `Value of int ]
   val set_delay_attach_on_connect : 'a t -> bool -> unit
   val get_delay_attach_on_connect : 'a t -> bool
   val set_xpub_verbose : [> `XPub] t -> bool -> unit
