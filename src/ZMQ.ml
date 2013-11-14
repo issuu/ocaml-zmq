@@ -434,16 +434,31 @@ module Monitor = struct
 
   let recv ?(opt = Socket.R_none) socket = native_recv socket opt
 
+  let get_peer_address fd =
+    try
+      let sockaddr = Unix.getpeername fd in
+      let domain = match Unix.domain_of_sockaddr sockaddr with
+        | Unix.PF_UNIX -> "unix"
+        | Unix.PF_INET -> "tcp"
+        | Unix.PF_INET6 -> "tcp6"
+      in
+      match sockaddr with
+      | Unix.ADDR_UNIX s -> Printf.sprintf "%s://%s" domain s;
+      | Unix.ADDR_INET (addr, port) -> Printf.sprintf "%s://%s:%d" domain (Unix.string_of_inet_addr addr) port
+    with
+    | Unix.Unix_error _ -> "unknown"
+
+
   let string_of_event = function
-    | Connected (addr, _fd) -> Printf.sprintf "Connect: %s" addr
-    | Connect_delayed (addr, error_no, error_text) -> Printf.sprintf "Connect delayed: %s. %d:%s" addr error_no error_text
-    | Connect_retried (addr, interval) -> Printf.sprintf "Connect retried: %s - %d" addr interval
-    | Listening (addr, _fd) -> Printf.sprintf "Listening: %s" addr
-    | Bind_failed (addr, error_no, error_text) -> Printf.sprintf "Bind failed: %s. %d:%s" addr error_no error_text
-    | Accepted (addr, _fd) -> Printf.sprintf "Accepted: %s" addr
-    | Accept_failed (addr, error_no, error_text) -> Printf.sprintf "Accept failed: %s. %d:%s" addr error_no error_text
-    | Closed (addr, _fd) -> Printf.sprintf "Closed: %s" addr
+    | Connected (addr, fd) -> Printf.sprintf "Connect on %s. peer %s" addr (get_peer_address fd)
+    | Connect_delayed (addr, error_no, error_text) -> Printf.sprintf "Connect delayed on %s. %d:%s" addr error_no error_text
+    | Connect_retried (addr, interval) -> Printf.sprintf "Connect retried on %s - %d" addr interval
+    | Listening (addr, fd) -> Printf.sprintf "Listening on %s - peer %s" addr (get_peer_address fd)
+    | Bind_failed (addr, error_no, error_text) -> Printf.sprintf "Bind failed on %s. %d:%s" addr error_no error_text
+    | Accepted (addr, fd) -> Printf.sprintf "Accepted on %s. peer %s" addr (get_peer_address fd)
+    | Accept_failed (addr, error_no, error_text) -> Printf.sprintf "Accept failed om %s. %d:%s" addr error_no error_text
+    | Closed (addr, fd) -> Printf.sprintf "Closed %s. peer %s" addr (get_peer_address fd)
     | Close_failed (addr, error_no, error_text) -> Printf.sprintf "Close failed: %s. %d:%s" addr error_no error_text
-    | Disconnected (addr, _fd) -> Printf.sprintf "Disconnected: %s" addr
+    | Disconnected (addr, fd) -> Printf.sprintf "Disconnect on %s. peer %s" addr (get_peer_address fd)
 
 end
