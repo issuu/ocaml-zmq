@@ -161,6 +161,17 @@ module Monitor : sig
   val create: 'a Socket.t -> t
   val connect: context -> t -> [>`Monitor] Socket.t
   val recv: ?opt:Socket.recv_option -> [> `Monitor ] Socket.t -> event
+
   val string_of_event: event -> string
+
+  (** Create a memorizing function for converting an event to a string.
+      As its it not possible to reliably retrieve the peer address of a closed socket
+      dues to a race condition, this function pairs connects and disconnects and returns the matching
+      connect peer address to disconnects.
+
+      Note that it is not possible to retrieve the peer address of connect events is the peer has disconnected
+      before string_of_event is called
+  *)
+  val mk_string_of_event: unit -> (event -> string)
 
 end
