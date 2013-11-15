@@ -448,17 +448,39 @@ module Monitor = struct
     with
     | Unix.Unix_error _ -> "unknown"
 
-
-  let string_of_event = function
-    | Connected (addr, fd) -> Printf.sprintf "Connect on %s. peer %s" addr (get_peer_address fd)
-    | Connect_delayed (addr, error_no, error_text) -> Printf.sprintf "Connect delayed on %s. %d:%s" addr error_no error_text
-    | Connect_retried (addr, interval) -> Printf.sprintf "Connect retried on %s - %d" addr interval
-    | Listening (addr, fd) -> Printf.sprintf "Listening on %s - peer %s" addr (get_peer_address fd)
-    | Bind_failed (addr, error_no, error_text) -> Printf.sprintf "Bind failed on %s. %d:%s" addr error_no error_text
-    | Accepted (addr, fd) -> Printf.sprintf "Accepted on %s. peer %s" addr (get_peer_address fd)
-    | Accept_failed (addr, error_no, error_text) -> Printf.sprintf "Accept failed om %s. %d:%s" addr error_no error_text
-    | Closed (addr, fd) -> Printf.sprintf "Closed %s. peer %s" addr (get_peer_address fd)
+  let internal_string_of_event push_address pop_address = function
+    | Connected (addr, fd) -> Printf.sprintf "Connect: %s. peer %s" addr (push_address fd)
+    | Connect_delayed (addr, error_no, error_text) -> Printf.sprintf "Connect delayed: %s. %d:%s" addr error_no error_text
+    | Connect_retried (addr, interval) -> Printf.sprintf "Connect retried: %s - %d" addr interval
+    | Listening (addr, fd) -> Printf.sprintf "Listening: %s - peer %s" addr (push_address fd)
+    | Bind_failed (addr, error_no, error_text) -> Printf.sprintf "Bind failed: %s. %d:%s" addr error_no error_text
+    | Accepted (addr, fd) -> Printf.sprintf "Accepted: %s. peer %s" addr (push_address fd)
+    | Accept_failed (addr, error_no, error_text) -> Printf.sprintf "Accept failed: %s. %d:%s" addr error_no error_text
+    | Closed (addr, fd) -> Printf.sprintf "Closed: %s. peer %s" addr (pop_address fd)
     | Close_failed (addr, error_no, error_text) -> Printf.sprintf "Close failed: %s. %d:%s" addr error_no error_text
-    | Disconnected (addr, fd) -> Printf.sprintf "Disconnect on %s. peer %s" addr (get_peer_address fd)
+    | Disconnected (addr, fd) -> Printf.sprintf "Disconnect: %s. peer %s" addr (pop_address fd)
+
+  let string_of_event event = internal_string_of_event get_peer_address get_peer_address event
+
+  let mk_string_of_event () =
+    let state = ref [] in
+
+    let pop_address fd =
+      let rec pop acc = function
+        | [] -> (get_peer_address fd, acc)
+        | (fd', address) :: xs when fd' = fd -> (address, acc @ xs)
+        | x :: xs -> pop (x :: acc) xs
+      in
+      let (address, new_state) = pop [] !state in
+      state := new_state;
+      address
+    in
+
+    let push_address fd =
+      let address = get_peer_address fd in
+      state := (fd, address) :: !state;
+      address
+    in
+    internal_string_of_event push_address pop_address
 
 end
