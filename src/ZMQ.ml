@@ -79,7 +79,6 @@ module Socket = struct
   external native_send : 'a t -> string -> snd_option -> unit = "caml_zmq_send"
   let send ?(opt = S_none) socket message = native_send socket message opt
 
-
   (** Native Option Setters (private) *)
   type int64_option =
   | ZMQ_MAXMSGSIZE
@@ -349,6 +348,42 @@ module Socket = struct
   type event = No_event | Poll_in | Poll_out | Poll_in_out | Poll_error
   external events : 'a t -> event = "caml_zmq_get_events"
 
+  let recv_all =
+    (* Once the first message part is received all remaining message parts can
+       be received without blocking. *)
+    let rec loop socket accu =
+      if has_more socket then
+        loop socket (recv socket :: accu)
+      else
+        accu
+    in
+    fun ?(block = true) socket ->
+      let opt = if block then R_none else R_no_block in
+      let first = recv ~opt socket in
+      List.rev (loop socket [first])
+
+  let send_all =
+    (* Once the first message part is sent all remaining message parts can
+       be sent without blocking. *)
+    let rec send_all_inner_loop socket message =
+      match message with
+      | [] -> ()
+      | hd :: [] ->
+        send socket hd
+      | hd :: tl ->
+        send ~opt:S_more socket hd;
+        send_all_inner_loop socket tl
+    in
+    fun ?(block = true) socket message ->
+      match message with
+      | [] -> ()
+      | hd :: [] ->
+        let opt = if block then S_none else S_no_block in
+        send ~opt socket hd
+      | hd :: tl ->
+        let opt = if block then S_more else S_more_no_block in
+        send ~opt socket hd;
+        send_all_inner_loop socket tl
 end
 
 module Proxy = struct

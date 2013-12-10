@@ -58,9 +58,11 @@ module Socket : sig
   (** Send and Receive *)
   type recv_option = R_none | R_no_block
   val recv : ?opt:recv_option -> 'a t -> string
+  val recv_all : ?block:bool -> 'a t -> string list
 
   type snd_option = S_none | S_no_block | S_more | S_more_no_block
   val send : ?opt:snd_option -> 'a t -> string -> unit
+  val send_all : ?block:bool -> 'a t -> string list -> unit
 
   (** Option Getter and Setters *)
   val set_max_message_size : 'a t -> int -> unit
