@@ -164,6 +164,31 @@ let suite =
              term ctx
            ));
 
+      "request reply (multi-part)" >::
+        (bracket
+           (fun () ->
+             let ctx = init () in
+             let req = create ctx req
+             and rep = create ctx rep in
+             ctx, req, rep
+           )
+           (fun (_, req, rep) ->
+             let endpoint = "inproc://endpoint" in
+             bind rep endpoint;
+             connect req endpoint;
+             send_all req ["request"; "and more"];
+             let msg = recv_all rep in
+             assert_equal ["request"; "and more"] msg;
+             send_all rep ["reply"; "and more"];
+             let msg = recv_all req in
+             assert_equal ["reply"; "and more"] msg
+           )
+           (fun (ctx, req, rep) ->
+             close req;
+             close rep;
+             term ctx
+           ));
+
       "poll" >::
         (bracket
            (fun () ->
