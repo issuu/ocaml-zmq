@@ -69,15 +69,11 @@ module Socket = struct
   external bind : 'a t -> string -> unit = "caml_zmq_bind"
 
   (** Send and Receive *)
-  type recv_option = R_none | R_no_block
+  external native_recv : 'a t -> bool -> string = "caml_zmq_recv"
+  let recv ?(block = true) socket = native_recv socket block
 
-  external native_recv : 'a t -> recv_option -> string = "caml_zmq_recv"
-  let recv ?(opt = R_none) socket = native_recv socket opt
-
-  type snd_option = S_none | S_no_block | S_more | S_more_no_block
-
-  external native_send : 'a t -> string -> snd_option -> unit = "caml_zmq_send"
-  let send ?(opt = S_none) socket message = native_send socket message opt
+  external native_send : 'a t -> string -> bool -> bool -> unit = "caml_zmq_send"
+  let send ?(block = true) ?(more = false) socket message = native_send socket message block more
 
   (** Native Option Setters (private) *)
   type int64_option =
@@ -372,9 +368,8 @@ module Socket = struct
       else
         accu
     in
-    fun ?(block = true) socket ->
-      let opt = if block then R_none else R_no_block in
-      let first = recv ~opt socket in
+    fun ?block socket ->
+      let first = recv ?block socket in
       List.rev (loop socket [first])
 
   let send_all =
@@ -386,18 +381,16 @@ module Socket = struct
       | hd :: [] ->
         send socket hd
       | hd :: tl ->
-        send ~opt:S_more socket hd;
+        send ~more:true socket hd;
         send_all_inner_loop socket tl
     in
-    fun ?(block = true) socket message ->
+    fun ?block socket message ->
       match message with
       | [] -> ()
       | hd :: [] ->
-        let opt = if block then S_none else S_no_block in
-        send ~opt socket hd
+        send ?block ~more:false socket hd
       | hd :: tl ->
-        let opt = if block then S_more else S_more_no_block in
-        send ~opt socket hd;
+        send ?block ~more:true socket hd;
         send_all_inner_loop socket tl
 end
 
@@ -465,9 +458,9 @@ module Monitor = struct
     Socket.connect s t;
     s
 
-  external native_recv : 'a Socket.t -> Socket.recv_option -> event = "caml_zmq_event_recv"
+  external native_recv : 'a Socket.t -> bool -> event = "caml_zmq_event_recv"
 
-  let recv ?(opt = Socket.R_none) socket = native_recv socket opt
+  let recv ?(block = true) socket = native_recv socket block
 
   let get_peer_address fd =
     try

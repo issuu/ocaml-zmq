@@ -80,7 +80,7 @@ let test_monitor () =
     in
     let assert_event event =
       let received =
-        (ZMQ.Monitor.string_of_event (ZMQ.Monitor.recv ~opt:ZMQ.Socket.R_no_block socket));
+        (ZMQ.Monitor.string_of_event (ZMQ.Monitor.recv ~block:false socket));
       in
       assert_equal ~msg:"Wrong event received" ~printer ~cmp
         (Printf.sprintf "%s: %s" event endpoint) received
@@ -208,7 +208,7 @@ let suite =
              assert_equal [| Some Out; None; None |] (poll ~timeout:1000 mask);
              send req "request";
              assert_equal [| None; Some In; None |] (poll ~timeout:1000 mask);
-             let msg = recv ~opt:R_no_block rep in
+             let msg = recv ~block:false rep in
              assert_equal "request" msg;
              send rep "reply";
              assert_equal [| Some In; None; None |] (poll ~timeout:1000 mask);
