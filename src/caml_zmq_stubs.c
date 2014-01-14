@@ -36,8 +36,6 @@
 
 #include "uint64.h"
 
-#define CAML_ZMQ_ARRAY_SIZE(a) (sizeof(a)/sizeof(a[0]))
-
 /**
  * Version
  */
@@ -360,8 +358,8 @@ CAMLprim value caml_zmq_send(value socket, value string, value block_flag, value
     CAMLparam4 (socket, string, block_flag, more_flag);
 
     int option = 0;
-    if (! Bool_val(block_flag)) option += ZMQ_NOBLOCK;
-    if (Bool_val(more_flag)) option += ZMQ_SNDMORE;
+    if (! Bool_val(block_flag)) option |= ZMQ_NOBLOCK;
+    if (Bool_val(more_flag)) option |= ZMQ_SNDMORE;
 
     void *sock = CAML_ZMQ_Socket_val(socket);
     zmq_msg_t msg;
@@ -392,7 +390,7 @@ CAMLprim value caml_zmq_recv(value socket, value block_flag) {
     CAMLlocal1 (message);
 
     int option = 0;
-    if (!Bool_val(block_flag)) option += ZMQ_NOBLOCK;
+    if (!Bool_val(block_flag)) option |= ZMQ_NOBLOCK;
 
     void *sock = CAML_ZMQ_Socket_val(socket);
 
@@ -485,7 +483,7 @@ CAMLprim value caml_zmq_event_recv(value socket, value block) {
 
     void *sock = CAML_ZMQ_Socket_val(socket);
     int option = 0;
-    if (!Bool_val(block)) option += ZMQ_NOBLOCK;
+    if (!Bool_val(block)) option |= ZMQ_NOBLOCK;
 
     zmq_msg_t msg;
     zmq_msg_init (&msg);
