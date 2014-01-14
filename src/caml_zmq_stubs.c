@@ -36,8 +36,6 @@
 
 #include "uint64.h"
 
-#define CAML_ZMQ_ARRAY_SIZE(a) (sizeof(a)/sizeof(a[0]))
-
 /**
  * Version
  */
@@ -356,27 +354,12 @@ CAMLprim value caml_zmq_disconnect(value socket, value string_address) {
 /**
  * Send
  */
+CAMLprim value caml_zmq_send(value socket, value string, value block_flag, value more_flag) {
+    CAMLparam4 (socket, string, block_flag, more_flag);
 
-/* Order must match Socket.snd_option declaration */
-static int const native_snd_option_for_caml_snd_option[] = {
-    0,
-    ZMQ_NOBLOCK,
-    ZMQ_SNDMORE,
-    ZMQ_NOBLOCK | ZMQ_SNDMORE
-};
-
-static bool is_caml_snd_option_valid(int caml_snd_option) {
-    return caml_snd_option > -1
-           && caml_snd_option
-              < (int) CAML_ZMQ_ARRAY_SIZE(native_snd_option_for_caml_snd_option);
-}
-
-CAMLprim value caml_zmq_send(value socket, value string, value snd_options) {
-    CAMLparam3 (socket, string, snd_options);
-
-    int caml_snd_option = Int_val(snd_options);
-    if (!is_caml_snd_option_valid(caml_snd_option))
-        caml_failwith("Invalid send option.");
+    int option = 0;
+    if (! Bool_val(block_flag)) option |= ZMQ_NOBLOCK;
+    if (Bool_val(more_flag)) option |= ZMQ_SNDMORE;
 
     void *sock = CAML_ZMQ_Socket_val(socket);
     zmq_msg_t msg;
@@ -386,7 +369,6 @@ CAMLprim value caml_zmq_send(value socket, value string, value snd_options) {
 
     /* Doesn't copy '\0' */
     memcpy ((void *) zmq_msg_data (&msg), String_val(string), length);
-    int option = native_snd_option_for_caml_snd_option[caml_snd_option];
 
     caml_release_runtime_system();
     result = zmq_msg_send(&msg, sock, option);
@@ -403,28 +385,14 @@ CAMLprim value caml_zmq_send(value socket, value string, value snd_options) {
  * Receive
  */
 
-/* Order must match Socket.recv_option declaration */
-static int const native_rcv_option_for_caml_rcv_option[] = {
-    0,
-    ZMQ_NOBLOCK
-};
-
-static bool is_caml_rcv_option_valid(int caml_rcv_option) {
-    return caml_rcv_option > -1
-           && caml_rcv_option
-              < (int) CAML_ZMQ_ARRAY_SIZE(native_rcv_option_for_caml_rcv_option);
-}
-
-CAMLprim value caml_zmq_recv(value socket, value rcv_options) {
-    CAMLparam2 (socket, rcv_options);
+CAMLprim value caml_zmq_recv(value socket, value block_flag) {
+    CAMLparam2 (socket, block_flag);
     CAMLlocal1 (message);
 
-    int caml_rcv_option = Int_val(rcv_options);
-    if (!is_caml_rcv_option_valid(caml_rcv_option))
-        caml_failwith("Invalid receive option.");
+    int option = 0;
+    if (!Bool_val(block_flag)) option |= ZMQ_NOBLOCK;
 
     void *sock = CAML_ZMQ_Socket_val(socket);
-    int option = native_rcv_option_for_caml_rcv_option[caml_rcv_option];
 
     zmq_msg_t msg;
     int result = zmq_msg_init (&msg);
@@ -509,16 +477,13 @@ enum event_type {
     we need to decode (and retrieve the address) before releasing the
     message ressources.
 */
-CAMLprim value caml_zmq_event_recv(value socket, value rcv_options) {
-    CAMLparam2 (socket, rcv_options);
+CAMLprim value caml_zmq_event_recv(value socket, value block) {
+    CAMLparam2 (socket, block);
     CAMLlocal1 (result);
 
-    int caml_rcv_option = Int_val(rcv_options);
-    if (!is_caml_rcv_option_valid(caml_rcv_option))
-        caml_failwith("Invalid receive option.");
-
     void *sock = CAML_ZMQ_Socket_val(socket);
-    int option = native_rcv_option_for_caml_rcv_option[caml_rcv_option];
+    int option = 0;
+    if (!Bool_val(block)) option |= ZMQ_NOBLOCK;
 
     zmq_msg_t msg;
     zmq_msg_init (&msg);

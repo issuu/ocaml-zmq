@@ -55,13 +55,26 @@ module Socket : sig
   val bind : 'a t -> string -> unit
   val disconnect : 'a t -> string -> unit
 
-  (** Send and Receive *)
-  type recv_option = R_none | R_no_block
-  val recv : ?opt:recv_option -> 'a t -> string
+  (** Read a message from the socket.
+      block indicates if the call should be blocking or non-blocking. Default true
+  *)
+  val recv : ?block:bool -> 'a t -> string
+
+  (** Read a complete multipart message from the socket.
+      block indicates if the call should be blocking or non-blocking. Default true
+  *)
   val recv_all : ?block:bool -> 'a t -> string list
 
-  type snd_option = S_none | S_no_block | S_more | S_more_no_block
-  val send : ?opt:snd_option -> 'a t -> string -> unit
+
+  (** Send a message to the socket.
+      block indicates if the call should be blocking or non-blocking. Default true
+      more is used for multipart messages, and indicates that the more message parts will follow. Default false
+  *)
+  val send : ?block:bool -> ?more:bool -> 'a t -> string -> unit
+
+  (** Send a multipart message to the socket.
+      block indicates if the call should be blocking or non-blocking. Default true
+  *)
   val send_all : ?block:bool -> 'a t -> string list -> unit
 
   (** Option Getter and Setters *)
@@ -162,7 +175,11 @@ module Monitor : sig
 
   val create: 'a Socket.t -> t
   val connect: context -> t -> [>`Monitor] Socket.t
-  val recv: ?opt:Socket.recv_option -> [> `Monitor ] Socket.t -> event
+
+  (** Receive an event from the monitor socket.
+      block indicates if the call should be blocking or non-blocking. Default true
+  *)
+  val recv: ?block:bool -> [> `Monitor ] Socket.t -> event
 
   val string_of_event: event -> string
 
