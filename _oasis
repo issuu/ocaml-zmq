@@ -22,7 +22,7 @@ Library ZMQB
                   poll.c,
                   uint64.h,
                   uint64.c
-  BuildDepends:   uint.uint64
+  BuildDepends:   unix, uint.uint64
   CCLib:          -lzmq
   CCOpt:          -Wall -W -Wextra -O2
   CompiledObject: best
