@@ -163,7 +163,7 @@ module Monitor : sig
 
   type event =
   | Connected of address * Unix.file_descr
-  | Connect_delayed of address * error_no * error_text
+  | Connect_delayed of address
   | Connect_retried of address * int (*interval*)
   | Listening of address * Unix.file_descr
   | Bind_failed of address * error_no * error_text
