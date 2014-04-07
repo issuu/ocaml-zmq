@@ -430,7 +430,7 @@ module Monitor = struct
 
   type event =
   | Connected of address * Unix.file_descr
-  | Connect_delayed of address * error_no * error_text
+  | Connect_delayed of address
   | Connect_retried of address * int (*interval*)
   | Listening of address * Unix.file_descr
   | Bind_failed of address * error_no * error_text
@@ -458,9 +458,13 @@ module Monitor = struct
     Socket.connect s t;
     s
 
-  external native_recv : 'a Socket.t -> bool -> event = "caml_zmq_event_recv"
+  external decode_monitor_event : string -> string -> event = "caml_decode_monitor_event"
 
-  let recv ?(block = true) socket = native_recv socket block
+  let recv ?block socket =
+    let event = Socket.recv ?block socket in
+    assert (Socket.has_more socket);
+    let addr = Socket.recv ~block:false socket in
+    decode_monitor_event event addr
 
   let get_peer_address fd =
     try
@@ -478,7 +482,7 @@ module Monitor = struct
 
   let internal_string_of_event push_address pop_address = function
     | Connected (addr, fd) -> Printf.sprintf "Connect: %s. peer %s" addr (push_address fd)
-    | Connect_delayed (addr, error_no, error_text) -> Printf.sprintf "Connect delayed: %s. %d:%s" addr error_no error_text
+    | Connect_delayed addr -> Printf.sprintf "Connect delayed: %s" addr
     | Connect_retried (addr, interval) -> Printf.sprintf "Connect retried: %s - %d" addr interval
     | Listening (addr, fd) -> Printf.sprintf "Listening: %s - peer %s" addr (push_address fd)
     | Bind_failed (addr, error_no, error_text) -> Printf.sprintf "Bind failed: %s. %d:%s" addr error_no error_text
