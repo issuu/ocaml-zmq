@@ -6,6 +6,9 @@
 	Sends results to sink via that socket
 *)
 
+let ms_sleep msec = 
+	ignore (Unix.select [] [] [] (msec /. 1000.0))
+
 let () =
 	let module Socket = ZMQ.Socket in
 	let context = ZMQ.init () in 
@@ -26,7 +29,7 @@ let () =
 		Printf.printf "%s." str;
 
 		(* Do the work *)
-		Unix.sleep (int_of_string str);
+		ms_sleep (float_of_string str);
 
 		(* Send results to sink *)
 		Socket.send sender ""

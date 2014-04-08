@@ -11,14 +11,6 @@ let random_list bound size =
         if i == size then lst else loop (i+1) ((next_int ()) :: lst) in
     loop 0 []
 
-(* build a list of partial sum totals of the values in another list *)
-let accum_list lst = 
-    let update_accum ls x = match ls with [] -> [x] | y :: _ -> (x+y) :: ls in
-    let revres = List.fold_left update_accum [] lst in
-    match revres with
-    | [] -> (0, [])
-    | total :: _ -> (total, List.rev revres)
-
 let () = 
     let module Socket = ZMQ.Socket in
     let context = ZMQ.init () in
@@ -43,8 +35,8 @@ let () =
 
     (* Send 100 tasks with random workload from 1 to 100 msec *)
     let workloads = random_list 100 100 in 
-    let total, partials = accum_list workloads in
-    List.iter (fun w -> let str = Printf.sprintf "%d" w in Socket.send sender str) partials;
+    let total = List.fold_left (+) 0 workloads in
+    List.iter (fun w -> let str = Printf.sprintf "%d" w in Socket.send sender str) workloads;
 
     Printf.printf "Total expected cost: %d msec\n" total;
     Unix.sleep 1;              (* Give 0MQ time to deliver *)

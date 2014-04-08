@@ -16,14 +16,14 @@ let () =
 	Socket.bind receiver "tcp://*:5558";
 
 	(* Wait for start of batch *)
-	let str = Socket.recv receiver
+	let _ = Socket.recv receiver in
 
 	(* Start our clock now *)
-	let start_time = Unix.gettimeofday ();
+	let start_time = Unix.gettimeofday () in
 
 	(* Process 100 confirmations *)
 	for task_nbr = 0 to 99 do 
-		let str = Socket.recv receiver in
+		let _ = Socket.recv receiver in
 		if task_nbr mod 10 == 0 then 
 			Printf.printf ":"
 		else 
@@ -32,7 +32,8 @@ let () =
 	done;
 
 	(* Calculate and report duration of batch *)
-	Printf.printf "Total elapsed time: %d msec \n" time_diff start_time (Unix.gettimeofday ());
+	let elapsed = time_diff_ms start_time (Unix.gettimeofday ()) in
+	Printf.printf "Total elapsed time: %d msec \n" elapsed;
 
 	Socket.close receiver;
 	ZMQ.term context
