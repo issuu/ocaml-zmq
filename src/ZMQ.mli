@@ -122,8 +122,8 @@ module Socket : sig
   val get_receive_timeout : 'a t -> int
   val set_send_timeout : 'a t -> int -> unit
   val get_send_timeout : 'a t -> int
-  val set_ipv4_only : 'a t -> bool -> unit
-  val get_ipv4_only : 'a t -> bool
+  val set_ipv6 : 'a t -> bool -> unit
+  val get_ipv6 : 'a t -> bool
   val set_router_mandatory : 'a t -> bool -> unit
   val get_router_mandatory : 'a t -> bool
   val set_tcp_keepalive : 'a t -> [ `Default | `Value of bool ] -> unit
@@ -134,8 +134,8 @@ module Socket : sig
   val get_tcp_keepalive_count : 'a t -> [ `Default | `Value of int ]
   val set_tcp_keepalive_interval : 'a t -> [ `Default | `Value of int ] -> unit
   val get_tcp_keepalive_interval : 'a t -> [ `Default | `Value of int ]
-  val set_delay_attach_on_connect : 'a t -> bool -> unit
-  val get_delay_attach_on_connect : 'a t -> bool
+  val set_immediate : 'a t -> bool -> unit
+  val get_immediate : 'a t -> bool
   val set_xpub_verbose : [> `XPub] t -> bool -> unit
 
   val get_fd : 'a t -> Unix.file_descr

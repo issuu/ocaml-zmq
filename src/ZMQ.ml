@@ -151,13 +151,13 @@ module Socket = struct
   | ZMQ_MULTICAST_HOPS
   | ZMQ_RCVTIMEO
   | ZMQ_SNDTIMEO
-  | ZMQ_IPV4ONLY
+  | ZMQ_IPV6
   | ZMQ_ROUTER_MANDATORY
   | ZMQ_TCP_KEEPALIVE
   | ZMQ_TCP_KEEPALIVE_CNT
   | ZMQ_TCP_KEEPALIVE_IDLE
   | ZMQ_TCP_KEEPALIVE_INTVL
-  | ZMQ_DELAY_ATTACH_ON_CONNECT
+  | ZMQ_IMMEDIATE
   | ZMQ_XPUB_VERBOSE
 
   external set_int_option :
@@ -285,12 +285,12 @@ module Socket = struct
   let get_send_timeout socket =
     get_int_option socket ZMQ_SNDTIMEO
 
-  let set_ipv4_only socket flag =
+  let set_ipv6 socket flag =
     let value = match flag with true -> 1 | false -> 0 in
-    set_int_option socket ZMQ_IPV4ONLY value
+    set_int_option socket ZMQ_IPV6 value
 
-  let get_ipv4_only socket =
-    match get_int_option socket ZMQ_IPV4ONLY with
+  let get_ipv6 socket =
+    match get_int_option socket ZMQ_IPV6 with
     | 0 -> false
     | _ -> true
 
@@ -360,15 +360,15 @@ module Socket = struct
     | n when n <= 0 -> raise Illegal_argument
     | n -> `Value n
 
-  let set_delay_attach_on_connect socket flag =
+  let set_immediate socket flag =
     let value = match flag with
       | true -> 1
       | false -> 0
     in
-    set_int_option socket ZMQ_DELAY_ATTACH_ON_CONNECT value
+    set_int_option socket ZMQ_IMMEDIATE value
 
-  let get_delay_attach_on_connect socket =
-    match get_int_option socket ZMQ_DELAY_ATTACH_ON_CONNECT with
+  let get_immediate socket =
+    match get_int_option socket ZMQ_IMMEDIATE with
     | 0 -> false
     | _ -> true
 

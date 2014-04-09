@@ -43,7 +43,7 @@ let test_ctx_options () =
 
   test_set_get_int "IO threads" set_io_threads get_io_threads ctx 1;
   test_set_get_int "Max sockets" set_max_sockets get_max_sockets ctx 1024;
-  test_set_get_bool "IPv6" set_ipv6 get_ipv6 ctx false;
+  test_set_get_bool "IPv6" Context.set_ipv6 Context.get_ipv6 ctx false;
   ()
 
 let test_options () =
