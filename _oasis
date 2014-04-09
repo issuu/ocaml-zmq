@@ -30,12 +30,96 @@ Library ZMQB
 Flag runtests
   Description: Build and run tests
 
+Flag examples
+  Description: Build examples
+  Default:     false
+
 Executable test
   Path:             test
   MainIs:           test.ml
   Install:          false
   Build$:           flag(runtests)
   BuildDepends:     oUnit (>= 1.1.0), ZMQ
+  CompiledObject:   best
+  ByteOpt:          -thread
+  NativeOpt:        -thread
+
+Executable hwserver
+  Path:             examples
+  MainIs:           hwserver.ml
+  Install:          false
+  Build$:           flag(examples)
+  BuildDepends:     ZMQ
+  CompiledObject:   best
+  ByteOpt:          -thread
+  NativeOpt:        -thread
+
+Executable hwclient
+  Path:             examples
+  MainIs:           hwclient.ml
+  Install:          false
+  Build$:           flag(examples)
+  BuildDepends:     ZMQ
+  CompiledObject:   best
+  ByteOpt:          -thread
+  NativeOpt:        -thread
+
+Executable wuserver
+  Path:             examples
+  MainIs:           wuserver.ml
+  Install:          false
+  Build$:           flag(examples)
+  BuildDepends:     ZMQ
+  CompiledObject:   best
+  ByteOpt:          -thread
+  NativeOpt:        -thread
+
+Executable wuclient
+  Path:             examples
+  MainIs:           wuclient.ml
+  Install:          false
+  Build$:           flag(examples)
+  BuildDepends:     ZMQ, str
+  CompiledObject:   best
+  ByteOpt:          -thread
+  NativeOpt:        -thread
+
+Executable wuproxy
+  Path:             examples
+  MainIs:           wuproxy.ml
+  Install:          false
+  Build$:           flag(examples)
+  BuildDepends:     ZMQ
+  CompiledObject:   best
+  ByteOpt:          -thread
+  NativeOpt:        -thread
+
+Executable taskvent
+  Path:             examples
+  MainIs:           taskvent.ml
+  Install:          false
+  Build$:           flag(examples)
+  BuildDepends:     ZMQ
+  CompiledObject:   best
+  ByteOpt:          -thread
+  NativeOpt:        -thread
+
+Executable taskwork
+  Path:             examples
+  MainIs:           taskwork.ml
+  Install:          false
+  Build$:           flag(examples)
+  BuildDepends:     ZMQ
+  CompiledObject:   best
+  ByteOpt:          -thread
+  NativeOpt:        -thread
+
+Executable tasksink
+  Path:             examples
+  MainIs:           tasksink.ml
+  Install:          false
+  Build$:           flag(examples)
+  BuildDepends:     ZMQ
   CompiledObject:   best
   ByteOpt:          -thread
   NativeOpt:        -thread
