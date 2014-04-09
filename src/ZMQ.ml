@@ -23,7 +23,8 @@ exception ZMQ_exception of error * string
 exception Illegal_argument
 
 let _ =
-  Callback.register_exception "zmq exception" (ZMQ_exception(EUNKNOWN,"Unkown error"))
+  Callback.register_exception "zmq exception" (ZMQ_exception(EUNKNOWN,"Unkown error"));
+  Callback.register_exception "zmq illegal argument" Illegal_argument
 
 external version : unit -> int * int * int = "caml_zmq_version"
 
@@ -622,4 +623,9 @@ module Monitor = struct
     in
     internal_string_of_event push_address pop_address
 
+end
+
+module Z85 = struct
+  external encode : string -> string = "caml_z85_encode"
+  external decode : string -> string = "caml_z85_decode"
 end

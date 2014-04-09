@@ -60,3 +60,7 @@ void caml_zmq_raise_if(int condition) {
         caml_zmq_raise(err_no, err_str);
     }
 }
+
+void caml_zmq_raise_illegal_arg() {
+    caml_raise_constant(*caml_named_value("zmq illegal argument"));
+}

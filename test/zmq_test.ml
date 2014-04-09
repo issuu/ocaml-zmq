@@ -163,6 +163,19 @@ let test_proxy () =
   ZMQ.Context.term ctx;
   ()
 
+let test_z85 () =
+  let binary = "\xBB\x88\x47\x1D\x65\xE2\x65\x9B" ^
+               "\x30\xC5\x5A\x53\x21\xCE\xBB\x5A" ^
+               "\xAB\x2B\x70\xA3\x98\x64\x5C\x26" ^
+               "\xDC\xA2\xB2\xFC\xB4\x3F\xC5\x18" in
+  let ascii  = "Yne@$w-vo<fVvi]a<NY6T1ed:M$fCG*[IaLV{hID" in
+  assert_equal ~printer:(Printf.sprintf "%S") binary (ZMQ.Z85.decode ascii);
+  assert_equal ~printer:(Printf.sprintf "%S") ascii  (ZMQ.Z85.encode binary);
+
+  assert_raises ZMQ.Illegal_argument (fun () -> ZMQ.Z85.encode "123");
+  assert_raises ZMQ.Illegal_argument (fun () -> ZMQ.Z85.decode "123");
+  ()
+
 let suite =
   "zmq test" >:::
     [
@@ -251,5 +264,6 @@ let suite =
       "get/set context options" >:: test_ctx_options;
       "get/set socket options" >:: test_options;
       "proxy" >:: test_proxy;
-      "monitor" >:: test_monitor
+      "monitor" >:: test_monitor;
+      "z85 encoding/decoding" >:: test_z85;
     ]

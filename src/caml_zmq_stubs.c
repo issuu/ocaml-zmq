@@ -29,6 +29,7 @@
 
 
 #include <zmq.h>
+#include <zmq_utils.h>
 
 #include "fail.h"
 #include "context.h"
@@ -597,5 +598,42 @@ CAMLprim value caml_decode_monitor_event(value event_val, value addr) {
         caml_zmq_raise(EFAULT, "Undefined event type");
         break;
     }
+    CAMLreturn(result);
+}
+
+/**
+ * Z85
+ */
+
+CAMLprim value caml_z85_encode(value source) {
+    CAMLparam1 (source);
+    CAMLlocal1 (result);
+
+    /*
+     * zmq_z85_encode writes a null terminator. However, OCaml does not
+     * need a null terminator. The code below does not allocate space for
+     * a null terminator, but zmq_z85_encode will not encounter an overrun,
+     * as OCaml string representation guarantees that one byte past the
+     * end of string is allocated and contains '\0'.
+     *
+     * See http://caml.inria.fr/pub/docs/oreilly-book/html/book-ora115.html#@concepts266
+     * for details.
+     */
+    int length = caml_string_length(source);
+    result = caml_alloc_string(length / 4 * 5);
+    if (zmq_z85_encode(String_val(result), (uint8_t*) String_val(source), length) == NULL)
+        caml_zmq_raise_illegal_arg();
+
+    CAMLreturn(result);
+}
+
+CAMLprim value caml_z85_decode(value source) {
+    CAMLparam1 (source);
+    CAMLlocal1 (result);
+
+    result = caml_alloc_string(caml_string_length(source) * 4 / 5);
+    if (zmq_z85_decode((uint8_t*) String_val(result), String_val(source)) == NULL)
+        caml_zmq_raise_illegal_arg();
+
     CAMLreturn(result);
 }
