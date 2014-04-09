@@ -34,7 +34,7 @@
 #include "context.h"
 #include "socket.h"
 
-#include "uint64.h"
+#include <uint64.h>
 
 /**
  * Version
@@ -134,7 +134,7 @@ static int const native_uint64_option_for[] = {
 CAMLprim value caml_zmq_set_uint64_option(value socket, value option_name, value socket_option) {
     CAMLparam3 (socket, option_name, socket_option);
 
-    uint64 val = CAML_UINT_Uint64_val(socket_option);
+    uint64 val = Uint64_val(socket_option);
     int result = zmq_setsockopt(CAML_ZMQ_Socket_val(socket),
                                 native_uint64_option_for[Int_val(option_name)],
                                 &val,
@@ -241,7 +241,7 @@ CAMLprim value caml_zmq_get_uint64_option(value socket, value option_name) {
                                  &mark,
                                  &mark_size);
     caml_zmq_raise_if (result == -1);
-    CAMLreturn (caml_uint_copy_uint64(mark));
+    CAMLreturn (copy_uint64(mark));
 }
 
 CAMLprim value caml_zmq_get_int64_option(value socket, value option_name) {
