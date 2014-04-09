@@ -59,11 +59,13 @@ CAMLprim value caml_zmq_version(value unit) {
  * Init
  */
 
-CAMLprim value caml_zmq_init(value num_threads) {
+CAMLprim value caml_zmq_new(value num_threads) {
     CAMLparam1 (num_threads);
     CAMLlocal1 (ctx_value);
-    void *ctx = zmq_init(Int_val(num_threads));
+
+    void *ctx = zmq_ctx_new();
     caml_zmq_raise_if(ctx == NULL);
+
     ctx_value = caml_zmq_copy_context(ctx);
     CAMLreturn (ctx_value);
 }
@@ -74,9 +76,47 @@ CAMLprim value caml_zmq_init(value num_threads) {
 
 CAMLprim value caml_zmq_term(value ctx) {
     CAMLparam1 (ctx);
-    int result = zmq_term(CAML_ZMQ_Context_val(ctx));
+
+    int result = zmq_ctx_term(CAML_ZMQ_Context_val(ctx));
     caml_zmq_raise_if(result == -1);
+
+    CAML_ZMQ_Context_val(ctx) = NULL;
     CAMLreturn (Val_unit);
+}
+
+/**
+ * Set context option
+ */
+
+static int const native_ctx_int_option_for[] = {
+    ZMQ_IO_THREADS,
+    ZMQ_MAX_SOCKETS,
+    ZMQ_IPV6
+};
+
+CAMLprim value caml_zmq_ctx_set_int_option(value socket, value option_name, value option_value) {
+    CAMLparam3 (socket, option_name, option_value);
+
+    int result = zmq_ctx_set(CAML_ZMQ_Context_val(socket),
+                             native_ctx_int_option_for[Int_val(option_name)],
+                             Int_val(option_value));
+    caml_zmq_raise_if (result == -1);
+
+    CAMLreturn (Val_unit);
+}
+
+/**
+ * Get context option
+ */
+
+CAMLprim value caml_zmq_ctx_get_int_option(value socket, value option_name) {
+    CAMLparam2 (socket, option_name);
+
+    int result = zmq_ctx_get(CAML_ZMQ_Context_val(socket),
+                             native_ctx_int_option_for[Int_val(option_name)]);
+    caml_zmq_raise_if (result == -1);
+
+    CAMLreturn (Val_int(result));
 }
 
 /**
@@ -102,9 +142,6 @@ CAMLprim value caml_zmq_socket(value ctx, value socket_kind) {
     CAMLparam2 (ctx, socket_kind);
     CAMLlocal1 (sock_value);
     void *socket;
-
-    if (Int_val(socket_kind) < 0 || Int_val(socket_kind) > 8)
-        caml_failwith("Invalid variant range");
 
     socket = zmq_socket(CAML_ZMQ_Context_val(ctx), socket_type_for_kind[Int_val(socket_kind)]);
     caml_zmq_raise_if(socket == NULL);
@@ -151,6 +188,7 @@ static int const native_int64_option_for[] = {
 
 CAMLprim value caml_zmq_set_int64_option(value socket, value option_name, value socket_option) {
     CAMLparam3 (socket, option_name, socket_option);
+
     int64 val = Int64_val(Field(socket_option, 1));
     int result = zmq_setsockopt(CAML_ZMQ_Socket_val(socket),
                                 native_int64_option_for[Int_val(option_name)],
@@ -169,7 +207,6 @@ static int const native_bytes_option_for[] = {
     ZMQ_LAST_ENDPOINT,
     ZMQ_TCP_ACCEPT_FILTER
 };
-
 
 int caml_zmq_set_bytes_option(value socket, value option_name, value socket_option) {
     CAMLparam3 (socket, option_name, socket_option);
@@ -226,7 +263,6 @@ CAMLprim value caml_zmq_set_int_option(value socket, value option_name, value so
 
     CAMLreturn (Val_unit);
 }
-
 
 /**
  * Get socket options

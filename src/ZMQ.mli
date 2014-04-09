@@ -20,14 +20,21 @@ type error =
 
 exception ZMQ_exception of error * string
 
-(** Context *)
-type context
-
-(** Creation and Destruction *)
-val init : ?io_threads:int -> unit -> context
-val term : context -> unit
-
 val version : unit -> int * int * int
+
+module Context : sig
+  type t
+
+  val create : unit -> t
+  val term : t -> unit
+
+  val get_io_threads : t -> int
+  val set_io_threads : t -> int -> unit
+  val get_max_sockets : t -> int
+  val set_max_sockets : t -> int -> unit
+  val get_ipv6 : t -> bool
+  val set_ipv6 : t -> bool -> unit
+end
 
 module Socket : sig
 
@@ -47,7 +54,7 @@ module Socket : sig
   val xpub   : [>`Xpub] kind
 
   (** Creation and Destruction *)
-  val create : context -> 'a kind -> 'a t
+  val create : Context.t -> 'a kind -> 'a t
   val close : 'a t -> unit
 
   (** Wiring *)
@@ -174,7 +181,7 @@ module Monitor : sig
   | Disconnected of address * Unix.file_descr
 
   val create: 'a Socket.t -> t
-  val connect: context -> t -> [>`Monitor] Socket.t
+  val connect: Context.t -> t -> [>`Monitor] Socket.t
 
   (** Receive an event from the monitor socket.
       block indicates if the call should be blocking or non-blocking. Default true

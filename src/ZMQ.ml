@@ -25,18 +25,43 @@ exception Illegal_argument
 let _ =
   Callback.register_exception "zmq exception" (ZMQ_exception(EUNKNOWN,"Unkown error"))
 
-
-(** Context *)
-type context
-
-(** Creation and Destruction *)
-
-external native_init : int -> context = "caml_zmq_init"
-let init ?(io_threads = 1) () = native_init io_threads
-
-external term : context -> unit = "caml_zmq_term"
-
 external version : unit -> int * int * int = "caml_zmq_version"
+
+module Context = struct
+  type t
+
+  external create : unit -> t = "caml_zmq_new"
+  external term : t -> unit = "caml_zmq_term"
+
+  type int_option =
+  | ZMQ_IO_THREADS
+  | ZMQ_MAX_SOCKETS
+  | ZMQ_IPV6
+
+  external set_int_option :
+    t -> int_option -> int -> unit = "caml_zmq_ctx_set_int_option"
+  external get_int_option :
+    t -> int_option -> int = "caml_zmq_ctx_get_int_option"
+
+  let get_io_threads ctx =
+    get_int_option ctx ZMQ_IO_THREADS
+
+  let set_io_threads ctx =
+    set_int_option ctx ZMQ_IO_THREADS
+
+  let get_max_sockets ctx =
+    get_int_option ctx ZMQ_MAX_SOCKETS
+
+  let set_max_sockets ctx =
+    set_int_option ctx ZMQ_MAX_SOCKETS
+
+  let get_ipv6 ctx =
+    (get_int_option ctx ZMQ_IPV6) == 1
+
+  let set_ipv6 ctx has_ipv6 =
+    set_int_option ctx ZMQ_IPV6 (if has_ipv6 then 1 else 0)
+
+end
 
 module Socket = struct
 
@@ -60,7 +85,7 @@ module Socket = struct
   let xsub   = 10
 
   (** Creation and Destruction *)
-  external create : context -> 'a kind -> 'a t = "caml_zmq_socket"
+  external create : Context.t -> 'a kind -> 'a t = "caml_zmq_socket"
   external close : 'a t -> unit = "caml_zmq_close"
 
   (** Wiring *)

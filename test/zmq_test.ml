@@ -1,6 +1,7 @@
 open OUnit
 
 open ZMQ
+open ZMQ.Context
 open ZMQ.Socket
 open ZMQ.Poll
 
@@ -19,9 +20,35 @@ let dump_events l =
   let l = Array.to_list (Array.map f l) in
   "[|" ^ (String.concat "; " l) ^ "|]"
 
+let test_ctx_options () =
+  let ctx = Context.create () in
+
+  let test_set_get_int msg setter getter ctx v =
+    let default = getter ctx in
+    setter ctx v;
+    assert_equal ~msg ~printer:string_of_int v (getter ctx);
+    setter ctx default;
+    assert_equal ~msg default (getter ctx);
+    ()
+  in
+
+  let test_set_get_bool msg setter getter ctx v =
+    let default = getter ctx in
+    setter ctx v;
+    assert_equal ~msg ~printer:string_of_bool v (getter ctx);
+    setter ctx default;
+    assert_equal ~msg default (getter ctx);
+    ()
+  in
+
+  test_set_get_int "IO threads" set_io_threads get_io_threads ctx 1;
+  test_set_get_int "Max sockets" set_max_sockets get_max_sockets ctx 1024;
+  test_set_get_bool "IPv6" set_ipv6 get_ipv6 ctx false;
+  ()
+
 let test_options () =
   let socket =
-    let ctx = init () in
+    let ctx = Context.create () in
     let s = create ctx push in
     s
   in
@@ -52,7 +79,7 @@ let test_options () =
   ()
 
 let test_monitor () =
-  let ctx = init () in
+  let ctx = Context.create () in
   let endpoint = "tcp://127.0.0.1:51234" in
   let s1 = ZMQ.Socket.create ctx ZMQ.Socket.pair
   and s2 = ZMQ.Socket.create ctx ZMQ.Socket.pair in
@@ -92,7 +119,7 @@ let test_monitor () =
   ()
 
 let test_proxy () =
-  let ctx = ZMQ.init () in
+  let ctx = ZMQ.Context.create () in
   let pull_endpoint = "inproc://pull"
   and pub_endpoint = "inproc://pub"
   and pull = ZMQ.Socket.create ctx pull
@@ -133,7 +160,7 @@ let test_proxy () =
   ZMQ.Socket.close push;
   ZMQ.Socket.close pull;
   ZMQ.Socket.close pub;
-  ZMQ.term ctx;
+  ZMQ.Context.term ctx;
   ()
 
 let suite =
@@ -142,7 +169,7 @@ let suite =
       "request reply" >::
         (bracket
            (fun () ->
-             let ctx = init () in
+             let ctx = ZMQ.Context.create () in
              let req = create ctx req
              and rep = create ctx rep in
              ctx, req, rep
@@ -161,13 +188,13 @@ let suite =
            (fun (ctx, req, rep) ->
              close req;
              close rep;
-             term ctx
+             ZMQ.Context.term ctx
            ));
 
       "request reply (multi-part)" >::
         (bracket
            (fun () ->
-             let ctx = init () in
+             let ctx = ZMQ.Context.create () in
              let req = create ctx req
              and rep = create ctx rep in
              ctx, req, rep
@@ -186,13 +213,13 @@ let suite =
            (fun (ctx, req, rep) ->
              close req;
              close rep;
-             term ctx
+             ZMQ.Context.term ctx
            ));
 
       "poll" >::
         (bracket
            (fun () ->
-             let ctx = init () in
+             let ctx = ZMQ.Context.create () in
              let req = create ctx req
              and rep = create ctx rep
              and sub = create ctx sub in
@@ -219,8 +246,9 @@ let suite =
              close req;
              close rep;
              close sub;
-             term ctx
+             ZMQ.Context.term ctx
            ));
+      "get/set context options" >:: test_ctx_options;
       "get/set socket options" >:: test_options;
       "proxy" >:: test_proxy;
       "monitor" >:: test_monitor
