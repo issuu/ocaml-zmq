@@ -19,7 +19,6 @@ type error =
   | EUNKNOWN
 
 exception ZMQ_exception of error * string
-exception Illegal_argument
 
 val version : unit -> int * int * int
 

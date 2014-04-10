@@ -20,11 +20,9 @@ type error =
   | EUNKNOWN
 
 exception ZMQ_exception of error * string
-exception Illegal_argument
 
 let _ =
-  Callback.register_exception "zmq exception" (ZMQ_exception(EUNKNOWN,"Unkown error"));
-  Callback.register_exception "zmq illegal argument" Illegal_argument
+  Callback.register_exception "zmq exception" (ZMQ_exception(EUNKNOWN,"Unkown error"))
 
 external version : unit -> int * int * int = "caml_zmq_version"
 
@@ -181,10 +179,10 @@ module Socket = struct
     'a t -> int_option -> int = "caml_zmq_get_int_option"
 
 
-  let validate_string_length min max str =
+  let validate_string_length min max str msg =
     match String.length str with
-    | n when n < min -> raise Illegal_argument
-    | n when n > max -> raise Illegal_argument
+    | n when n < min -> invalid_arg msg
+    | n when n > max -> invalid_arg msg
     | n -> ()
 
   let set_max_message_size socket size =
@@ -200,7 +198,7 @@ module Socket = struct
     Uint64.to_int (get_uint64_option socket ZMQ_AFFINITY)
 
   let set_identity socket identity =
-    validate_string_length 1 255 identity;
+    validate_string_length 1 255 identity "set_identity";
     set_bytes_option socket ZMQ_IDENTITY identity
 
   let get_identity socket =
@@ -334,7 +332,7 @@ module Socket = struct
   let set_tcp_keepalive_idle socket flag =
     let value = match flag with
       | `Default -> -1
-      | `Value n when n <= 0 -> raise Illegal_argument
+      | `Value n when n <= 0 -> invalid_arg "set_tcp_keepalive_idle"
       | `Value n -> n
     in
     set_int_option socket ZMQ_TCP_KEEPALIVE_IDLE value
@@ -342,13 +340,13 @@ module Socket = struct
   let get_tcp_keepalive_idle socket =
     match get_int_option socket ZMQ_TCP_KEEPALIVE_IDLE with
     | -1 -> `Default
-    | n when n <= 0 -> raise Illegal_argument
+    | n when n <= 0 -> assert false
     | n -> `Value n
 
   let set_tcp_keepalive_interval socket flag =
     let value = match flag with
       | `Default -> -1
-      | `Value n when n <= 0 -> raise Illegal_argument
+      | `Value n when n <= 0 -> invalid_arg "set_tcp_keepalive_interval"
       | `Value n -> n
     in
     set_int_option socket ZMQ_TCP_KEEPALIVE_INTVL value
@@ -356,14 +354,13 @@ module Socket = struct
   let get_tcp_keepalive_interval socket =
     match get_int_option socket ZMQ_TCP_KEEPALIVE_INTVL with
     | -1 -> `Default
-    | n when n <= 0 -> raise Illegal_argument
+    | n when n <= 0 -> assert false
     | n -> `Value n
-
 
   let set_tcp_keepalive_count socket flag =
     let value = match flag with
       | `Default -> -1
-      | `Value n when n <= 0 -> raise Illegal_argument
+      | `Value n when n <= 0 -> invalid_arg "set_tcp_keepalive_count"
       | `Value n -> n
     in
     set_int_option socket ZMQ_TCP_KEEPALIVE_CNT value
@@ -371,7 +368,7 @@ module Socket = struct
   let get_tcp_keepalive_count socket =
     match get_int_option socket ZMQ_TCP_KEEPALIVE_CNT with
     | -1 -> `Default
-    | n when n <= 0 -> raise Illegal_argument
+    | n when n <= 0 -> assert false
     | n -> `Value n
 
   let set_immediate socket flag =
@@ -420,30 +417,30 @@ module Socket = struct
   let get_plain_password socket =
     get_bytes_option socket ZMQ_PLAIN_PASSWORD
 
-  let validate_curve_key_length str =
+  let validate_curve_key_length str msg =
     match String.length str with
     | 32 | 40 -> ()
-    | _ -> raise Illegal_argument
+    | _ -> invalid_arg msg
 
   let get_curve_publickey socket =
     get_bytes_option socket ZMQ_CURVE_PUBLICKEY
 
   let set_curve_publickey socket str =
-    validate_curve_key_length str;
+    validate_curve_key_length str "set_curve_publickey";
     set_bytes_option socket ZMQ_CURVE_PUBLICKEY str
 
   let get_curve_secretkey socket =
     get_bytes_option socket ZMQ_CURVE_SECRETKEY
 
   let set_curve_secretkey socket str =
-    validate_curve_key_length str;
+    validate_curve_key_length str "set_curve_secretkey";
     set_bytes_option socket ZMQ_CURVE_SECRETKEY str
 
   let get_curve_serverkey socket =
     get_bytes_option socket ZMQ_CURVE_SERVERKEY
 
   let set_curve_serverkey socket str =
-    validate_curve_key_length str;
+    validate_curve_key_length str "set_curve_serverkey";
     set_bytes_option socket ZMQ_CURVE_SERVERKEY str
 
   let get_mechanism socket =

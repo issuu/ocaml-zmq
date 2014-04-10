@@ -27,7 +27,6 @@
 #  define Val_fd(x) Val_int(x)
 #endif
 
-
 #include <zmq.h>
 #include <zmq_utils.h>
 
@@ -622,7 +621,7 @@ CAMLprim value caml_z85_encode(value source) {
     int length = caml_string_length(source);
     result = caml_alloc_string(length / 4 * 5);
     if (zmq_z85_encode(String_val(result), (uint8_t*) String_val(source), length) == NULL)
-        caml_zmq_raise_illegal_arg();
+        caml_invalid_argument("zmq_z85_encode");
 
     CAMLreturn(result);
 }
@@ -633,7 +632,7 @@ CAMLprim value caml_z85_decode(value source) {
 
     result = caml_alloc_string(caml_string_length(source) * 4 / 5);
     if (zmq_z85_decode((uint8_t*) String_val(result), String_val(source)) == NULL)
-        caml_zmq_raise_illegal_arg();
+        caml_invalid_argument("zmq_z85_decode");
 
     CAMLreturn(result);
 }

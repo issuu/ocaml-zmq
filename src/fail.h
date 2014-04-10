@@ -7,6 +7,5 @@
 
 void caml_zmq_raise(int err_no, const char *err_str);
 void caml_zmq_raise_if(int condition);
-void caml_zmq_raise_illegal_arg();
 
 #endif  /* CAML_ZMQ_FAIL_H_ */

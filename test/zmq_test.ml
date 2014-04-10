@@ -172,8 +172,8 @@ let test_z85 () =
   assert_equal ~printer:(Printf.sprintf "%S") binary (ZMQ.Z85.decode ascii);
   assert_equal ~printer:(Printf.sprintf "%S") ascii  (ZMQ.Z85.encode binary);
 
-  assert_raises ZMQ.Illegal_argument (fun () -> ZMQ.Z85.encode "123");
-  assert_raises ZMQ.Illegal_argument (fun () -> ZMQ.Z85.decode "123");
+  assert_raises (Invalid_argument "zmq_z85_encode") (fun () -> ZMQ.Z85.encode "123");
+  assert_raises (Invalid_argument "zmq_z85_decode") (fun () -> ZMQ.Z85.decode "123");
   ()
 
 let suite =

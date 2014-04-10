@@ -66,7 +66,8 @@ value CAML_ZMQ_Val_mask(short mask) {
     if(mask & ZMQ_POLLOUT) {
         return Val_int(Out);
     }
-    caml_failwith("Invalid event mask detected. Should be impossible to reach.");
+
+    abort(); /* unreachable */
 }
 
 short CAML_ZMQ_Mask_val (value mask) {
@@ -75,12 +76,14 @@ short CAML_ZMQ_Mask_val (value mask) {
         case Out: return ZMQ_POLLOUT;
         case In_out: return ZMQ_POLLOUT | ZMQ_POLLIN;
     }
-    caml_failwith("Invalid event mask detected. Should be impossible to reach.");
+
+    abort(); /* unreachable */
 }
 
 CAMLprim value caml_zmq_poll(value poll, value timeout) {
     CAMLparam2 (poll, timeout);
     CAMLlocal2 (events, some);
+
     int n = CAML_ZMQ_Poll_val(poll)->num_elems;
     zmq_pollitem_t *items = CAML_ZMQ_Poll_val(poll)->poll_items;
     int tm = Int_val(timeout);

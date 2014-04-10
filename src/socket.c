@@ -22,7 +22,9 @@ static struct custom_operations caml_zmq_socket_ops = {
 value caml_zmq_copy_socket(void *zmq_socket) {
     CAMLparam0 ();
     CAMLlocal1 (socket);
+
     socket = caml_alloc_custom(&caml_zmq_socket_ops, sizeof (zmq_socket), 0, 1);
     CAML_ZMQ_Socket_val(socket) = zmq_socket;
+
     CAMLreturn (socket);
 }
