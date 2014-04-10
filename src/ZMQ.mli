@@ -226,3 +226,8 @@ module Z85 : sig
   val encode : string -> string
   val decode : string -> string
 end
+
+module Curve : sig
+  (** [keypair ()] returns a pair [public, secret] of Z85 encoded keys. *)
+  val keypair : unit -> string * string
+end

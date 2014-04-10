@@ -637,3 +637,23 @@ CAMLprim value caml_z85_decode(value source) {
 
     CAMLreturn(result);
 }
+
+/**
+ * Key generation
+ */
+
+CAMLprim value caml_curve_keypair(value unit) {
+    CAMLparam1 (unit);
+    CAMLlocal3 (public, secret, tuple);
+
+    /* See the notice in caml_z85_encode. */
+    public = caml_alloc_string(40);
+    secret = caml_alloc_string(40);
+    int result = zmq_curve_keypair(String_val(public), String_val(secret));
+    caml_zmq_raise_if(result == -1);
+
+    tuple = caml_alloc_tuple(2);
+    Store_field(tuple, 0, public);
+    Store_field(tuple, 1, secret);
+    CAMLreturn (tuple);
+}

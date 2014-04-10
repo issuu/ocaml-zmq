@@ -629,3 +629,7 @@ module Z85 = struct
   external encode : string -> string = "caml_z85_encode"
   external decode : string -> string = "caml_z85_decode"
 end
+
+module Curve = struct
+  external keypair : unit -> string * string = "caml_curve_keypair"
+end
