@@ -20,23 +20,47 @@ type error =
   | EUNKNOWN
 
 exception ZMQ_exception of error * string
-exception Illegal_argument
 
 let _ =
   Callback.register_exception "zmq exception" (ZMQ_exception(EUNKNOWN,"Unkown error"))
 
-
-(** Context *)
-type context
-
-(** Creation and Destruction *)
-
-external native_init : int -> context = "caml_zmq_init"
-let init ?(io_threads = 1) () = native_init io_threads
-
-external term : context -> unit = "caml_zmq_term"
-
 external version : unit -> int * int * int = "caml_zmq_version"
+
+module Context = struct
+  type t
+
+  external create : unit -> t = "caml_zmq_new"
+  external terminate : t -> unit = "caml_zmq_term"
+
+  type int_option =
+  | ZMQ_IO_THREADS
+  | ZMQ_MAX_SOCKETS
+  | ZMQ_IPV6
+
+  external set_int_option :
+    t -> int_option -> int -> unit = "caml_zmq_ctx_set_int_option"
+  external get_int_option :
+    t -> int_option -> int = "caml_zmq_ctx_get_int_option"
+
+  let get_io_threads ctx =
+    get_int_option ctx ZMQ_IO_THREADS
+
+  let set_io_threads ctx =
+    set_int_option ctx ZMQ_IO_THREADS
+
+  let get_max_sockets ctx =
+    get_int_option ctx ZMQ_MAX_SOCKETS
+
+  let set_max_sockets ctx =
+    set_int_option ctx ZMQ_MAX_SOCKETS
+
+  let get_ipv6 ctx =
+    (get_int_option ctx ZMQ_IPV6) == 1
+
+  let set_ipv6 ctx has_ipv6 =
+    set_int_option ctx ZMQ_IPV6 (if has_ipv6 then 1 else 0)
+
+end
 
 module Socket = struct
 
@@ -58,9 +82,10 @@ module Socket = struct
   let push   = 8
   let xpub   = 9
   let xsub   = 10
+  let stream = 11
 
   (** Creation and Destruction *)
-  external create : context -> 'a kind -> 'a t = "caml_zmq_socket"
+  external create : Context.t -> 'a kind -> 'a t = "caml_zmq_socket"
   external close : 'a t -> unit = "caml_zmq_close"
 
   (** Wiring *)
@@ -102,6 +127,12 @@ module Socket = struct
   | ZMQ_UNSUBSCRIBE
   | ZMQ_LAST_ENDPOINT
   | ZMQ_TCP_ACCEPT_FILTER
+  | ZMQ_PLAIN_USERNAME
+  | ZMQ_PLAIN_PASSWORD
+  | ZMQ_CURVE_PUBLICKEY
+  | ZMQ_CURVE_SECRETKEY
+  | ZMQ_CURVE_SERVERKEY
+  | ZMQ_ZAP_DOMAIN
 
   external set_bytes_option :
     'a t -> bytes_option -> string -> unit = "caml_zmq_set_bytes_option"
@@ -126,14 +157,21 @@ module Socket = struct
   | ZMQ_MULTICAST_HOPS
   | ZMQ_RCVTIMEO
   | ZMQ_SNDTIMEO
-  | ZMQ_IPV4ONLY
+  | ZMQ_IPV6
   | ZMQ_ROUTER_MANDATORY
   | ZMQ_TCP_KEEPALIVE
   | ZMQ_TCP_KEEPALIVE_CNT
   | ZMQ_TCP_KEEPALIVE_IDLE
   | ZMQ_TCP_KEEPALIVE_INTVL
-  | ZMQ_DELAY_ATTACH_ON_CONNECT
+  | ZMQ_IMMEDIATE
   | ZMQ_XPUB_VERBOSE
+  | ZMQ_MECHANISM
+  | ZMQ_PLAIN_SERVER
+  | ZMQ_CURVE_SERVER
+  | ZMQ_PROBE_ROUTER
+  | ZMQ_REQ_CORRELATE
+  | ZMQ_REQ_RELAXED
+  | ZMQ_CONFLATE
 
   external set_int_option :
     'a t -> int_option -> int -> unit = "caml_zmq_set_int_option"
@@ -142,10 +180,10 @@ module Socket = struct
     'a t -> int_option -> int = "caml_zmq_get_int_option"
 
 
-  let validate_string_length min max str =
+  let validate_string_length min max str msg =
     match String.length str with
-    | n when n < min -> raise Illegal_argument
-    | n when n > max -> raise Illegal_argument
+    | n when n < min -> invalid_arg msg
+    | n when n > max -> invalid_arg msg
     | n -> ()
 
   let set_max_message_size socket size =
@@ -161,7 +199,7 @@ module Socket = struct
     Uint64.to_int (get_uint64_option socket ZMQ_AFFINITY)
 
   let set_identity socket identity =
-    validate_string_length 1 255 identity;
+    validate_string_length 1 255 identity "set_identity";
     set_bytes_option socket ZMQ_IDENTITY identity
 
   let get_identity socket =
@@ -260,12 +298,12 @@ module Socket = struct
   let get_send_timeout socket =
     get_int_option socket ZMQ_SNDTIMEO
 
-  let set_ipv4_only socket flag =
+  let set_ipv6 socket flag =
     let value = match flag with true -> 1 | false -> 0 in
-    set_int_option socket ZMQ_IPV4ONLY value
+    set_int_option socket ZMQ_IPV6 value
 
-  let get_ipv4_only socket =
-    match get_int_option socket ZMQ_IPV4ONLY with
+  let get_ipv6 socket =
+    match get_int_option socket ZMQ_IPV6 with
     | 0 -> false
     | _ -> true
 
@@ -295,7 +333,7 @@ module Socket = struct
   let set_tcp_keepalive_idle socket flag =
     let value = match flag with
       | `Default -> -1
-      | `Value n when n <= 0 -> raise Illegal_argument
+      | `Value n when n <= 0 -> invalid_arg "set_tcp_keepalive_idle"
       | `Value n -> n
     in
     set_int_option socket ZMQ_TCP_KEEPALIVE_IDLE value
@@ -303,13 +341,13 @@ module Socket = struct
   let get_tcp_keepalive_idle socket =
     match get_int_option socket ZMQ_TCP_KEEPALIVE_IDLE with
     | -1 -> `Default
-    | n when n <= 0 -> raise Illegal_argument
+    | n when n <= 0 -> assert false
     | n -> `Value n
 
   let set_tcp_keepalive_interval socket flag =
     let value = match flag with
       | `Default -> -1
-      | `Value n when n <= 0 -> raise Illegal_argument
+      | `Value n when n <= 0 -> invalid_arg "set_tcp_keepalive_interval"
       | `Value n -> n
     in
     set_int_option socket ZMQ_TCP_KEEPALIVE_INTVL value
@@ -317,14 +355,13 @@ module Socket = struct
   let get_tcp_keepalive_interval socket =
     match get_int_option socket ZMQ_TCP_KEEPALIVE_INTVL with
     | -1 -> `Default
-    | n when n <= 0 -> raise Illegal_argument
+    | n when n <= 0 -> assert false
     | n -> `Value n
-
 
   let set_tcp_keepalive_count socket flag =
     let value = match flag with
       | `Default -> -1
-      | `Value n when n <= 0 -> raise Illegal_argument
+      | `Value n when n <= 0 -> invalid_arg "set_tcp_keepalive_count"
       | `Value n -> n
     in
     set_int_option socket ZMQ_TCP_KEEPALIVE_CNT value
@@ -332,18 +369,18 @@ module Socket = struct
   let get_tcp_keepalive_count socket =
     match get_int_option socket ZMQ_TCP_KEEPALIVE_CNT with
     | -1 -> `Default
-    | n when n <= 0 -> raise Illegal_argument
+    | n when n <= 0 -> assert false
     | n -> `Value n
 
-  let set_delay_attach_on_connect socket flag =
+  let set_immediate socket flag =
     let value = match flag with
       | true -> 1
       | false -> 0
     in
-    set_int_option socket ZMQ_DELAY_ATTACH_ON_CONNECT value
+    set_int_option socket ZMQ_IMMEDIATE value
 
-  let get_delay_attach_on_connect socket =
-    match get_int_option socket ZMQ_DELAY_ATTACH_ON_CONNECT with
+  let get_immediate socket =
+    match get_int_option socket ZMQ_IMMEDIATE with
     | 0 -> false
     | _ -> true
 
@@ -353,6 +390,75 @@ module Socket = struct
       | false -> 0
     in
     set_int_option socket ZMQ_XPUB_VERBOSE value
+
+  let set_probe_router socket flag =
+    set_int_option socket ZMQ_PROBE_ROUTER (if flag then 1 else 0)
+
+  let set_req_correlate socket flag =
+    set_int_option socket ZMQ_REQ_CORRELATE (if flag then 1 else 0)
+
+  let set_req_relaxed socket flag =
+    set_int_option socket ZMQ_REQ_RELAXED (if flag then 1 else 0)
+
+  let set_plain_server socket flag =
+    set_int_option socket ZMQ_PLAIN_SERVER (if flag then 1 else 0)
+
+  let set_curve_server socket flag =
+    set_int_option socket ZMQ_CURVE_SERVER (if flag then 1 else 0)
+
+  let set_plain_username socket =
+    set_bytes_option socket ZMQ_PLAIN_USERNAME
+
+  let get_plain_username socket =
+    get_bytes_option socket ZMQ_PLAIN_USERNAME
+
+  let set_plain_password socket =
+    set_bytes_option socket ZMQ_PLAIN_PASSWORD
+
+  let get_plain_password socket =
+    get_bytes_option socket ZMQ_PLAIN_PASSWORD
+
+  let validate_curve_key_length str msg =
+    match String.length str with
+    | 32 | 40 -> ()
+    | _ -> invalid_arg msg
+
+  let get_curve_publickey socket =
+    get_bytes_option socket ZMQ_CURVE_PUBLICKEY
+
+  let set_curve_publickey socket str =
+    validate_curve_key_length str "set_curve_publickey";
+    set_bytes_option socket ZMQ_CURVE_PUBLICKEY str
+
+  let get_curve_secretkey socket =
+    get_bytes_option socket ZMQ_CURVE_SECRETKEY
+
+  let set_curve_secretkey socket str =
+    validate_curve_key_length str "set_curve_secretkey";
+    set_bytes_option socket ZMQ_CURVE_SECRETKEY str
+
+  let get_curve_serverkey socket =
+    get_bytes_option socket ZMQ_CURVE_SERVERKEY
+
+  let set_curve_serverkey socket str =
+    validate_curve_key_length str "set_curve_serverkey";
+    set_bytes_option socket ZMQ_CURVE_SERVERKEY str
+
+  let get_mechanism socket =
+    match get_int_option socket ZMQ_MECHANISM with
+    | 0 -> `Null
+    | 1 -> `Plain
+    | 2 -> `Curve
+    | _ -> assert false
+
+  let set_zap_domain socket =
+    set_bytes_option socket ZMQ_ZAP_DOMAIN
+
+  let get_zap_domain socket =
+    get_bytes_option socket ZMQ_ZAP_DOMAIN
+
+  let set_conflate socket flag =
+    set_int_option socket ZMQ_CONFLATE (if flag then 1 else 0)
 
   external get_fd : 'a t -> Unix.file_descr = "caml_zmq_get_fd"
 
@@ -515,4 +621,13 @@ module Monitor = struct
     in
     internal_string_of_event push_address pop_address
 
+end
+
+module Z85 = struct
+  external encode : string -> string = "caml_z85_encode"
+  external decode : string -> string = "caml_z85_decode"
+end
+
+module Curve = struct
+  external keypair : unit -> string * string = "caml_curve_keypair"
 end

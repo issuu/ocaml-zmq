@@ -22,6 +22,9 @@ static struct custom_operations caml_zmq_poll_ops = {
     custom_hash_default,
     custom_serialize_default,
     custom_deserialize_default
+#ifdef custom_compare_ext_default
+    , custom_compare_ext_default
+#endif
 };
 
 CAMLprim value caml_zmq_poll_of_pollitem_array(value pollitem_array) {
@@ -38,8 +41,8 @@ CAMLprim value caml_zmq_poll_of_pollitem_array(value pollitem_array) {
         items[i].events = CAML_ZMQ_Mask_val(Field(current_elem, 1));
     }
 
-    poll= caml_alloc_custom(&caml_zmq_poll_ops, 
-                            sizeof(struct caml_zmq_poll), 
+    poll= caml_alloc_custom(&caml_zmq_poll_ops,
+                            sizeof(struct caml_zmq_poll),
                             0, 1);
     CAML_ZMQ_Poll_val(poll)->num_elems = n;
     CAML_ZMQ_Poll_val(poll)->poll_items = items;
@@ -63,7 +66,8 @@ value CAML_ZMQ_Val_mask(short mask) {
     if(mask & ZMQ_POLLOUT) {
         return Val_int(Out);
     }
-    caml_failwith("Invalid event mask detected. Should be impossible to reach.");
+
+    abort(); /* unreachable */
 }
 
 short CAML_ZMQ_Mask_val (value mask) {
@@ -72,12 +76,14 @@ short CAML_ZMQ_Mask_val (value mask) {
         case Out: return ZMQ_POLLOUT;
         case In_out: return ZMQ_POLLOUT | ZMQ_POLLIN;
     }
-    caml_failwith("Invalid event mask detected. Should be impossible to reach.");
+
+    abort(); /* unreachable */
 }
 
 CAMLprim value caml_zmq_poll(value poll, value timeout) {
     CAMLparam2 (poll, timeout);
     CAMLlocal2 (events, some);
+
     int n = CAML_ZMQ_Poll_val(poll)->num_elems;
     zmq_pollitem_t *items = CAML_ZMQ_Poll_val(poll)->poll_items;
     int tm = Int_val(timeout);

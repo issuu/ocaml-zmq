@@ -7,9 +7,8 @@ License:      MIT
 Plugins:      DevFiles (0.3), META (0.3)
 BuildTools:   ocamlbuild
 
-Library ZMQB
+Library ZMQ
   Path:           src
-  FindlibName:    ZMQ
   Modules:        ZMQ
   CSources:       caml_zmq_stubs.c,
                   socket.h,
@@ -19,12 +18,10 @@ Library ZMQB
                   fail.h,
                   fail.c,
                   poll.h,
-                  poll.c,
-                  uint64.h,
-                  uint64.c
+                  poll.c
   BuildDepends:   unix, uint.uint64
   CCLib:          -lzmq
-  CCOpt:          -Wall -W -Wextra -O2
+  CCOpt:          -I $pkg_uint_uint64 -Wall -W -Wextra -O2
   CompiledObject: best
 
 Flag runtests

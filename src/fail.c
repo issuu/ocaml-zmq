@@ -36,6 +36,7 @@ static int const caml_zmq_EUNKNOWN =
 void caml_zmq_raise(int err_no, const char *err_str) {
     CAMLparam0 ();
     CAMLlocalN(error_parameters, 2);
+
     int error_to_raise = caml_zmq_EUNKNOWN;
     int i;
     for (i = 0; i < caml_zmq_EUNKNOWN; i++) {
@@ -44,12 +45,12 @@ void caml_zmq_raise(int err_no, const char *err_str) {
             break;
         }
     }
+
     error_parameters[0] = Val_int(error_to_raise);
     error_parameters[1] = caml_copy_string(err_str);
-    caml_raise_with_args(
-                         *caml_named_value("zmq exception"),
-                         2,
-                         error_parameters);
+    caml_raise_with_args(*caml_named_value("zmq exception"),
+                         2, error_parameters);
+
     CAMLreturn0;
 }
 
