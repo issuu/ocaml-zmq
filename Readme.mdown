@@ -1,14 +1,14 @@
 Readme
 ======
 
-OCaml bindings for ZMQ 3.2
+OCaml bindings for ZMQ 4.0
 
 Requirements
 ------------
 * [OCaml >= 3.12](http://caml.inria.fr/)
 * [Findlib](http://projects.camlcity.org/projects/findlib.html)
 * [ocaml-uint](https://github.com/andrenth/ocaml-uint)
-* [ZMQ 3.2.*](http://www.zeromq.org/intro:get-the-software)
+* [ZMQ 4.0.*](http://www.zeromq.org/intro:get-the-software)
 * [oasis](http://oasis.forge.ocamlcore.org/)
 
 Install
@@ -20,13 +20,6 @@ make install
 Uninstall
 ---------
 make uninstall
-
-Roadmap
-----
-* Implement every zguide example
-* Look at the exception format again
-* Stabilize the interface
-* Release final version
 
 License
 -------
