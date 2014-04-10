@@ -26,7 +26,7 @@ module Context : sig
   type t
 
   val create : unit -> t
-  val term : t -> unit
+  val terminate : t -> unit
 
   val get_io_threads : t -> int
   val set_io_threads : t -> int -> unit

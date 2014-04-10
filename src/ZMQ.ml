@@ -30,7 +30,7 @@ module Context = struct
   type t
 
   external create : unit -> t = "caml_zmq_new"
-  external term : t -> unit = "caml_zmq_term"
+  external terminate : t -> unit = "caml_zmq_term"
 
   type int_option =
   | ZMQ_IO_THREADS

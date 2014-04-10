@@ -160,7 +160,7 @@ let test_proxy () =
   ZMQ.Socket.close push;
   ZMQ.Socket.close pull;
   ZMQ.Socket.close pub;
-  ZMQ.Context.term ctx;
+  ZMQ.Context.terminate ctx;
   ()
 
 let test_z85 () =
@@ -201,7 +201,7 @@ let suite =
            (fun (ctx, req, rep) ->
              close req;
              close rep;
-             ZMQ.Context.term ctx
+             ZMQ.Context.terminate ctx
            ));
 
       "request reply (multi-part)" >::
@@ -226,7 +226,7 @@ let suite =
            (fun (ctx, req, rep) ->
              close req;
              close rep;
-             ZMQ.Context.term ctx
+             ZMQ.Context.terminate ctx
            ));
 
       "poll" >::
@@ -259,7 +259,7 @@ let suite =
              close req;
              close rep;
              close sub;
-             ZMQ.Context.term ctx
+             ZMQ.Context.terminate ctx
            ));
       "get/set context options" >:: test_ctx_options;
       "get/set socket options" >:: test_options;
