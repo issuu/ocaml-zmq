@@ -14,6 +14,9 @@ static struct custom_operations caml_zmq_context_ops = {
     custom_hash_default,
     custom_serialize_default,
     custom_deserialize_default
+#ifdef custom_compare_ext_default
+    , custom_compare_ext_default
+#endif
 };
 
 value caml_zmq_copy_context(void *zmq_context) {
