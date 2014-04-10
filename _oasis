@@ -32,7 +32,7 @@ Flag runtests
 
 Flag examples
   Description: Build examples
-  Default:     false
+  Default:     true
 
 Executable test
   Path:             test
