@@ -15,7 +15,7 @@ while true do
   while not !finish do
     let message = ZSocket.recv frontend in
     if ZSocket.has_more frontend then
-      ZSocket.send ~opt:ZSocket.S_more backend message
+      ZSocket.send ~more:true backend message
     else begin
       ZSocket.send backend message;
       finish := true
