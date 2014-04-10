@@ -7,9 +7,15 @@
 #include <caml/custom.h>
 #include <caml/memory.h>
 
+CAMLextern value caml_zmq_term(value ctx);
+
+static void custom_finalize_context(value context) {
+    caml_zmq_term(context);
+}
+
 static struct custom_operations caml_zmq_context_ops = {
     "org.zeromq.context",
-    custom_finalize_default,
+    custom_finalize_context,
     custom_compare_default,
     custom_hash_default,
     custom_serialize_default,
