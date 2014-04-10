@@ -52,6 +52,7 @@ module Socket : sig
   val push   : [>`Push] kind
   val xsub   : [>`Xsub] kind
   val xpub   : [>`Xpub] kind
+  val stream : [>`Stream] kind
 
   (** Creation and Destruction *)
   val create : Context.t -> 'a kind -> 'a t

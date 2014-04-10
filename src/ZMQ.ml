@@ -82,6 +82,7 @@ module Socket = struct
   let push   = 8
   let xpub   = 9
   let xsub   = 10
+  let stream = 11
 
   (** Creation and Destruction *)
   external create : Context.t -> 'a kind -> 'a t = "caml_zmq_socket"
