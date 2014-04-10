@@ -205,7 +205,13 @@ static int const native_bytes_option_for[] = {
     ZMQ_SUBSCRIBE,
     ZMQ_UNSUBSCRIBE,
     ZMQ_LAST_ENDPOINT,
-    ZMQ_TCP_ACCEPT_FILTER
+    ZMQ_TCP_ACCEPT_FILTER,
+    ZMQ_PLAIN_USERNAME,
+    ZMQ_PLAIN_PASSWORD,
+    ZMQ_CURVE_PUBLICKEY,
+    ZMQ_CURVE_SECRETKEY,
+    ZMQ_CURVE_SERVERKEY,
+    ZMQ_ZAP_DOMAIN,
 };
 
 int caml_zmq_set_bytes_option(value socket, value option_name, value socket_option) {
@@ -248,6 +254,13 @@ static int const native_int_option_for[] = {
     ZMQ_TCP_KEEPALIVE_INTVL,
     ZMQ_IMMEDIATE,
     ZMQ_XPUB_VERBOSE,
+    ZMQ_MECHANISM,
+    ZMQ_PLAIN_SERVER,
+    ZMQ_CURVE_SERVER,
+    ZMQ_PROBE_ROUTER,
+    ZMQ_REQ_CORRELATE,
+    ZMQ_REQ_RELAXED,
+    ZMQ_CONFLATE,
 };
 
 CAMLprim value caml_zmq_set_int_option(value socket, value option_name, value socket_option) {

@@ -127,6 +127,12 @@ module Socket = struct
   | ZMQ_UNSUBSCRIBE
   | ZMQ_LAST_ENDPOINT
   | ZMQ_TCP_ACCEPT_FILTER
+  | ZMQ_PLAIN_USERNAME
+  | ZMQ_PLAIN_PASSWORD
+  | ZMQ_CURVE_PUBLICKEY
+  | ZMQ_CURVE_SECRETKEY
+  | ZMQ_CURVE_SERVERKEY
+  | ZMQ_ZAP_DOMAIN
 
   external set_bytes_option :
     'a t -> bytes_option -> string -> unit = "caml_zmq_set_bytes_option"
@@ -159,6 +165,13 @@ module Socket = struct
   | ZMQ_TCP_KEEPALIVE_INTVL
   | ZMQ_IMMEDIATE
   | ZMQ_XPUB_VERBOSE
+  | ZMQ_MECHANISM
+  | ZMQ_PLAIN_SERVER
+  | ZMQ_CURVE_SERVER
+  | ZMQ_PROBE_ROUTER
+  | ZMQ_REQ_CORRELATE
+  | ZMQ_REQ_RELAXED
+  | ZMQ_CONFLATE
 
   external set_int_option :
     'a t -> int_option -> int -> unit = "caml_zmq_set_int_option"
@@ -378,6 +391,75 @@ module Socket = struct
       | false -> 0
     in
     set_int_option socket ZMQ_XPUB_VERBOSE value
+
+  let set_probe_router socket flag =
+    set_int_option socket ZMQ_PROBE_ROUTER (if flag then 1 else 0)
+
+  let set_req_correlate socket flag =
+    set_int_option socket ZMQ_REQ_CORRELATE (if flag then 1 else 0)
+
+  let set_req_relaxed socket flag =
+    set_int_option socket ZMQ_REQ_RELAXED (if flag then 1 else 0)
+
+  let set_plain_server socket flag =
+    set_int_option socket ZMQ_PLAIN_SERVER (if flag then 1 else 0)
+
+  let set_curve_server socket flag =
+    set_int_option socket ZMQ_CURVE_SERVER (if flag then 1 else 0)
+
+  let set_plain_username socket =
+    set_bytes_option socket ZMQ_PLAIN_USERNAME
+
+  let get_plain_username socket =
+    get_bytes_option socket ZMQ_PLAIN_USERNAME
+
+  let set_plain_password socket =
+    set_bytes_option socket ZMQ_PLAIN_PASSWORD
+
+  let get_plain_password socket =
+    get_bytes_option socket ZMQ_PLAIN_PASSWORD
+
+  let validate_curve_key_length str =
+    match String.length str with
+    | 32 | 40 -> ()
+    | _ -> raise Illegal_argument
+
+  let get_curve_publickey socket =
+    get_bytes_option socket ZMQ_CURVE_PUBLICKEY
+
+  let set_curve_publickey socket str =
+    validate_curve_key_length str;
+    set_bytes_option socket ZMQ_CURVE_PUBLICKEY str
+
+  let get_curve_secretkey socket =
+    get_bytes_option socket ZMQ_CURVE_SECRETKEY
+
+  let set_curve_secretkey socket str =
+    validate_curve_key_length str;
+    set_bytes_option socket ZMQ_CURVE_SECRETKEY str
+
+  let get_curve_serverkey socket =
+    get_bytes_option socket ZMQ_CURVE_SERVERKEY
+
+  let set_curve_serverkey socket str =
+    validate_curve_key_length str;
+    set_bytes_option socket ZMQ_CURVE_SERVERKEY str
+
+  let get_mechanism socket =
+    match get_int_option socket ZMQ_MECHANISM with
+    | 0 -> `Null
+    | 1 -> `Plain
+    | 2 -> `Curve
+    | _ -> assert false
+
+  let set_zap_domain socket =
+    set_bytes_option socket ZMQ_ZAP_DOMAIN
+
+  let get_zap_domain socket =
+    get_bytes_option socket ZMQ_ZAP_DOMAIN
+
+  let set_conflate socket flag =
+    set_int_option socket ZMQ_CONFLATE (if flag then 1 else 0)
 
   external get_fd : 'a t -> Unix.file_descr = "caml_zmq_get_fd"
 

@@ -137,6 +137,25 @@ module Socket : sig
   val set_immediate : 'a t -> bool -> unit
   val get_immediate : 'a t -> bool
   val set_xpub_verbose : [> `XPub] t -> bool -> unit
+  val set_probe_router : [> `Router | `Dealer | `Req ] t -> bool -> unit
+  val set_req_correlate : [> `Req ] t -> bool -> unit
+  val set_req_relaxed : [> `Req ] t -> bool -> unit
+  val set_plain_server : 'a t -> bool -> unit
+  val set_plain_username : 'a t -> string -> unit
+  val get_plain_username : 'a t -> string
+  val set_plain_password : 'a t -> string -> unit
+  val get_plain_password : 'a t -> string
+  val set_curve_server : 'a t -> bool -> unit
+  val set_curve_publickey : 'a t -> string -> unit
+  val get_curve_publickey : 'a t -> string
+  val set_curve_secretkey : 'a t -> string -> unit
+  val get_curve_secretkey : 'a t -> string
+  val set_curve_serverkey : 'a t -> string -> unit
+  val get_curve_serverkey : 'a t -> string
+  val get_mechanism : 'a t -> [`Null | `Plain | `Curve]
+  val set_zap_domain : 'a t -> string -> unit
+  val get_zap_domain : 'a t -> string
+  val set_conflate : [> `Pull | `Push | `Sub | `Pub | `Dealer] t -> bool -> unit
 
   val get_fd : 'a t -> Unix.file_descr
 
