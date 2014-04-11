@@ -27,14 +27,14 @@
 #  define Val_fd(x) Val_int(x)
 #endif
 
-
 #include <zmq.h>
+#include <zmq_utils.h>
 
 #include "fail.h"
 #include "context.h"
 #include "socket.h"
 
-#include "uint64.h"
+#include <uint64.h>
 
 /**
  * Version
@@ -59,11 +59,13 @@ CAMLprim value caml_zmq_version(value unit) {
  * Init
  */
 
-CAMLprim value caml_zmq_init(value num_threads) {
+CAMLprim value caml_zmq_new(value num_threads) {
     CAMLparam1 (num_threads);
     CAMLlocal1 (ctx_value);
-    void *ctx = zmq_init(Int_val(num_threads));
+
+    void *ctx = zmq_ctx_new();
     caml_zmq_raise_if(ctx == NULL);
+
     ctx_value = caml_zmq_copy_context(ctx);
     CAMLreturn (ctx_value);
 }
@@ -74,9 +76,47 @@ CAMLprim value caml_zmq_init(value num_threads) {
 
 CAMLprim value caml_zmq_term(value ctx) {
     CAMLparam1 (ctx);
-    int result = zmq_term(CAML_ZMQ_Context_val(ctx));
+
+    int result = zmq_ctx_term(CAML_ZMQ_Context_val(ctx));
     caml_zmq_raise_if(result == -1);
+
+    CAML_ZMQ_Context_val(ctx) = NULL;
     CAMLreturn (Val_unit);
+}
+
+/**
+ * Set context option
+ */
+
+static int const native_ctx_int_option_for[] = {
+    ZMQ_IO_THREADS,
+    ZMQ_MAX_SOCKETS,
+    ZMQ_IPV6
+};
+
+CAMLprim value caml_zmq_ctx_set_int_option(value socket, value option_name, value option_value) {
+    CAMLparam3 (socket, option_name, option_value);
+
+    int result = zmq_ctx_set(CAML_ZMQ_Context_val(socket),
+                             native_ctx_int_option_for[Int_val(option_name)],
+                             Int_val(option_value));
+    caml_zmq_raise_if (result == -1);
+
+    CAMLreturn (Val_unit);
+}
+
+/**
+ * Get context option
+ */
+
+CAMLprim value caml_zmq_ctx_get_int_option(value socket, value option_name) {
+    CAMLparam2 (socket, option_name);
+
+    int result = zmq_ctx_get(CAML_ZMQ_Context_val(socket),
+                             native_ctx_int_option_for[Int_val(option_name)]);
+    caml_zmq_raise_if (result == -1);
+
+    CAMLreturn (Val_int(result));
 }
 
 /**
@@ -102,9 +142,6 @@ CAMLprim value caml_zmq_socket(value ctx, value socket_kind) {
     CAMLparam2 (ctx, socket_kind);
     CAMLlocal1 (sock_value);
     void *socket;
-
-    if (Int_val(socket_kind) < 0 || Int_val(socket_kind) > 8)
-        caml_failwith("Invalid variant range");
 
     socket = zmq_socket(CAML_ZMQ_Context_val(ctx), socket_type_for_kind[Int_val(socket_kind)]);
     caml_zmq_raise_if(socket == NULL);
@@ -134,7 +171,7 @@ static int const native_uint64_option_for[] = {
 CAMLprim value caml_zmq_set_uint64_option(value socket, value option_name, value socket_option) {
     CAMLparam3 (socket, option_name, socket_option);
 
-    uint64 val = CAML_UINT_Uint64_val(socket_option);
+    uint64 val = Uint64_val(socket_option);
     int result = zmq_setsockopt(CAML_ZMQ_Socket_val(socket),
                                 native_uint64_option_for[Int_val(option_name)],
                                 &val,
@@ -151,6 +188,7 @@ static int const native_int64_option_for[] = {
 
 CAMLprim value caml_zmq_set_int64_option(value socket, value option_name, value socket_option) {
     CAMLparam3 (socket, option_name, socket_option);
+
     int64 val = Int64_val(Field(socket_option, 1));
     int result = zmq_setsockopt(CAML_ZMQ_Socket_val(socket),
                                 native_int64_option_for[Int_val(option_name)],
@@ -167,9 +205,14 @@ static int const native_bytes_option_for[] = {
     ZMQ_SUBSCRIBE,
     ZMQ_UNSUBSCRIBE,
     ZMQ_LAST_ENDPOINT,
-    ZMQ_TCP_ACCEPT_FILTER
+    ZMQ_TCP_ACCEPT_FILTER,
+    ZMQ_PLAIN_USERNAME,
+    ZMQ_PLAIN_PASSWORD,
+    ZMQ_CURVE_PUBLICKEY,
+    ZMQ_CURVE_SECRETKEY,
+    ZMQ_CURVE_SERVERKEY,
+    ZMQ_ZAP_DOMAIN,
 };
-
 
 int caml_zmq_set_bytes_option(value socket, value option_name, value socket_option) {
     CAMLparam3 (socket, option_name, socket_option);
@@ -203,14 +246,21 @@ static int const native_int_option_for[] = {
     ZMQ_MULTICAST_HOPS,
     ZMQ_RCVTIMEO,
     ZMQ_SNDTIMEO,
-    ZMQ_IPV4ONLY,
+    ZMQ_IPV6,
     ZMQ_ROUTER_MANDATORY,
     ZMQ_TCP_KEEPALIVE,
     ZMQ_TCP_KEEPALIVE_CNT,
     ZMQ_TCP_KEEPALIVE_IDLE,
     ZMQ_TCP_KEEPALIVE_INTVL,
-    ZMQ_DELAY_ATTACH_ON_CONNECT,
+    ZMQ_IMMEDIATE,
     ZMQ_XPUB_VERBOSE,
+    ZMQ_MECHANISM,
+    ZMQ_PLAIN_SERVER,
+    ZMQ_CURVE_SERVER,
+    ZMQ_PROBE_ROUTER,
+    ZMQ_REQ_CORRELATE,
+    ZMQ_REQ_RELAXED,
+    ZMQ_CONFLATE,
 };
 
 CAMLprim value caml_zmq_set_int_option(value socket, value option_name, value socket_option) {
@@ -227,7 +277,6 @@ CAMLprim value caml_zmq_set_int_option(value socket, value option_name, value so
     CAMLreturn (Val_unit);
 }
 
-
 /**
  * Get socket options
  */
@@ -241,7 +290,7 @@ CAMLprim value caml_zmq_get_uint64_option(value socket, value option_name) {
                                  &mark,
                                  &mark_size);
     caml_zmq_raise_if (result == -1);
-    CAMLreturn (caml_uint_copy_uint64(mark));
+    CAMLreturn (copy_uint64(mark));
 }
 
 CAMLprim value caml_zmq_get_int64_option(value socket, value option_name) {
@@ -549,4 +598,61 @@ CAMLprim value caml_decode_monitor_event(value event_val, value addr) {
         break;
     }
     CAMLreturn(result);
+}
+
+/**
+ * Z85
+ */
+
+CAMLprim value caml_z85_encode(value source) {
+    CAMLparam1 (source);
+    CAMLlocal1 (result);
+
+    /*
+     * zmq_z85_encode writes a null terminator. However, OCaml does not
+     * need a null terminator. The code below does not allocate space for
+     * a null terminator, but zmq_z85_encode will not encounter an overrun,
+     * as OCaml string representation guarantees that one byte past the
+     * end of string is allocated and contains '\0'.
+     *
+     * See http://caml.inria.fr/pub/docs/oreilly-book/html/book-ora115.html#@concepts266
+     * for details.
+     */
+    int length = caml_string_length(source);
+    result = caml_alloc_string(length / 4 * 5);
+    if (zmq_z85_encode(String_val(result), (uint8_t*) String_val(source), length) == NULL)
+        caml_invalid_argument("zmq_z85_encode");
+
+    CAMLreturn(result);
+}
+
+CAMLprim value caml_z85_decode(value source) {
+    CAMLparam1 (source);
+    CAMLlocal1 (result);
+
+    result = caml_alloc_string(caml_string_length(source) * 4 / 5);
+    if (zmq_z85_decode((uint8_t*) String_val(result), String_val(source)) == NULL)
+        caml_invalid_argument("zmq_z85_decode");
+
+    CAMLreturn(result);
+}
+
+/**
+ * Key generation
+ */
+
+CAMLprim value caml_curve_keypair(value unit) {
+    CAMLparam1 (unit);
+    CAMLlocal3 (public, secret, tuple);
+
+    /* See the notice in caml_z85_encode. */
+    public = caml_alloc_string(40);
+    secret = caml_alloc_string(40);
+    int result = zmq_curve_keypair(String_val(public), String_val(secret));
+    caml_zmq_raise_if(result == -1);
+
+    tuple = caml_alloc_tuple(2);
+    Store_field(tuple, 0, public);
+    Store_field(tuple, 1, secret);
+    CAMLreturn (tuple);
 }

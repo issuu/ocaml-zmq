@@ -20,14 +20,21 @@ type error =
 
 exception ZMQ_exception of error * string
 
-(** Context *)
-type context
-
-(** Creation and Destruction *)
-val init : ?io_threads:int -> unit -> context
-val term : context -> unit
-
 val version : unit -> int * int * int
+
+module Context : sig
+  type t
+
+  val create : unit -> t
+  val terminate : t -> unit
+
+  val get_io_threads : t -> int
+  val set_io_threads : t -> int -> unit
+  val get_max_sockets : t -> int
+  val set_max_sockets : t -> int -> unit
+  val get_ipv6 : t -> bool
+  val set_ipv6 : t -> bool -> unit
+end
 
 module Socket : sig
 
@@ -45,9 +52,10 @@ module Socket : sig
   val push   : [>`Push] kind
   val xsub   : [>`Xsub] kind
   val xpub   : [>`Xpub] kind
+  val stream : [>`Stream] kind
 
   (** Creation and Destruction *)
-  val create : context -> 'a kind -> 'a t
+  val create : Context.t -> 'a kind -> 'a t
   val close : 'a t -> unit
 
   (** Wiring *)
@@ -115,8 +123,8 @@ module Socket : sig
   val get_receive_timeout : 'a t -> int
   val set_send_timeout : 'a t -> int -> unit
   val get_send_timeout : 'a t -> int
-  val set_ipv4_only : 'a t -> bool -> unit
-  val get_ipv4_only : 'a t -> bool
+  val set_ipv6 : 'a t -> bool -> unit
+  val get_ipv6 : 'a t -> bool
   val set_router_mandatory : 'a t -> bool -> unit
   val get_router_mandatory : 'a t -> bool
   val set_tcp_keepalive : 'a t -> [ `Default | `Value of bool ] -> unit
@@ -127,9 +135,28 @@ module Socket : sig
   val get_tcp_keepalive_count : 'a t -> [ `Default | `Value of int ]
   val set_tcp_keepalive_interval : 'a t -> [ `Default | `Value of int ] -> unit
   val get_tcp_keepalive_interval : 'a t -> [ `Default | `Value of int ]
-  val set_delay_attach_on_connect : 'a t -> bool -> unit
-  val get_delay_attach_on_connect : 'a t -> bool
+  val set_immediate : 'a t -> bool -> unit
+  val get_immediate : 'a t -> bool
   val set_xpub_verbose : [> `XPub] t -> bool -> unit
+  val set_probe_router : [> `Router | `Dealer | `Req ] t -> bool -> unit
+  val set_req_correlate : [> `Req ] t -> bool -> unit
+  val set_req_relaxed : [> `Req ] t -> bool -> unit
+  val set_plain_server : 'a t -> bool -> unit
+  val set_plain_username : 'a t -> string -> unit
+  val get_plain_username : 'a t -> string
+  val set_plain_password : 'a t -> string -> unit
+  val get_plain_password : 'a t -> string
+  val set_curve_server : 'a t -> bool -> unit
+  val set_curve_publickey : 'a t -> string -> unit
+  val get_curve_publickey : 'a t -> string
+  val set_curve_secretkey : 'a t -> string -> unit
+  val get_curve_secretkey : 'a t -> string
+  val set_curve_serverkey : 'a t -> string -> unit
+  val get_curve_serverkey : 'a t -> string
+  val get_mechanism : 'a t -> [`Null | `Plain | `Curve]
+  val set_zap_domain : 'a t -> string -> unit
+  val get_zap_domain : 'a t -> string
+  val set_conflate : [> `Pull | `Push | `Sub | `Pub | `Dealer] t -> bool -> unit
 
   val get_fd : 'a t -> Unix.file_descr
 
@@ -174,7 +201,7 @@ module Monitor : sig
   | Disconnected of address * Unix.file_descr
 
   val create: 'a Socket.t -> t
-  val connect: context -> t -> [>`Monitor] Socket.t
+  val connect: Context.t -> t -> [>`Monitor] Socket.t
 
   (** Receive an event from the monitor socket.
       block indicates if the call should be blocking or non-blocking. Default true
@@ -193,4 +220,14 @@ module Monitor : sig
   *)
   val mk_string_of_event: unit -> (event -> string)
 
+end
+
+module Z85 : sig
+  val encode : string -> string
+  val decode : string -> string
+end
+
+module Curve : sig
+  (** [keypair ()] returns a pair [public, secret] of Z85 encoded keys. *)
+  val keypair : unit -> string * string
 end
