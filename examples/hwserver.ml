@@ -1,15 +1,12 @@
-open ZMQ;;
-open ZMQ.Socket;;
-
-let context = init () in
-let responder = Socket.create context rep in
-bind responder "tcp://*:5555";
+let context = ZMQ.Context.create () in
+let responder = ZMQ.Socket.create context ZMQ.Socket.rep in
+ZMQ.Socket.bind responder "tcp://*:5555";
 
 while true do
-  let request = recv responder in
+  let request = ZMQ.Socket.recv responder in
   Printf.printf "Received request: [%s]\n%!" request;
-  send responder "World"
+  ZMQ.Socket.send responder "World"
 done;
 
-close responder;
-term context
+ZMQ.Socket.close responder;
+ZMQ.Context.terminate context

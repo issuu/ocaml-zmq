@@ -1,29 +1,26 @@
-module ZSocket = ZMQ.Socket;;
+let context = ZMQ.Context.create () in
 
-let context = ZMQ.init () in
+let frontend = ZMQ.Socket.create context ZMQ.Socket.sub in
+ZMQ.Socket.connect frontend "tcp://192.168.55.210:5556";
 
-let frontend = ZSocket.create context ZSocket.sub in
-ZSocket.connect frontend "tcp://192.168.55.210:5556";
+let backend = ZMQ.Socket.create context ZMQ.Socket.sub in
+ZMQ.Socket.bind backend "tcp://10.1.1.0:8100";
 
-let backend = ZSocket.create context ZSocket.sub in
-ZSocket.bind backend "tcp://10.1.1.0:8100";
-
-ZSocket.subscribe frontend "";
+ZMQ.Socket.subscribe frontend "";
 
 while true do
   let finish = ref false in
   while not !finish do
-    let message = ZSocket.recv frontend in
-    if ZSocket.has_more frontend then
-      ZSocket.send ~more:true backend message
+    let message = ZMQ.Socket.recv frontend in
+    if ZMQ.Socket.has_more frontend then
+      ZMQ.Socket.send ~more:true backend message
     else begin
-      ZSocket.send backend message;
+      ZMQ.Socket.send backend message;
       finish := true
     end
   done
 done;
 
-ZSocket.close frontend;
-ZSocket.close backend;
-ZMQ.term context
-
+ZMQ.Socket.close frontend;
+ZMQ.Socket.close backend;
+ZMQ.Context.terminate context
