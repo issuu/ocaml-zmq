@@ -3,26 +3,34 @@
 (** Module Exceptions *)
 
 type error =
-    EINVAL
-  | EFAULT
-  | EMTHREAD
-  | ETERM
-  | ENODEV
-  | EADDRNOTAVAIL
-  | EADDRINUSE
-  | ENOCOMPATPROTO
-  | EPROTONOSUPPORT
-  | EAGAIN
-  | ENOTSUP
-  | EFSM
-  | ENOMEM
-  | EINTR
-  | EUNKNOWN
+| ENOTSUP
+| EPROTONOSUPPORT
+| ENOBUFS
+| ENETDOWN
+| EADDRINUSE
+| EADDRNOTAVAIL
+| ECONNREFUSED
+| EINPROGRESS
+| ENOTSOCK
+| EMSGSIZE
+| EAFNOSUPPORT
+| ENETUNREACH
+| ECONNABORTED
+| ECONNRESET
+| ENOTCONN
+| ETIMEDOUT
+| EHOSTUNREACH
+| ENETRESET
+| EFSM
+| ENOCOMPATPROTO
+| ETERM
+| EMTHREAD
+| EUNKNOWN
 
 exception ZMQ_exception of error * string
 
 let _ =
-  Callback.register_exception "zmq exception" (ZMQ_exception(EUNKNOWN,"Unkown error"))
+  Callback.register_exception "ZMQ.ZMQ_exception" (ZMQ_exception(EUNKNOWN, "Unknown error"))
 
 external version : unit -> int * int * int = "caml_zmq_version"
 

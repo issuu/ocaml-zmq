@@ -13,20 +13,28 @@
 
 /* This table must be synchronized with the variant definition. */
 static int const caml_zmq_error_table[] = {
-    EINVAL,
-    EFAULT,
-    EMTHREAD,
-    ETERM,
-    ENODEV,
-    EADDRNOTAVAIL,
-    EADDRINUSE,
-    ENOCOMPATPROTO,
-    EPROTONOSUPPORT,
-    EAGAIN,
     ENOTSUP,
+    EPROTONOSUPPORT,
+    ENOBUFS,
+    ENETDOWN,
+    EADDRINUSE,
+    EADDRNOTAVAIL,
+    ECONNREFUSED,
+    EINPROGRESS,
+    ENOTSOCK,
+    EMSGSIZE,
+    EAFNOSUPPORT,
+    ENETUNREACH,
+    ECONNABORTED,
+    ECONNRESET,
+    ENOTCONN,
+    ETIMEDOUT,
+    EHOSTUNREACH,
+    ENETRESET,
     EFSM,
-    ENOMEM,
-    EINTR
+    ENOCOMPATPROTO,
+    ETERM,
+    EMTHREAD,
 };
 
 /* This must be the last value of the variant. */
@@ -48,7 +56,7 @@ void caml_zmq_raise(int err_no, const char *err_str) {
 
     error_parameters[0] = Val_int(error_to_raise);
     error_parameters[1] = caml_copy_string(err_str);
-    caml_raise_with_args(*caml_named_value("zmq exception"),
+    caml_raise_with_args(*caml_named_value("ZMQ.ZMQ_exception"),
                          2, error_parameters);
 
     CAMLreturn0;
