@@ -10,6 +10,7 @@
 #include <caml/alloc.h>
 #include <caml/fail.h>
 #include <caml/memory.h>
+#include <caml/unixsupport.h>
 
 /* This table must be synchronized with the variant definition. */
 static int const caml_zmq_error_table[] = {
@@ -54,10 +55,14 @@ void caml_zmq_raise(int err_no, const char *err_str) {
         }
     }
 
-    error_parameters[0] = Val_int(error_to_raise);
-    error_parameters[1] = caml_copy_string(err_str);
-    caml_raise_with_args(*caml_named_value("ZMQ.ZMQ_exception"),
-                         2, error_parameters);
+    if (error_to_raise == caml_zmq_EUNKNOWN) {
+      unix_error(err_no, "ZMQ", Nothing); /* raise as unix error.  Not sure about parameters. */
+    } else {
+      error_parameters[0] = Val_int(error_to_raise);
+      error_parameters[1] = caml_copy_string(err_str);
+      caml_raise_with_args(*caml_named_value("ZMQ.ZMQ_exception"),
+                          2, error_parameters);
+    }
 
     CAMLreturn0;
 }
