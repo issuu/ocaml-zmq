@@ -43,7 +43,7 @@ enum _OcamlErrorConstructors {
 
 static value * unix_error_exn = NULL;
 
-static void caml_zmq_unix_error_constr(int constr_no, char *cmdname, value cmdarg) {
+static void caml_zmq_unix_error_constr(int constr_no, const char *cmdname, value cmdarg) {
   value res;
   value name = Val_unit, err = Val_unit, arg = Val_unit;
 
@@ -66,78 +66,79 @@ static void caml_zmq_unix_error_constr(int constr_no, char *cmdname, value cmdar
   mlraise(res);
 }
 
-void caml_zmq_raise(int err_no, const char *err_str) {
+void caml_zmq_raise(int err_no, const char *err_path) {
     CAMLparam0 ();
     CAMLlocalN(error_parameters, 2);
 
     if (err_no < ZMQ_HAUSNUMERO) {
       
       /* Map to Unix_error */
-      unix_error(err_no, "ZMQ", Nothing);
+      unix_error(err_no, (char *) err_path, Nothing);
     
     } else {
 
       /* (re-)defined by ZMQ depending on platform, map to Unix_error */
       switch (err_no) {
       case ENOTSUP:
-        caml_zmq_unix_error_constr(c_EOPNOTSUPP, "ZMQ", Nothing);
+        caml_zmq_unix_error_constr(c_EOPNOTSUPP, err_path, Nothing);
         break;
       case EPROTONOSUPPORT:
-        caml_zmq_unix_error_constr(c_EPROTONOSUPPORT, "ZMQ", Nothing);
+        caml_zmq_unix_error_constr(c_EPROTONOSUPPORT, err_path, Nothing);
         break;
       case ENOBUFS:
-        caml_zmq_unix_error_constr(c_ENOBUFS, "ZMQ", Nothing);
+        caml_zmq_unix_error_constr(c_ENOBUFS, err_path, Nothing);
         break;
       case ENETDOWN:
-        caml_zmq_unix_error_constr(c_ENETDOWN, "ZMQ", Nothing);
+        caml_zmq_unix_error_constr(c_ENETDOWN, err_path, Nothing);
         break;
       case EADDRINUSE:
-        caml_zmq_unix_error_constr(c_EADDRINUSE, "ZMQ", Nothing);
+        caml_zmq_unix_error_constr(c_EADDRINUSE, err_path, Nothing);
         break;
       case EADDRNOTAVAIL:
-        caml_zmq_unix_error_constr(c_EADDRNOTAVAIL, "ZMQ", Nothing);
+        caml_zmq_unix_error_constr(c_EADDRNOTAVAIL, err_path, Nothing);
         break;
       case ECONNREFUSED:
-        caml_zmq_unix_error_constr(c_ECONNREFUSED, "ZMQ", Nothing);
+        caml_zmq_unix_error_constr(c_ECONNREFUSED, err_path, Nothing);
         break;
       case EINPROGRESS:
-        caml_zmq_unix_error_constr(c_EINPROGRESS, "ZMQ", Nothing);
+        caml_zmq_unix_error_constr(c_EINPROGRESS, err_path, Nothing);
         break;
       case ENOTSOCK:
-        caml_zmq_unix_error_constr(c_ENOTSOCK, "ZMQ", Nothing);
+        caml_zmq_unix_error_constr(c_ENOTSOCK, err_path, Nothing);
         break;
       case EMSGSIZE:
-        caml_zmq_unix_error_constr(c_EMSGSIZE, "ZMQ", Nothing);
+        caml_zmq_unix_error_constr(c_EMSGSIZE, err_path, Nothing);
         break;
       case EAFNOSUPPORT:
-        caml_zmq_unix_error_constr(c_EAFNOSUPPORT, "ZMQ", Nothing);
+        caml_zmq_unix_error_constr(c_EAFNOSUPPORT, err_path, Nothing);
         break;
       case ENETUNREACH:
-        caml_zmq_unix_error_constr(c_ENETUNREACH, "ZMQ", Nothing);
+        caml_zmq_unix_error_constr(c_ENETUNREACH, err_path, Nothing);
         break;
       case ECONNABORTED:
-        caml_zmq_unix_error_constr(c_ECONNABORTED, "ZMQ", Nothing);
+        caml_zmq_unix_error_constr(c_ECONNABORTED, err_path, Nothing);
         break;
       case ECONNRESET:
-        caml_zmq_unix_error_constr(c_ECONNRESET, "ZMQ", Nothing);
+        caml_zmq_unix_error_constr(c_ECONNRESET, err_path, Nothing);
         break;
       case ENOTCONN:
-        caml_zmq_unix_error_constr(c_ENOTCONN, "ZMQ", Nothing);
+        caml_zmq_unix_error_constr(c_ENOTCONN, err_path, Nothing);
         break;
       case ETIMEDOUT:
-        caml_zmq_unix_error_constr(c_ETIMEDOUT, "ZMQ", Nothing);
+        caml_zmq_unix_error_constr(c_ETIMEDOUT, err_path, Nothing);
         break;
       case EHOSTUNREACH:
-        caml_zmq_unix_error_constr(c_EHOSTUNREACH, "ZMQ", Nothing);
+        caml_zmq_unix_error_constr(c_EHOSTUNREACH, err_path, Nothing);
         break;
       case ENETRESET:
-        caml_zmq_unix_error_constr(c_ENETRESET, "ZMQ", Nothing);
+        caml_zmq_unix_error_constr(c_ENETRESET, err_path, Nothing);
         break;
       default:
         /* ZMQ error */
         {
           int error_to_raise = caml_zmq_EUNKNOWN;
           int i;
+          const char *err_str = zmq_strerror(err_no);
           for (i = 0; i < caml_zmq_EUNKNOWN; i++) {
               if (err_no == caml_zmq_error_table[i]) {
                   error_to_raise = i;
@@ -156,10 +157,10 @@ void caml_zmq_raise(int err_no, const char *err_str) {
     CAMLreturn0;
 }
 
-void caml_zmq_raise_if(int condition) {
+void caml_zmq_raise_if(int condition, char *err_path) {
     if (condition) {
         int err_no = zmq_errno();
-        const char *err_str = zmq_strerror(err_no);
-        caml_zmq_raise(err_no, err_str);
+        caml_zmq_raise(err_no, err_path);
     }
 }
+
