@@ -163,6 +163,19 @@ let test_proxy () =
   ZMQ.Context.terminate ctx;
   ()
 
+(** Simple test to test interrupted exception, while in the C lib. *)
+let test_exceptions () =
+  let ctx = ZMQ.Context.create () in
+  let s = ZMQ.Socket.create ctx pull in
+
+  let mask = ZMQ.Poll.mask_of [| s, ZMQ.Poll.In |] in
+
+  Sys.(set_signal sigalrm (Signal_handle (fun _ -> ())));
+  ignore (Unix.alarm 1);
+
+  assert_raises ~msg:"Failed to raise EINTR" Unix.(Unix_error(EINTR, "caml_zmq_poll", ""))  (fun _ -> ZMQ.Poll.poll ~timeout:2000 mask);
+  ()
+
 let test_z85 () =
   let binary = "\xBB\x88\x47\x1D\x65\xE2\x65\x9B" ^
                "\x30\xC5\x5A\x53\x21\xCE\xBB\x5A" ^
@@ -266,4 +279,5 @@ let suite =
       "proxy" >:: test_proxy;
       "monitor" >:: test_monitor;
       "z85 encoding/decoding" >:: test_z85;
+      "unix_exceptions" >:: test_exceptions;
     ]

@@ -33,7 +33,7 @@ CAMLprim value caml_zmq_poll_of_pollitem_array(value pollitem_array) {
 
     int n = Wosize_val(pollitem_array);
     zmq_pollitem_t *items = malloc(sizeof(zmq_pollitem_t) * n);
-    caml_zmq_raise_if(items == NULL);
+    ZMQ_RAISE_IF(items == NULL);
     int i;
     for(i = 0; i < n; i++) {
         current_elem = Field(pollitem_array, i);
@@ -92,7 +92,8 @@ CAMLprim value caml_zmq_poll(value poll, value timeout) {
     int num_event_sockets = zmq_poll(items, n, tm);
     caml_acquire_runtime_system();
 
-    caml_zmq_raise_if(num_event_sockets == -1);
+    ZMQ_RAISE_IF(num_event_sockets == -1);
+
     events = caml_alloc(n, 0);
 
     int i;

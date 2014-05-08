@@ -42,9 +42,8 @@ static int const caml_zmq_error_table[] = {
 static int const caml_zmq_EUNKNOWN =
     (sizeof caml_zmq_error_table) / (sizeof caml_zmq_error_table[0]);
 
-void caml_zmq_raise(int err_no, const char *err_str) {
+void caml_zmq_raise(int err_no, const char *err_str, const char *location) {
     CAMLparam0 ();
-    CAMLlocalN(error_parameters, 2);
 
     /* err_no can be a standard Unix error code, or it can be a ZMQ-defined
      * error code in the range above ZMQ_HAUSNUMERO. If the system headers are
@@ -53,37 +52,42 @@ void caml_zmq_raise(int err_no, const char *err_str) {
      * codes.
      */
     if (err_no < ZMQ_HAUSNUMERO) {
-      /* The err_str parameter to unix_error is supposed to be the function name
-       * where the error occurred, but we insert the error description there
-       * instead, which should be more useful.
-       */
-      unix_error(err_no, (char *) err_str, Nothing);
+        unix_error(err_no, (char *) location, Nothing);
 
     } else {
-      value exn;
-      int error_to_raise = caml_zmq_EUNKNOWN;
-      int i;
-      for (i = 0; i < caml_zmq_EUNKNOWN; i++) {
-          if (err_no == caml_zmq_error_table[i]) {
-              error_to_raise = i;
-              break;
-          }
-      }
+        int error_to_raise = caml_zmq_EUNKNOWN;
+        int i;
+        for (i = 0; i < caml_zmq_EUNKNOWN; i++) {
+            if (err_no == caml_zmq_error_table[i]) {
+                error_to_raise = i;
+                break;
+            }
+        }
+        /* From http://caml.inria.fr/pub/docs/manual-ocaml-4.01/intfc.html#sec439:
 
-      exn = caml_callback2(
-          *caml_named_value("ZMQ.remap_exn"),
-          Val_int(error_to_raise),
-          caml_copy_string(err_str));
-      caml_raise_constant(exn);
+            If the function f does not return, but raises an exception that
+            escapes the scope of the application, then this exception is
+            propagated to the next enclosing OCaml code, skipping over the C
+            code. That is, if an OCaml function f calls a C function g that calls
+            back an OCaml function h that raises a stray exception, then the
+            execution of g is interrupted and the exception is propagated back
+            into f.
+        */
+
+        caml_callback3(*caml_named_value("ZMQ.zmq_raise"),
+                      Val_int(error_to_raise),
+                      caml_copy_string(err_str),
+                      caml_copy_string(location)
+                      );
     }
 
     CAMLreturn0;
 }
 
-void caml_zmq_raise_if(int condition) {
+void caml_zmq_raise_if(int condition, const char *location) {
     if (condition) {
         int err_no = zmq_errno();
         const char *err_str = zmq_strerror(err_no);
-        caml_zmq_raise(err_no, err_str);
+        caml_zmq_raise(err_no, err_str, location);
     }
 }

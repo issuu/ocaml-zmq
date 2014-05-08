@@ -64,7 +64,7 @@ CAMLprim value caml_zmq_new(value num_threads) {
     CAMLlocal1 (ctx_value);
 
     void *ctx = zmq_ctx_new();
-    caml_zmq_raise_if(ctx == NULL);
+    ZMQ_RAISE_IF(ctx == NULL);
 
     ctx_value = caml_zmq_copy_context(ctx);
     CAMLreturn (ctx_value);
@@ -78,7 +78,7 @@ CAMLprim value caml_zmq_term(value ctx) {
     CAMLparam1 (ctx);
 
     int result = zmq_ctx_term(CAML_ZMQ_Context_val(ctx));
-    caml_zmq_raise_if(result == -1);
+    ZMQ_RAISE_IF(result == -1);
 
     CAML_ZMQ_Context_val(ctx) = NULL;
     CAMLreturn (Val_unit);
@@ -100,7 +100,7 @@ CAMLprim value caml_zmq_ctx_set_int_option(value socket, value option_name, valu
     int result = zmq_ctx_set(CAML_ZMQ_Context_val(socket),
                              native_ctx_int_option_for[Int_val(option_name)],
                              Int_val(option_value));
-    caml_zmq_raise_if (result == -1);
+    ZMQ_RAISE_IF(result == -1);
 
     CAMLreturn (Val_unit);
 }
@@ -114,7 +114,7 @@ CAMLprim value caml_zmq_ctx_get_int_option(value socket, value option_name) {
 
     int result = zmq_ctx_get(CAML_ZMQ_Context_val(socket),
                              native_ctx_int_option_for[Int_val(option_name)]);
-    caml_zmq_raise_if (result == -1);
+    ZMQ_RAISE_IF(result == -1);
 
     CAMLreturn (Val_int(result));
 }
@@ -144,7 +144,7 @@ CAMLprim value caml_zmq_socket(value ctx, value socket_kind) {
     void *socket;
 
     socket = zmq_socket(CAML_ZMQ_Context_val(ctx), socket_type_for_kind[Int_val(socket_kind)]);
-    caml_zmq_raise_if(socket == NULL);
+    ZMQ_RAISE_IF(socket == NULL);
     sock_value = caml_zmq_copy_socket(socket);
     CAMLreturn (sock_value);
 }
@@ -156,7 +156,7 @@ CAMLprim value caml_zmq_socket(value ctx, value socket_kind) {
 CAMLprim value caml_zmq_close(value socket) {
     CAMLparam1 (socket);
     int result = zmq_close(CAML_ZMQ_Socket_val(socket));
-    caml_zmq_raise_if(result == -1);
+    ZMQ_RAISE_IF(result == -1);
     CAMLreturn (Val_unit);
 }
 
@@ -177,7 +177,7 @@ CAMLprim value caml_zmq_set_uint64_option(value socket, value option_name, value
                                 &val,
                                 sizeof(val));
 
-    caml_zmq_raise_if (result == -1);
+    ZMQ_RAISE_IF(result == -1);
 
     CAMLreturn (Val_unit);
 }
@@ -195,7 +195,7 @@ CAMLprim value caml_zmq_set_int64_option(value socket, value option_name, value 
                                 &val,
                                 sizeof(val));
 
-    caml_zmq_raise_if (result == -1);
+    ZMQ_RAISE_IF(result == -1);
 
     CAMLreturn (Val_unit);
 }
@@ -224,7 +224,7 @@ int caml_zmq_set_bytes_option(value socket, value option_name, value socket_opti
                                 option_value,
                                 option_size);
 
-    caml_zmq_raise_if (result == -1);
+    ZMQ_RAISE_IF(result == -1);
 
     CAMLreturn (Val_unit);
 }
@@ -272,7 +272,7 @@ CAMLprim value caml_zmq_set_int_option(value socket, value option_name, value so
                                 &val,
                                 sizeof(val));
 
-    caml_zmq_raise_if (result == -1);
+    ZMQ_RAISE_IF(result == -1);
 
     CAMLreturn (Val_unit);
 }
@@ -289,7 +289,7 @@ CAMLprim value caml_zmq_get_uint64_option(value socket, value option_name) {
                                  native_uint64_option_for[Int_val(option_name)],
                                  &mark,
                                  &mark_size);
-    caml_zmq_raise_if (result == -1);
+    ZMQ_RAISE_IF(result == -1);
     CAMLreturn (copy_uint64(mark));
 }
 
@@ -301,7 +301,7 @@ CAMLprim value caml_zmq_get_int64_option(value socket, value option_name) {
                                  native_int64_option_for[Int_val(option_name)],
                                  &mark,
                                  &mark_size);
-    caml_zmq_raise_if (result == -1);
+    ZMQ_RAISE_IF(result == -1);
     CAMLreturn (caml_copy_int64(mark));
 }
 
@@ -314,7 +314,7 @@ CAMLprim value caml_zmq_get_bytes_option(value socket, value option_name) {
                                  buffer,
                                  &buffer_size);
     buffer[result] = '\0';
-    caml_zmq_raise_if (result == -1);
+    ZMQ_RAISE_IF(result == -1);
     CAMLreturn (caml_copy_string(buffer));
 }
 
@@ -326,7 +326,7 @@ CAMLprim value caml_zmq_get_int_option(value socket, value option_name) {
                                  native_int_option_for[Int_val(option_name)],
                                  &mark,
                                  &mark_size);
-    caml_zmq_raise_if (result == -1);
+    ZMQ_RAISE_IF(result == -1);
     CAMLreturn (Val_int(mark));
 }
 
@@ -338,7 +338,7 @@ CAMLprim value caml_zmq_get_events(value socket) {
                                  ZMQ_EVENTS,
                                  &event,
                                  &event_size);
-    caml_zmq_raise_if (result == -1);
+    ZMQ_RAISE_IF(result == -1);
     int event_type = 0; /* No_event */
     if (event & ZMQ_POLLIN) {
         event_type = 1; /* Poll_in */
@@ -361,7 +361,7 @@ CAMLprim value caml_zmq_get_fd(value socket) {
                                  ZMQ_FD,
                                  (void *)&fd,
                                  &mark_size);
-    caml_zmq_raise_if (result == -1);
+    ZMQ_RAISE_IF(result == -1);
     CAMLreturn (Val_fd(fd));
 }
 
@@ -374,7 +374,7 @@ CAMLprim value caml_zmq_get_fd(value socket) {
 CAMLprim value caml_zmq_bind(value socket, value string_address) {
     CAMLparam2 (socket, string_address);
     int result = zmq_bind(CAML_ZMQ_Socket_val(socket), String_val(string_address));
-    caml_zmq_raise_if (result == -1);
+    ZMQ_RAISE_IF(result == -1);
     CAMLreturn(Val_unit);
 }
 
@@ -385,7 +385,7 @@ CAMLprim value caml_zmq_bind(value socket, value string_address) {
 CAMLprim value caml_zmq_connect(value socket, value string_address) {
     CAMLparam2 (socket, string_address);
     int result = zmq_connect(CAML_ZMQ_Socket_val(socket), String_val(string_address));
-    caml_zmq_raise_if (result == -1);
+    ZMQ_RAISE_IF(result == -1);
     CAMLreturn(Val_unit);
 }
 
@@ -395,7 +395,7 @@ CAMLprim value caml_zmq_connect(value socket, value string_address) {
 CAMLprim value caml_zmq_disconnect(value socket, value string_address) {
     CAMLparam2 (socket, string_address);
     int result = zmq_disconnect(CAML_ZMQ_Socket_val(socket), String_val(string_address));
-    caml_zmq_raise_if (result == -1);
+    ZMQ_RAISE_IF(result == -1);
     CAMLreturn(Val_unit);
 }
 
@@ -414,7 +414,7 @@ CAMLprim value caml_zmq_send(value socket, value string, value block_flag, value
     zmq_msg_t msg;
     int length = caml_string_length(string);
     int result = zmq_msg_init_size(&msg, length);
-    caml_zmq_raise_if (result == -1);
+    ZMQ_RAISE_IF(result == -1);
 
     /* Doesn't copy '\0' */
     memcpy ((void *) zmq_msg_data (&msg), String_val(string), length);
@@ -424,8 +424,8 @@ CAMLprim value caml_zmq_send(value socket, value string, value block_flag, value
     caml_acquire_runtime_system();
 
     int close_result = zmq_msg_close (&msg);
-    caml_zmq_raise_if (result == -1);
-    caml_zmq_raise_if (close_result == -1);
+    ZMQ_RAISE_IF(result == -1);
+    ZMQ_RAISE_IF(close_result == -1);
 
     CAMLreturn(Val_unit);
 }
@@ -445,19 +445,19 @@ CAMLprim value caml_zmq_recv(value socket, value block_flag) {
 
     zmq_msg_t msg;
     int result = zmq_msg_init (&msg);
-    caml_zmq_raise_if (result == -1);
+    ZMQ_RAISE_IF(result == -1);
 
     caml_release_runtime_system();
     result = zmq_msg_recv (&msg, sock, option);
     caml_acquire_runtime_system();
 
-    caml_zmq_raise_if (result == -1);
+    ZMQ_RAISE_IF(result == -1);
 
     size_t size = zmq_msg_size (&msg);
     message = caml_alloc_string(size);
     memcpy (String_val(message), zmq_msg_data (&msg), size);
     result = zmq_msg_close(&msg);
-    caml_zmq_raise_if (result == -1);
+    ZMQ_RAISE_IF(result == -1);
     CAMLreturn (message);
 }
 
@@ -476,7 +476,7 @@ CAMLprim value caml_zmq_proxy2(value frontend, value backend) {
     caml_acquire_runtime_system();
 
     /* Will awlays raise an exception */
-    caml_zmq_raise_if(result == -1);
+    ZMQ_RAISE_IF(result == -1);
     CAMLreturn (Val_unit);
 }
 
@@ -492,7 +492,7 @@ CAMLprim value caml_zmq_proxy3(value frontend, value backend, value capture) {
     caml_acquire_runtime_system();
 
     /* Will awlays raise an exception */
-    caml_zmq_raise_if(result == -1);
+    ZMQ_RAISE_IF(result == -1);
     CAMLreturn (Val_unit);
 }
 
@@ -504,7 +504,7 @@ CAMLprim value caml_zmq_socket_monitor(value socket, value address) {
     caml_acquire_runtime_system();
 
     /* Will awlays raise an exception */
-    caml_zmq_raise_if(result == -1);
+    ZMQ_RAISE_IF(result == -1);
     CAMLreturn (Val_unit);
 }
 
@@ -594,7 +594,7 @@ CAMLprim value caml_decode_monitor_event(value event_val, value addr) {
         Store_field(result, 1, Val_fd(event.value));
         break;
     default:
-        caml_zmq_raise(EFAULT, "Undefined event type");
+        caml_zmq_raise(EFAULT, "Undefined event type", __FUNCTION__);
         break;
     }
     CAMLreturn(result);
@@ -649,7 +649,7 @@ CAMLprim value caml_curve_keypair(value unit) {
     public = caml_alloc_string(40);
     secret = caml_alloc_string(40);
     int result = zmq_curve_keypair(String_val(public), String_val(secret));
-    caml_zmq_raise_if(result == -1);
+    ZMQ_RAISE_IF(result == -1);
 
     tuple = caml_alloc_tuple(2);
     Store_field(tuple, 0, public);
