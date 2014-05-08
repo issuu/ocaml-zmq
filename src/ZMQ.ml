@@ -3,24 +3,6 @@
 (** Module Exceptions *)
 
 type error =
-| ENOTSUP
-| EPROTONOSUPPORT
-| ENOBUFS
-| ENETDOWN
-| EADDRINUSE
-| EADDRNOTAVAIL
-| ECONNREFUSED
-| EINPROGRESS
-| ENOTSOCK
-| EMSGSIZE
-| EAFNOSUPPORT
-| ENETUNREACH
-| ECONNABORTED
-| ECONNRESET
-| ENOTCONN
-| ETIMEDOUT
-| EHOSTUNREACH
-| ENETRESET
 | EFSM
 | ENOCOMPATPROTO
 | ETERM
@@ -28,9 +10,6 @@ type error =
 | EUNKNOWN
 
 exception ZMQ_exception of error * string
-
-let _ =
-  Callback.register_exception "ZMQ.ZMQ_exception" (ZMQ_exception(EUNKNOWN, "Unknown error"))
 
 external version : unit -> int * int * int = "caml_zmq_version"
 
@@ -639,3 +618,65 @@ end
 module Curve = struct
   external keypair : unit -> string * string = "caml_curve_keypair"
 end
+
+(* The following code is called by fail.c *)
+
+type internal_error =
+(* zmq.h defines the following Unix error codes if they are not already defined
+ * by the system headers *)
+| I_ENOTSUP
+| I_EPROTONOSUPPORT
+| I_ENOBUFS
+| I_ENETDOWN
+| I_EADDRINUSE
+| I_EADDRNOTAVAIL
+| I_ECONNREFUSED
+| I_EINPROGRESS
+| I_ENOTSOCK
+| I_EMSGSIZE
+| I_EAFNOSUPPORT
+| I_ENETUNREACH
+| I_ECONNABORTED
+| I_ECONNRESET
+| I_ENOTCONN
+| I_ETIMEDOUT
+| I_EHOSTUNREACH
+| I_ENETRESET
+(* The following error codes are ZMQ-specific *)
+| I_EFSM
+| I_ENOCOMPATPROTO
+| I_ETERM
+| I_EMTHREAD
+| I_EUNKNOWN
+
+(* All Unix-type errors are mapped to their corresponding constructor in
+ * Unix -- except I_ENOTSUP, which is mapped to EOPNOTSUPP ("Operation not
+ * supported on socket") since there is no Unix.ENOTSUP.
+ * ZMQ-specific errors are mapped to the constructors of ZMQ.error. *)
+let remap_exn e str =
+  match e with
+  | I_ENOTSUP         -> Unix.(Unix_error (EOPNOTSUPP     , str, ""))
+  | I_EPROTONOSUPPORT -> Unix.(Unix_error (EPROTONOSUPPORT, str, ""))
+  | I_ENOBUFS         -> Unix.(Unix_error (ENOBUFS        , str, ""))
+  | I_ENETDOWN        -> Unix.(Unix_error (ENETDOWN       , str, ""))
+  | I_EADDRINUSE      -> Unix.(Unix_error (EADDRINUSE     , str, ""))
+  | I_EADDRNOTAVAIL   -> Unix.(Unix_error (EADDRNOTAVAIL  , str, ""))
+  | I_ECONNREFUSED    -> Unix.(Unix_error (ECONNREFUSED   , str, ""))
+  | I_EINPROGRESS     -> Unix.(Unix_error (EINPROGRESS    , str, ""))
+  | I_ENOTSOCK        -> Unix.(Unix_error (ENOTSOCK       , str, ""))
+  | I_EMSGSIZE        -> Unix.(Unix_error (EMSGSIZE       , str, ""))
+  | I_EAFNOSUPPORT    -> Unix.(Unix_error (EAFNOSUPPORT   , str, ""))
+  | I_ENETUNREACH     -> Unix.(Unix_error (ENETUNREACH    , str, ""))
+  | I_ECONNABORTED    -> Unix.(Unix_error (ECONNABORTED   , str, ""))
+  | I_ECONNRESET      -> Unix.(Unix_error (ECONNRESET     , str, ""))
+  | I_ENOTCONN        -> Unix.(Unix_error (ENOTCONN       , str, ""))
+  | I_ETIMEDOUT       -> Unix.(Unix_error (ETIMEDOUT      , str, ""))
+  | I_EHOSTUNREACH    -> Unix.(Unix_error (EHOSTUNREACH   , str, ""))
+  | I_ENETRESET       -> Unix.(Unix_error (ENETRESET      , str, ""))
+  | I_EFSM            -> ZMQ_exception (EFSM          , str)
+  | I_ENOCOMPATPROTO  -> ZMQ_exception (ENOCOMPATPROTO, str)
+  | I_ETERM           -> ZMQ_exception (ETERM         , str)
+  | I_EMTHREAD        -> ZMQ_exception (EMTHREAD      , str)
+  | I_EUNKNOWN        -> ZMQ_exception (EUNKNOWN      , str)
+
+let () = Callback.register "ZMQ.remap_exn" remap_exn

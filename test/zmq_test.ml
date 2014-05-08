@@ -133,7 +133,7 @@ let test_proxy () =
       ZMQ.Proxy.create pull pub;
       assert_failure "Proxy.create must raise an exception when completed"
     with
-      ZMQ.ZMQ_exception _ -> ()
+      Unix.Unix_error (Unix.ENOTSOCK, _, _) -> ()
   in
 
   let _thread = Thread.create proxy (pull, pub) in
