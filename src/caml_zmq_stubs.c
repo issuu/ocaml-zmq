@@ -189,7 +189,7 @@ static int const native_int64_option_for[] = {
 CAMLprim value caml_zmq_set_int64_option(value socket, value option_name, value socket_option) {
     CAMLparam3 (socket, option_name, socket_option);
 
-    int64 val = Int64_val(Field(socket_option, 1));
+    int64 val = Int64_val(socket_option);
     int result = zmq_setsockopt(CAML_ZMQ_Socket_val(socket),
                                 native_int64_option_for[Int_val(option_name)],
                                 &val,
