@@ -653,31 +653,32 @@ type internal_error =
  * Unix -- except I_ENOTSUP, which is mapped to EOPNOTSUPP ("Operation not
  * supported on socket") since there is no Unix.ENOTSUP.
  * ZMQ-specific errors are mapped to the constructors of ZMQ.error. *)
-let zmq_raise e str location =
+let zmq_raise e str func_name =
   let exn = match e with
-  | I_ENOTSUP         -> Unix.(Unix_error (EOPNOTSUPP     , str, location))
-  | I_EPROTONOSUPPORT -> Unix.(Unix_error (EPROTONOSUPPORT, str, location))
-  | I_ENOBUFS         -> Unix.(Unix_error (ENOBUFS        , str, location))
-  | I_ENETDOWN        -> Unix.(Unix_error (ENETDOWN       , str, location))
-  | I_EADDRINUSE      -> Unix.(Unix_error (EADDRINUSE     , str, location))
-  | I_EADDRNOTAVAIL   -> Unix.(Unix_error (EADDRNOTAVAIL  , str, location))
-  | I_ECONNREFUSED    -> Unix.(Unix_error (ECONNREFUSED   , str, location))
-  | I_EINPROGRESS     -> Unix.(Unix_error (EINPROGRESS    , str, location))
-  | I_ENOTSOCK        -> Unix.(Unix_error (ENOTSOCK       , str, location))
-  | I_EMSGSIZE        -> Unix.(Unix_error (EMSGSIZE       , str, location))
-  | I_EAFNOSUPPORT    -> Unix.(Unix_error (EAFNOSUPPORT   , str, location))
-  | I_ENETUNREACH     -> Unix.(Unix_error (ENETUNREACH    , str, location))
-  | I_ECONNABORTED    -> Unix.(Unix_error (ECONNABORTED   , str, location))
-  | I_ECONNRESET      -> Unix.(Unix_error (ECONNRESET     , str, location))
-  | I_ENOTCONN        -> Unix.(Unix_error (ENOTCONN       , str, location))
-  | I_ETIMEDOUT       -> Unix.(Unix_error (ETIMEDOUT      , str, location))
-  | I_EHOSTUNREACH    -> Unix.(Unix_error (EHOSTUNREACH   , str, location))
-  | I_ENETRESET       -> Unix.(Unix_error (ENETRESET      , str, location))
+  | I_ENOTSUP         -> Unix.(Unix_error (EOPNOTSUPP     , func_name, ""))
+  | I_EPROTONOSUPPORT -> Unix.(Unix_error (EPROTONOSUPPORT, func_name, ""))
+  | I_ENOBUFS         -> Unix.(Unix_error (ENOBUFS        , func_name, ""))
+  | I_ENETDOWN        -> Unix.(Unix_error (ENETDOWN       , func_name, ""))
+  | I_EADDRINUSE      -> Unix.(Unix_error (EADDRINUSE     , func_name, ""))
+  | I_EADDRNOTAVAIL   -> Unix.(Unix_error (EADDRNOTAVAIL  , func_name, ""))
+  | I_ECONNREFUSED    -> Unix.(Unix_error (ECONNREFUSED   , func_name, ""))
+  | I_EINPROGRESS     -> Unix.(Unix_error (EINPROGRESS    , func_name, ""))
+  | I_ENOTSOCK        -> Unix.(Unix_error (ENOTSOCK       , func_name, ""))
+  | I_EMSGSIZE        -> Unix.(Unix_error (EMSGSIZE       , func_name, ""))
+  | I_EAFNOSUPPORT    -> Unix.(Unix_error (EAFNOSUPPORT   , func_name, ""))
+  | I_ENETUNREACH     -> Unix.(Unix_error (ENETUNREACH    , func_name, ""))
+  | I_ECONNABORTED    -> Unix.(Unix_error (ECONNABORTED   , func_name, ""))
+  | I_ECONNRESET      -> Unix.(Unix_error (ECONNRESET     , func_name, ""))
+  | I_ENOTCONN        -> Unix.(Unix_error (ENOTCONN       , func_name, ""))
+  | I_ETIMEDOUT       -> Unix.(Unix_error (ETIMEDOUT      , func_name, ""))
+  | I_EHOSTUNREACH    -> Unix.(Unix_error (EHOSTUNREACH   , func_name, ""))
+  | I_ENETRESET       -> Unix.(Unix_error (ENETRESET      , func_name, ""))
   | I_EFSM            -> ZMQ_exception (EFSM          , str)
   | I_ENOCOMPATPROTO  -> ZMQ_exception (ENOCOMPATPROTO, str)
   | I_ETERM           -> ZMQ_exception (ETERM         , str)
   | I_EMTHREAD        -> ZMQ_exception (EMTHREAD      , str)
-  | I_EUNKNOWN        -> ZMQ_exception (EUNKNOWN      , str) in
+  | I_EUNKNOWN        -> ZMQ_exception (EUNKNOWN      , str)
+  in
 
   raise exn
 
