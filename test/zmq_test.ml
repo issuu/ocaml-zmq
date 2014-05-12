@@ -164,7 +164,7 @@ let test_proxy () =
   ()
 
 (** Simple test to test interrupted exception, while in the C lib. *)
-let test_exceptions () =
+let test_unix_exceptions () =
   let ctx = ZMQ.Context.create () in
   let s = ZMQ.Socket.create ctx pull in
 
@@ -174,6 +174,17 @@ let test_exceptions () =
   ignore (Unix.alarm 1);
 
   assert_raises ~msg:"Failed to raise EINTR" Unix.(Unix_error(EINTR, "caml_zmq_poll", ""))  (fun _ -> ZMQ.Poll.poll ~timeout:2000 mask);
+  ()
+
+(** Test a ZMQ specific exception *)
+let test_zmq_exception () =
+  let ctx = ZMQ.Context.create () in
+  let socket = ZMQ.Socket.create ctx req in
+  assert_raises
+    (ZMQ.ZMQ_exception(ZMQ.EFSM, "Operation cannot be accomplished in current state"))
+    (fun () -> ZMQ.Socket.recv socket);
+  ZMQ.Socket.close socket;
+  ZMQ.Context.terminate ctx;
   ()
 
 let test_z85 () =
@@ -279,5 +290,6 @@ let suite =
       "proxy" >:: test_proxy;
       "monitor" >:: test_monitor;
       "z85 encoding/decoding" >:: test_z85;
-      "unix_exceptions" >:: test_exceptions;
+      "unix exceptions" >:: test_unix_exceptions;
+      "zmq exceptions" >:: test_zmq_exception;
     ]
