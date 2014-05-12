@@ -42,7 +42,7 @@ static int const caml_zmq_error_table[] = {
 static int const caml_zmq_EUNKNOWN =
     (sizeof caml_zmq_error_table) / (sizeof caml_zmq_error_table[0]);
 
-void caml_zmq_raise(int err_no, const char *err_str, const char *location) {
+void caml_zmq_raise(int err_no, const char *err_str, const char *name) {
     CAMLparam0 ();
 
     /* err_no can be a standard Unix error code, or it can be a ZMQ-defined
@@ -52,7 +52,7 @@ void caml_zmq_raise(int err_no, const char *err_str, const char *location) {
      * codes.
      */
     if (err_no < ZMQ_HAUSNUMERO) {
-        unix_error(err_no, (char *) location, Nothing);
+        unix_error(err_no, (char *) name, Nothing);
 
     } else {
         int error_to_raise = caml_zmq_EUNKNOWN;
@@ -75,10 +75,10 @@ void caml_zmq_raise(int err_no, const char *err_str, const char *location) {
         */
 
         caml_callback3(*caml_named_value("ZMQ.zmq_raise"),
-                      Val_int(error_to_raise),
-                      caml_copy_string(err_str),
-                      caml_copy_string(location)
-                      );
+                       Val_int(error_to_raise),
+                       caml_copy_string(err_str),
+                       caml_copy_string(name)
+                       );
     }
 
     CAMLreturn0;
