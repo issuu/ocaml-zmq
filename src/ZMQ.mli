@@ -50,8 +50,9 @@ module Socket : sig
 
   (** Wiring *)
   val connect : 'a t -> string -> unit
-  val bind : 'a t -> string -> unit
   val disconnect : 'a t -> string -> unit
+  val bind : 'a t -> string -> unit
+  val unbind : 'a t -> string -> unit
 
   (** Read a message from the socket.
       block indicates if the call should be blocking or non-blocking. Default true
