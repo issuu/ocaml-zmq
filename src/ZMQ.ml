@@ -79,6 +79,7 @@ module Socket = struct
   external connect : 'a t -> string -> unit = "caml_zmq_connect"
   external disconnect : 'a t -> string -> unit = "caml_zmq_disconnect"
   external bind : 'a t -> string -> unit = "caml_zmq_bind"
+  external unbind : 'a t -> string -> unit = "caml_zmq_unbind"
 
   (** Send and Receive *)
   external native_recv : 'a t -> bool -> string = "caml_zmq_recv"

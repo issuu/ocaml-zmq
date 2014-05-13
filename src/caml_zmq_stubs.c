@@ -362,20 +362,8 @@ CAMLprim value caml_zmq_get_fd(value socket) {
 
 
 /**
- * Bind
- */
-
-CAMLprim value caml_zmq_bind(value socket, value string_address) {
-    CAMLparam2 (socket, string_address);
-    int result = zmq_bind(CAML_ZMQ_Socket_val(socket), String_val(string_address));
-    caml_zmq_raise_if(result == -1, "zmq_bind");
-    CAMLreturn(Val_unit);
-}
-
-/**
  * Connect
  */
-
 CAMLprim value caml_zmq_connect(value socket, value string_address) {
     CAMLparam2 (socket, string_address);
     int result = zmq_connect(CAML_ZMQ_Socket_val(socket), String_val(string_address));
@@ -390,6 +378,26 @@ CAMLprim value caml_zmq_disconnect(value socket, value string_address) {
     CAMLparam2 (socket, string_address);
     int result = zmq_disconnect(CAML_ZMQ_Socket_val(socket), String_val(string_address));
     caml_zmq_raise_if(result == -1, "zmq_disconnect");
+    CAMLreturn(Val_unit);
+}
+
+/**
+ * Bind
+ */
+CAMLprim value caml_zmq_bind(value socket, value string_address) {
+    CAMLparam2 (socket, string_address);
+    int result = zmq_bind(CAML_ZMQ_Socket_val(socket), String_val(string_address));
+    caml_zmq_raise_if(result == -1, "zmq_bind");
+    CAMLreturn(Val_unit);
+}
+
+/**
+ * Unbind
+ */
+CAMLprim value caml_zmq_unbind(value socket, value string_address) {
+    CAMLparam2 (socket, string_address);
+    int result = zmq_unbind(CAML_ZMQ_Socket_val(socket), String_val(string_address));
+    caml_zmq_raise_if(result == -1, "zmq_unbind");
     CAMLreturn(Val_unit);
 }
 
@@ -432,7 +440,6 @@ CAMLprim value caml_zmq_send(value socket, value string, value block_flag, value
 /**
  * Receive
  */
-
 CAMLprim value caml_zmq_recv(value socket, value block_flag) {
     CAMLparam2 (socket, block_flag);
     CAMLlocal1 (message);
