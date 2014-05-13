@@ -133,7 +133,7 @@ let test_proxy () =
       ZMQ.Proxy.create pull pub;
       assert_failure "Proxy.create must raise an exception when completed"
     with
-      ZMQ.ZMQ_exception _ -> ()
+      Unix.Unix_error (Unix.ENOTSOCK, _, _) -> ()
   in
 
   let _thread = Thread.create proxy (pull, pub) in
@@ -162,6 +162,43 @@ let test_proxy () =
   ZMQ.Socket.close pub;
   ZMQ.Context.terminate ctx;
   ()
+
+(** Simple test to test interrupted exception, while in the C lib. *)
+let test_unix_exceptions = bracket
+    (fun () ->
+       let ctx = ZMQ.Context.create () in
+       let s = ZMQ.Socket.create ctx pull in
+       (ctx, s)
+    )
+    (fun (_, s) ->
+
+       let mask = ZMQ.Poll.mask_of [| s, ZMQ.Poll.In |] in
+       Sys.(set_signal sigalrm (Signal_handle (fun _ -> ())));
+       ignore (Unix.alarm 1);
+       assert_raises ~msg:"Failed to raise EINTR" Unix.(Unix_error(EINTR, "zmq_poll", ""))  (fun _ -> ZMQ.Poll.poll ~timeout:2000 mask);
+       ()
+    )
+    (fun (ctx, s) ->
+       ZMQ.Socket.close s;
+       ZMQ.Context.terminate ctx
+    )
+
+(** Test a ZMQ specific exception *)
+let test_zmq_exception = bracket
+  (fun () ->
+    let ctx = ZMQ.Context.create () in
+    let socket = ZMQ.Socket.create ctx req in
+    (ctx, socket)
+  )
+  (fun (_, socket) ->
+     assert_raises
+       (ZMQ.ZMQ_exception(ZMQ.EFSM, "Operation cannot be accomplished in current state"))
+       (fun () -> ZMQ.Socket.recv socket);
+  )
+  (fun (ctx, socket) ->
+     ZMQ.Socket.close socket;
+     ZMQ.Context.terminate ctx;
+  )
 
 let test_z85 () =
   let binary = "\xBB\x88\x47\x1D\x65\xE2\x65\x9B" ^
@@ -266,4 +303,6 @@ let suite =
       "proxy" >:: test_proxy;
       "monitor" >:: test_monitor;
       "z85 encoding/decoding" >:: test_z85;
+      "unix exceptions" >:: test_unix_exceptions;
+      "zmq exceptions" >:: test_zmq_exception;
     ]
