@@ -7,9 +7,16 @@
 #include <caml/memory.h>
 #include <caml/custom.h>
 
+CAMLextern value caml_zmq_close(value ctx);
+
+static void custom_finalize_socket(value socket) {
+    if (CAML_ZMQ_Socket_val(socket))
+        caml_zmq_close(socket);
+}
+
 static struct custom_operations caml_zmq_socket_ops = {
     "org.zeromq.socket",
-    custom_finalize_default,
+    custom_finalize_socket,
     custom_compare_default,
     custom_hash_default,
     custom_serialize_default,
