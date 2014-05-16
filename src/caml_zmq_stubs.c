@@ -155,6 +155,7 @@ CAMLprim value caml_zmq_close(value socket) {
     CAMLparam1 (socket);
     int result = zmq_close(CAML_ZMQ_Socket_val(socket));
     caml_zmq_raise_if(result == -1, "zmq_close");
+    CAML_ZMQ_Socket_val(socket) = NULL;
     CAMLreturn (Val_unit);
 }
 
