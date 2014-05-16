@@ -10,7 +10,8 @@
 CAMLextern value caml_zmq_term(value ctx);
 
 static void custom_finalize_context(value context) {
-    caml_zmq_term(context);
+    if (CAML_ZMQ_Context_val(context))
+        caml_zmq_term(context);
 }
 
 static struct custom_operations caml_zmq_context_ops = {
