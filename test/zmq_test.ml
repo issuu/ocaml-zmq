@@ -200,6 +200,14 @@ let test_zmq_exception = bracket
      ZMQ.Context.terminate ctx;
   )
 
+let test_socket_gc () =
+  let _sock =
+    let ctx = ZMQ.Context.create () in
+    ZMQ.Socket.create ctx ZMQ.Socket.req
+  in
+  (* This will hang trying to terminate the context if socket doesn't keep it alive *)
+  Gc.compact ()
+
 let test_z85 () =
   let binary = "\xBB\x88\x47\x1D\x65\xE2\x65\x9B" ^
                "\x30\xC5\x5A\x53\x21\xCE\xBB\x5A" ^
@@ -305,4 +313,5 @@ let suite =
       "z85 encoding/decoding" >:: test_z85;
       "unix exceptions" >:: test_unix_exceptions;
       "zmq exceptions" >:: test_zmq_exception;
+      "socket gc" >:: test_socket_gc;
     ]
