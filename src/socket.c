@@ -14,8 +14,11 @@
 
 static void custom_finalize_socket(value socket) {
     if (CAML_ZMQ_Socket_inner_val(socket)) {
-        int result = zmq_close(CAML_ZMQ_Socket_inner_val(socket));
-        caml_zmq_raise_if(result == -1, "zmq_close");
+        zmq_close(CAML_ZMQ_Socket_inner_val(socket));
+        /* zmq_close can return an error, which will be ignored;
+           the only possible error is ENOTSOCK, which should be dynamically
+           never encountered, and if it is, it would be raised from
+           the finalizer, which would be not helpful and confusing. */
         CAML_ZMQ_Socket_inner_val(socket) = NULL;
     }
 }
