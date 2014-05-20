@@ -14,11 +14,19 @@
 
 static void custom_finalize_socket(value socket) {
     if (CAML_ZMQ_Socket_inner_val(socket)) {
+        /* First, set ZMQ_LINGER to 0, so that zmq_term will never hang due to
+           finalised sockets. */
+
+        int linger = 0;
+        zmq_setsockopt(CAML_ZMQ_Socket_inner_val(socket), ZMQ_LINGER, &linger, sizeof(linger));
+        /* See the note on errors below; it applies to EINVAL, ETERM and
+           ENOTSOCK. Setting ZMQ_LINGER cannot return EINTR. */
+
         zmq_close(CAML_ZMQ_Socket_inner_val(socket));
         /* zmq_close can return an error, which will be ignored;
-           the only possible error is ENOTSOCK, which should be dynamically
-           never encountered, and if it is, it would be raised from
-           the finalizer, which would be not helpful and confusing. */
+           the only possible error is ENOTSOCK, which would never
+           dynamically happen. */
+
         CAML_ZMQ_Socket_inner_val(socket) = NULL;
     }
 }

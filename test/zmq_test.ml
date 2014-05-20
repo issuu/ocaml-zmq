@@ -201,12 +201,25 @@ let test_zmq_exception = bracket
   )
 
 let test_socket_gc () =
-  let _sock =
+  let sock =
     let ctx = ZMQ.Context.create () in
     ZMQ.Socket.create ctx ZMQ.Socket.req
   in
   (* This will hang trying to terminate the context if socket doesn't keep it alive *)
-  Gc.compact ()
+  Gc.compact ();
+  ZMQ.Socket.close sock
+
+let test_context_gc () =
+  let ctx =
+    let ctx = ZMQ.Context.create () in
+    let sock = ZMQ.Socket.create ctx ZMQ.Socket.pair in
+    ZMQ.Socket.connect sock "tcp://127.0.0.1:9999";
+    ZMQ.Socket.send sock "test";
+    ctx
+  in
+  (* This will hang if context finalizer doesn't release the mutex *)
+  Gc.compact ();
+  ZMQ.Context.terminate ctx
 
 let test_z85 () =
   let binary = "\xBB\x88\x47\x1D\x65\xE2\x65\x9B" ^
@@ -314,4 +327,5 @@ let suite =
       "unix exceptions" >:: test_unix_exceptions;
       "zmq exceptions" >:: test_zmq_exception;
       "socket gc" >:: test_socket_gc;
+      "context gc" >:: test_context_gc;
     ]

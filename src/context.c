@@ -9,8 +9,6 @@
 
 #include <zmq.h>
 
-CAMLextern value caml_zmq_term(value ctx);
-
 static void custom_finalize_context(value context) {
     if (CAML_ZMQ_Context_val(context)) {
         do {
