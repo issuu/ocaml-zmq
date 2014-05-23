@@ -7,10 +7,21 @@
 #include <caml/custom.h>
 #include <caml/memory.h>
 
-CAMLextern value caml_zmq_term(value ctx);
+#include <zmq.h>
 
 static void custom_finalize_context(value context) {
-    caml_zmq_term(context);
+    if (CAML_ZMQ_Context_val(context)) {
+        do {
+            int result = zmq_ctx_term(CAML_ZMQ_Context_val(context));
+            /* If termination was interrupted by a signal, restart. */
+            if (result == EINTR) continue;
+
+            /* For errors other than EINTR (i.e. only EFAULT), see the
+               ntoes in socket.c, custom_finalize_socket. */
+        } while(0);
+
+        CAML_ZMQ_Context_val(context) = NULL;
+    }
 }
 
 static struct custom_operations caml_zmq_context_ops = {

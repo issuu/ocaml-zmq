@@ -1,10 +1,11 @@
 open OUnit;;
 
-let suite = "ZMQ" >::: 
+let suite = "ZMQ" >:::
   [
     Zmq_test.suite;
   ]
 
-let _ = 
-  run_test_tt_main suite
+let _ =
+  run_test_tt_main suite;
+  Gc.compact ()
 
