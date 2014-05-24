@@ -309,7 +309,7 @@ CAMLprim value caml_zmq_get_bytes_option(value socket, value option_name) {
                                  buffer,
                                  &buffer_size);
     caml_zmq_raise_if(result == -1, "zmq_getsockopt");
-    buffer[result] = '\0';
+    buffer[buffer_size] = '\0';
     CAMLreturn (caml_copy_string(buffer));
 }
 
