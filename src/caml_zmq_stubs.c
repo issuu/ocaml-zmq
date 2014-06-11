@@ -462,7 +462,7 @@ CAMLprim value caml_zmq_recv(value socket, value block_flag) {
     if (result == -1) {
         errno = zmq_errno();
         zmq_msg_close (&msg);
-        caml_zmq_raise(errno, zmq_strerror(errno), "zmq_msg_send");
+        caml_zmq_raise(errno, zmq_strerror(errno), "zmq_msg_recv");
     }
 
     size_t size = zmq_msg_size (&msg);
