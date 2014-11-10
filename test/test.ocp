@@ -5,13 +5,12 @@ begin library "threads"
 end
 
 begin program "unittest"
+      requires = [ "ZMQ" "oUnit" "threads" "unix" ]
       sort = true
       files = [
         "test.ml"
         "zmq_test.ml"
       ]
       link = [ "-thread" ]
-      comp = [ "-thread" ]
-      requires = [ "zmq" "oUnit" "threads" "unix" ]
-      comp = [ "-bin-annot" "-g" "-w" "@A-4-27-29-33-37-41-44-45" ]
+      comp = [ "-bin-annot" "-thread" "-g" "-w" "@A-4-27-29-33-37-41-44-45" ]
 end
