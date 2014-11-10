@@ -1,0 +1,16 @@
+begin library "threads"
+  generated = true
+  dirname = [ "%{OCAMLLIB}%/threads" ]
+  has_byte = false
+end
+
+begin program "unittest"
+      requires = [ "oUnit" "threads" "unix" "zmq-lib" ]
+      sort = true
+      files = [
+        "test.ml"
+        "zmq_test.ml"
+      ]
+      link = [ "-thread" ]
+      comp = [ "-bin-annot" "-thread" "-g" "-w" "@A-4-27-29-33-37-41-44-45" ]
+end

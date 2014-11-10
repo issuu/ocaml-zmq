@@ -1,0 +1,8 @@
+version = "4.0"
+description = "Bindings for the ZMQ library"
+requires = "unix uint.uint64"
+archive(byte) = "zmq-lib.cma"
+archive(byte, plugin) = "zmq-lib.cma"
+archive(native) = "zmq-lib.cmxa"
+archive(native, plugin) = "zmq-lib.cmxa"
+exists_if = "zmq-lib.cma"

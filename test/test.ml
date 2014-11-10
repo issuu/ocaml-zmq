@@ -6,6 +6,6 @@ let suite = "ZMQ" >:::
   ]
 
 let _ =
-  run_test_tt_main suite;
-  Gc.compact ()
-
+  let _ = run_test_tt_main suite in
+  let _ = Gc.compact () in
+  ()

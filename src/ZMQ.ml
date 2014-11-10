@@ -172,7 +172,7 @@ module Socket = struct
     match String.length str with
     | n when n < min -> invalid_arg msg
     | n when n > max -> invalid_arg msg
-    | n -> ()
+    | _ -> ()
 
   let set_max_message_size socket size =
     set_int64_option socket ZMQ_MAXMSGSIZE (Int64.of_int size)

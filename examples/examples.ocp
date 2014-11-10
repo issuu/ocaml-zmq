@@ -1,0 +1,33 @@
+requires = [ "unix" "str" "zmq-lib"  ]
+
+begin program "hwclient"
+  files = [ "hwclient.ml" ]
+end
+
+begin program "hwserver"
+  files = [ "hwserver.ml" ]
+end
+
+begin program "wuclient"
+  files = [ "wuclient.ml" ]
+end
+
+begin program "wuserver"
+  files = [ "wuserver.ml" ]
+end
+
+begin program "wuproxy"
+  files = [ "wuproxy.ml" ]
+end
+
+begin program "taskvent"
+  files = [ "taskvent.ml" ]
+end
+
+begin program "taskwork"
+  files = [ "taskwork.ml" ]
+end
+
+begin program "tasksink"
+  files = [ "tasksink.ml" ]
+end
