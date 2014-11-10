@@ -1,5 +1,3 @@
-# OASIS_START
-# DO NOT EDIT (digest: 05d6af35ca117301f950ec8e5c1eb6ba)
 version = "4.0"
 description = "Bindings for the ZMQ library"
 requires = "unix uint.uint64"
@@ -8,4 +6,3 @@ archive(byte, plugin) = "ZMQ.cma"
 archive(native) = "ZMQ.cmxa"
 archive(native, plugin) = "ZMQ.cmxa"
 exists_if = "ZMQ.cma"
-# OASIS_STOP
