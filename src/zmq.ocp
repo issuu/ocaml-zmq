@@ -11,7 +11,7 @@ begin library "ZMQ"
         "ZMQ.ml"
       ]
 
-      comp = [ "-bin-annot" "-g" "-w" "@A-4-27-29-33-37-41-44-45" ]
+      comp = [ "-bin-annot" "-g" "-w" "A-4-29-33-37-41-44-45" ]
       asmlink = [ "-cclib" "-lzmq" ]
       bytelink = [ "-cclib" "-lzmq" ]
 end
