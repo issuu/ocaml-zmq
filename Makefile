@@ -17,6 +17,5 @@ reinstall: uninstall install
 test: build
 	_obuild/unittest/unittest.asm
 
-
 clean:
 	ocp-build clean
