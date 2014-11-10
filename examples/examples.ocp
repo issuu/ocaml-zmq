@@ -1,4 +1,4 @@
-requires = [ "ZMQ" "unix" "str" ]
+requires = [ "unix" "str" "zmq-lib"  ]
 
 begin program "hwclient"
   files = [ "hwclient.ml" ]

@@ -1,7 +1,7 @@
 INSTALL_FILES = \
    META \
    src/ZMQ.mli \
-   $(addprefix  _obuild/ZMQ/, ZMQ.a ZMQ.cma ZMQ.cmi ZMQ.cmt ZMQ.cmti ZMQ.cmx ZMQ.cmxa libmlZMQ.a)
+   $(addprefix _obuild/zmq-lib/, ZMQ.cmi zmq-lib.a zmq-lib.cma zmq-lib.cmxa libmlzmq-lib.a)
 
 build:
 	ocp-build

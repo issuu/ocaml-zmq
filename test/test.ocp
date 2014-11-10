@@ -5,7 +5,7 @@ begin library "threads"
 end
 
 begin program "unittest"
-      requires = [ "ZMQ" "oUnit" "threads" "unix" ]
+      requires = [ "oUnit" "threads" "unix" "zmq-lib" ]
       sort = true
       files = [
         "test.ml"
