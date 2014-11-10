@@ -1,0 +1,16 @@
+begin library "zmq"
+      sort = true
+      files = [
+        "caml_zmq_stubs.c"
+        "context.c"
+        "fail.c"
+        "poll.c"
+        "socket.c"
+        "ZMQ.ml"
+      ]
+
+      requires = [ "uint" ]
+      comp = [ "-bin-annot" "-g" "-w" "@A-4-27-29-33-37-41-44-45" ]
+      asmlink = [ "-cclib" "-lzmq" "-I" "/home/afu/.opam/4.02.1/lib/uint"]
+      bytelink = [ "-cclib" "-lzmq" "-I" "/home/afu/.opam/4.02.1/lib/uint"]
+end
