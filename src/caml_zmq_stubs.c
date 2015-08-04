@@ -303,7 +303,7 @@ CAMLprim value caml_zmq_get_int64_option(value socket, value option_name) {
 CAMLprim value caml_zmq_get_bytes_option(value socket, value option_name) {
     CAMLparam2 (socket, option_name);
     char buffer[256];
-    size_t buffer_size = sizeof (buffer);
+    size_t buffer_size = sizeof (buffer) - 1;
     int result = zmq_getsockopt (CAML_ZMQ_Socket_val(socket),
                                  native_bytes_option_for[Int_val(option_name)],
                                  buffer,
