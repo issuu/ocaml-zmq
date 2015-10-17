@@ -20,8 +20,8 @@ Library ZMQ
                   poll.h,
                   poll.c
   BuildDepends:   unix, uint.uint64
-  CCLib:          -lzmq
-  CCOpt:          -I $pkg_uint_uint64 -Wall -Wextra -O2
+  CCLib:          -L/usr/local/lib -lzmq
+  CCOpt:          -I/usr/local/include -I $pkg_uint_uint64 -Wall -Wextra -O2
   CompiledObject: best
 
 Flag examples
