@@ -21,7 +21,7 @@
 #  include <winsock2.h>
 #  include <windows.h>
 #  define fd_type SOCKET
-#  define Val_fd(x) win_alloc_socket(fd)
+#  define Val_fd(x) win_alloc_socket(x)
 #else
 #  define fd_type int
 #  define Val_fd(x) Val_int(x)
