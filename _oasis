@@ -19,9 +19,9 @@ Library ZMQ
                   fail.c,
                   poll.h,
                   poll.c
-  BuildDepends:   unix, uint.uint64
+  BuildDepends:   unix, stdint
   CCLib:          -L/usr/local/lib -lzmq
-  CCOpt:          -I/usr/local/include -I $pkg_uint_uint64 -Wall -Wextra -O2
+  CCOpt:          -I/usr/local/include -I $pkg_stdint -Wall -Wextra -O2
   CompiledObject: best
 
 Flag examples
