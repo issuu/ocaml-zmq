@@ -50,6 +50,7 @@ module Context = struct
 end
 
 module Socket = struct
+  open Stdint
 
   type 'a t
 
