@@ -17,5 +17,4 @@ setup.log
 *.byte
 *.native
 src/META
-_tags
 myocamlbuild.ml
