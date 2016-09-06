@@ -12,4 +12,3 @@
 value caml_zmq_copy_context(void *zmq_context);
 
 #endif  /* CAML_ZMQ_CONTEXT_H_ */
-

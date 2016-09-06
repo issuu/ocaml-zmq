@@ -7,9 +7,8 @@
 
 #include <caml/mlvalues.h>
 
-#define CAML_ZMQ_Socket_val(v) (*((void **) Data_custom_val(Field(v, 1))))
+#define CAML_ZMQ_Socket_val(v) (*((void **) Data_custom_val(v)))
 
-value caml_zmq_copy_socket(value context, void *zmq_socket);
+value caml_zmq_copy_socket(void *zmq_socket);
 
 #endif  /* CAML_ZMQ_SOCKET_H_ */
-

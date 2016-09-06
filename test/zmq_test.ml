@@ -335,6 +335,8 @@ let suite =
       "z85 encoding/decoding" >:: test_z85;
       "unix exceptions" >:: test_unix_exceptions;
       "zmq exceptions" >:: test_zmq_exception;
-      "socket gc" >:: test_socket_gc;
-      "context gc" >:: test_context_gc;
+      (* Gc tests disabled, as resources will not be freed through finalisers
+         "socket gc" >:: test_socket_gc;
+         "context gc" >:: test_context_gc;
+      *)
     ]

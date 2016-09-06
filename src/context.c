@@ -11,16 +11,7 @@
 
 static void custom_finalize_context(value context) {
     if (CAML_ZMQ_Context_val(context)) {
-        do {
-            int result = zmq_ctx_term(CAML_ZMQ_Context_val(context));
-            /* If termination was interrupted by a signal, restart. */
-            if (result == EINTR) continue;
-
-            /* For errors other than EINTR (i.e. only EFAULT), see the
-               ntoes in socket.c, custom_finalize_socket. */
-        } while(0);
-
-        CAML_ZMQ_Context_val(context) = NULL;
+        fprintf(stderr, "Error: Context not closed before finalization\n");
     }
 }
 
@@ -43,4 +34,3 @@ value caml_zmq_copy_context(void *zmq_context) {
     CAML_ZMQ_Context_val(context) = zmq_context;
     CAMLreturn (context);
 }
-
