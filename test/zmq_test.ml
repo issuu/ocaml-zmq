@@ -44,14 +44,12 @@ let test_ctx_options () =
   test_set_get_int "IO threads" set_io_threads get_io_threads ctx 1;
   test_set_get_int "Max sockets" set_max_sockets get_max_sockets ctx 1024;
   test_set_get_bool "IPv6" Context.set_ipv6 Context.get_ipv6 ctx false;
-  ()
+  Context.terminate ctx
 
-let test_options () =
-  let socket =
-    let ctx = Context.create () in
-    let s = create ctx push in
-    s
-  in
+let test_socket_options () =
+  let ctx = Context.create () in
+  let socket = create ctx push in
+
 
   let test_set_get_int msg setter getter socket v =
     let default = getter socket in
@@ -76,6 +74,9 @@ let test_options () =
   test_set_get_int "Affinity" set_affinity get_affinity socket 3;
   test_set_get_int "Receive timeout" set_receive_timeout get_receive_timeout socket 1000;
   test_set_get_value "Tcp keepalive interval" set_tcp_keepalive_interval get_tcp_keepalive_interval socket (`Value 1000);
+
+  Socket.close socket;
+  Context.terminate ctx;
   ()
 
 let test_monitor () =
@@ -116,6 +117,10 @@ let test_monitor () =
   in
   assert_events m1 [ "Listening"; "Accepted"; "Closed" ];
   assert_events m2 [ "Connect delayed"; "Connect" ];
+
+  ZMQ.Socket.close m2;
+  ZMQ.Socket.close m1;
+  Context.terminate ctx;
   ()
 
 let test_proxy () =
@@ -207,7 +212,8 @@ let test_socket_gc () =
   in
   (* This will hang trying to terminate the context if socket doesn't keep it alive *)
   Gc.compact ();
-  ZMQ.Socket.close sock
+  ZMQ.Socket.close sock;
+  Gc.compact () (* Clean up the context.*)
 
 let test_context_gc () =
   let ctx =
@@ -217,9 +223,12 @@ let test_context_gc () =
     ZMQ.Socket.send sock "test";
     ctx
   in
-  (* This will hang if context finalizer doesn't release the mutex *)
+  (* At this point, ctx is alive. The garbage collector needs to set
+     so_linger when closing the socket, or it the system will hang when
+     trying to terminate the context. *)
   Gc.compact ();
-  ZMQ.Context.terminate ctx
+  ZMQ.Context.terminate ctx;
+  ()
 
 let test_z85 () =
   let binary = "\xBB\x88\x47\x1D\x65\xE2\x65\x9B" ^
@@ -317,15 +326,17 @@ let suite =
              close req;
              close rep;
              close sub;
-             ZMQ.Context.terminate ctx
+             ZMQ.Context.terminate ctx;
            ));
       "get/set context options" >:: test_ctx_options;
-      "get/set socket options" >:: test_options;
+      "get/set socket options" >:: test_socket_options;
       "proxy" >:: test_proxy;
       "monitor" >:: test_monitor;
       "z85 encoding/decoding" >:: test_z85;
       "unix exceptions" >:: test_unix_exceptions;
       "zmq exceptions" >:: test_zmq_exception;
-      "socket gc" >:: test_socket_gc;
-      "context gc" >:: test_context_gc;
+      (* Gc tests disabled, as resources will not be freed through finalisers
+         "socket gc" >:: test_socket_gc;
+         "context gc" >:: test_context_gc;
+      *)
     ]

@@ -16,9 +16,6 @@ setup.log
 *.swn
 *.byte
 *.native
-Makefile
-myocamlbuild.ml
-setup.ml
 src/META
-configure
 _tags
+myocamlbuild.ml
