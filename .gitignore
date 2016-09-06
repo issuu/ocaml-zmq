@@ -5,7 +5,6 @@ setup.data
 setup.log
 *.o
 *.so
-*.clib
 *.a
 *.cmx
 *.cmi
@@ -16,5 +15,3 @@ setup.log
 *.swn
 *.byte
 *.native
-src/META
-myocamlbuild.ml
