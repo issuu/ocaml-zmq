@@ -56,7 +56,7 @@ module Socket : sig
 
   (** Read a message from the socket.
       block indicates if the call should be blocking or non-blocking.
-      If block:false, on lack of message to receive, recv raises Unix.Unix_error (EAGAIN, "zmq_msg_recv", "")
+      If block is [false], [recv] will raise [Unix.Unix_error (Unix.EAGAIN, _, _)] if there are no messages available to receive on the specified socket.
       Default true
   *)
   val recv : ?block:bool -> 'a t -> string
