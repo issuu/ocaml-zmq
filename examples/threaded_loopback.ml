@@ -2,7 +2,7 @@ open ZMQ
 
 let rec subscription socket =
   (* Block thread until there is data *)
-  let msg = Socket.recv ~block:true socket in
+  let msg = Socket.recv socket in
   let thread = Thread.self () |> Thread.id |> string_of_int in
   print_endline @@ "thread " ^ thread ^ " received: " ^ msg;
   subscription socket 
