@@ -118,5 +118,15 @@ Executable tasksink
   ByteOpt:          -thread
   NativeOpt:        -thread
 
+Executable threadedloopback
+  Path:             examples
+  MainIs:           threaded_loopback.ml
+  Install:          false
+  Build$:           flag(examples)
+  BuildDepends:     ZMQ
+  CompiledObject:   best
+  ByteOpt:          -thread
+  NativeOpt:        -thread
+
 Test main
   Command:        $test
