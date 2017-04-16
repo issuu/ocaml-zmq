@@ -55,7 +55,9 @@ module Socket : sig
   val unbind : 'a t -> string -> unit
 
   (** Read a message from the socket.
-      block indicates if the call should be blocking or non-blocking. Default true
+      block indicates if the call should be blocking or non-blocking.
+      If block is [false], [recv] will raise [Unix.Unix_error (Unix.EAGAIN, _, _)] if there are no messages available to receive on the specified socket.
+      Default true
   *)
   val recv : ?block:bool -> 'a t -> string
 
