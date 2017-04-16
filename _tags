@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 750af406c65ae3906813717354b73eb6)
+# DO NOT EDIT (digest: 9efaac16d20fbc24b3d1afa5dbca91b2)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -119,6 +119,14 @@ true: annot, bin_annot
 <examples/tasksink.{native,byte}>: pkg_stdint
 <examples/tasksink.{native,byte}>: pkg_unix
 <examples/tasksink.{native,byte}>: use_ZMQ
+# Executable threadedloopback
+<examples/threaded_loopback.{native,byte}>: oasis_executable_threadedloopback_byte
+<examples/*.ml{,i,y}>: oasis_executable_threadedloopback_byte
+<examples/threaded_loopback.{native,byte}>: oasis_executable_threadedloopback_native
+<examples/*.ml{,i,y}>: oasis_executable_threadedloopback_native
+<examples/threaded_loopback.{native,byte}>: pkg_stdint
+<examples/threaded_loopback.{native,byte}>: pkg_unix
+<examples/threaded_loopback.{native,byte}>: use_ZMQ
 <examples/*.ml{,i,y}>: pkg_stdint
 <examples/*.ml{,i,y}>: pkg_unix
 <examples/*.ml{,i,y}>: use_ZMQ
