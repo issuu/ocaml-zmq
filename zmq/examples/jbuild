@@ -10,7 +10,9 @@
     taskvent
     taskwork
     tasksink
-    threaded_loopback))
+    threaded_loopback
+    echoserver
+    echoclient))
   (libraries (threads zmq str))))
 
 (alias
@@ -24,4 +26,6 @@
     taskvent.exe
     taskwork.exe
     tasksink.exe
-    threaded_loopback.exe))))
+    threaded_loopback.exe
+    echoserver.exe
+    echoclient.exe))))
