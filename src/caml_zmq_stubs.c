@@ -16,6 +16,7 @@
 #include <caml/custom.h>
 #include <caml/intext.h>
 #include <caml/threads.h>
+#include <caml/bigarray.h>
 
 #if defined(_WIN32) || defined(_WIN64)
 #  include <winsock2.h>
@@ -33,6 +34,7 @@
 #include "fail.h"
 #include "context.h"
 #include "socket.h"
+#include "msg.h"
 
 #include <uint64.h>
 
@@ -472,6 +474,126 @@ CAMLprim value caml_zmq_recv(value socket, value block_flag) {
     caml_zmq_raise_if(result == -1, "zmq_msg_close");
     CAMLreturn (message);
 }
+
+
+/**
+ * msg values
+ */
+void caml_zmq_remove_generational_global_root(void *data __attribute__((unused)), void *hint) {
+    CAMLparam0();
+    caml_remove_generational_global_root(hint);
+    CAMLreturn0;
+}
+
+/**
+ * Send msg
+ */
+CAMLprim value caml_zmq_send_msg(value socket, value msg, value block_flag, value more_flag) {
+    CAMLparam4 (socket, msg, block_flag, more_flag);
+
+    int option = 0;
+    if (! Bool_val(block_flag)) option |= ZMQ_NOBLOCK;
+    if (Bool_val(more_flag)) option |= ZMQ_SNDMORE;
+
+    void *sock = CAML_ZMQ_Socket_val(socket);
+    zmq_msg_t *cmsg;
+    cmsg = (zmq_msg_t *)CAML_ZMQ_Msg_val(msg);
+
+    caml_release_runtime_system();
+    int result = zmq_msg_send(cmsg, sock, option);
+    caml_acquire_runtime_system();
+
+    int errno;
+    if (result == -1) {
+        errno = zmq_errno();
+        caml_zmq_raise(errno, zmq_strerror(errno), "zmq_msg_send");
+    }
+
+    CAMLreturn(Val_unit);
+}
+
+/**
+ * Receive msg
+ */
+CAMLprim value caml_zmq_recv_msg(value socket, value block_flag) {
+    CAMLparam2(socket, block_flag);
+
+    int option = 0;
+    if (!Bool_val(block_flag)) option |= ZMQ_NOBLOCK;
+
+    void *sock = CAML_ZMQ_Socket_val(socket);
+
+    zmq_msg_t *msg;
+    msg = (zmq_msg_t *)malloc(sizeof(zmq_msg_t));
+    int result = zmq_msg_init (msg);
+
+    int errno;
+    if (result == -1) {
+        errno = zmq_errno();
+        free(msg);
+        caml_zmq_raise(errno, zmq_strerror(errno), "zmq_msg_init");
+    }
+
+    caml_release_runtime_system();
+    result = zmq_msg_recv(msg, sock, option);
+    caml_acquire_runtime_system();
+
+    if (result == -1) {
+        errno = zmq_errno();
+        zmq_msg_close (msg);
+        free(msg);
+        caml_zmq_raise(errno, zmq_strerror(errno), "zmq_msg_recv");
+    }
+
+    CAMLreturn (caml_zmq_copy_msg(msg));
+}
+
+
+/**
+ * Msg values
+ */
+CAMLprim value caml_zmq_msg_init_data(value ba, value offset, value len) {
+    CAMLparam3(ba, offset, len);
+    CAMLlocal1(msg);
+
+    zmq_msg_t *cmsg;
+    cmsg = (zmq_msg_t *)malloc(sizeof(zmq_msg_t));
+
+    caml_register_generational_global_root(&ba);
+    int result = zmq_msg_init_data(cmsg, (char*)Caml_ba_data_val(ba) + Int_val(offset), Int_val(len), (void *)caml_zmq_remove_generational_global_root, (void *)ba);
+
+    int errno;
+    if (result == -1) {
+        errno = zmq_errno();
+        zmq_msg_close(cmsg);
+        free(cmsg);
+        caml_zmq_raise(errno, zmq_strerror(errno), "zmq_msg_init_data");
+    }
+
+    CAMLreturn(caml_zmq_copy_msg(cmsg));
+}
+
+CAMLprim value caml_zmq_msg_size(value msg) {
+    CAMLparam1(msg);
+    CAMLreturn(Val_int(zmq_msg_size(CAML_ZMQ_Msg_val(msg))));
+}
+
+CAMLprim value caml_zmq_msg_data(value msg) {
+    CAMLparam1(msg);
+    CAMLlocal1(data);
+    data = caml_ba_alloc_dims(CAML_BA_UINT8 | CAML_BA_C_LAYOUT | CAML_BA_EXTERNAL,
+                              1,
+                              zmq_msg_data(CAML_ZMQ_Msg_val(msg)),
+                              zmq_msg_size(CAML_ZMQ_Msg_val(msg)));
+    CAMLreturn(data);
+}
+
+CAMLprim value caml_zmq_msg_close(value msg) {
+    CAMLparam1(msg);
+    zmq_msg_close(CAML_ZMQ_Msg_val(msg));
+    CAMLreturn(Val_unit);
+}
+
 
 /**
  * Devices

@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: f210ef3eb1e630f9a28fa9509fe4b5af) *)
+(* DO NOT EDIT (digest: 2121ae297e1d905dfed0631d9d25b2f3) *)
 module OASISGettext = struct
 (* # 22 "src/oasis/OASISGettext.ml" *)
 
@@ -746,6 +746,9 @@ module MyOCamlbuildBase = struct
 (* # 110 "src/plugins/ocamlbuild/MyOCamlbuildBase.ml" *)
 
 
+  let env_filename = Pathname.basename BaseEnvLight.default_filename
+
+
   let dispatch_combine lst =
     fun e ->
       List.iter
@@ -878,7 +881,7 @@ module MyOCamlbuildBase = struct
 end
 
 
-# 881 "myocamlbuild.ml"
+# 884 "myocamlbuild.ml"
 open Ocamlbuild_plugin;;
 let package_default =
   {
@@ -887,7 +890,13 @@ let package_default =
        [
           ("ZMQ",
             "src",
-            ["src/socket.h"; "src/context.h"; "src/fail.h"; "src/poll.h"])
+            [
+               "src/socket.h";
+               "src/context.h";
+               "src/fail.h";
+               "src/poll.h";
+               "src/msg.h"
+            ])
        ];
      flags =
        [
@@ -1033,6 +1042,88 @@ let package_default =
           (["oasis_executable_tasksink_byte"; "ocaml"; "compile"; "byte"],
             [(OASISExpr.EBool true, S [A "-thread"])]);
           (["oasis_executable_tasksink_native"; "ocaml"; "compile"; "native"],
+            [(OASISExpr.EBool true, S [A "-thread"])]);
+          (["oasis_executable_threadedloopback_byte"; "ocaml"; "link"; "byte"
+           ],
+            [(OASISExpr.EBool true, S [A "-thread"])]);
+          ([
+              "oasis_executable_threadedloopback_native";
+              "ocaml";
+              "link";
+              "native"
+           ],
+            [(OASISExpr.EBool true, S [A "-thread"])]);
+          ([
+              "oasis_executable_threadedloopback_byte";
+              "ocaml";
+              "ocamldep";
+              "byte"
+           ],
+            [(OASISExpr.EBool true, S [A "-thread"])]);
+          ([
+              "oasis_executable_threadedloopback_native";
+              "ocaml";
+              "ocamldep";
+              "native"
+           ],
+            [(OASISExpr.EBool true, S [A "-thread"])]);
+          ([
+              "oasis_executable_threadedloopback_byte";
+              "ocaml";
+              "compile";
+              "byte"
+           ],
+            [(OASISExpr.EBool true, S [A "-thread"])]);
+          ([
+              "oasis_executable_threadedloopback_native";
+              "ocaml";
+              "compile";
+              "native"
+           ],
+            [(OASISExpr.EBool true, S [A "-thread"])]);
+          (["oasis_executable_echoserver_byte"; "ocaml"; "link"; "byte"],
+            [(OASISExpr.EBool true, S [A "-thread"])]);
+          (["oasis_executable_echoserver_native"; "ocaml"; "link"; "native"],
+            [(OASISExpr.EBool true, S [A "-thread"])]);
+          (["oasis_executable_echoserver_byte"; "ocaml"; "ocamldep"; "byte"],
+            [(OASISExpr.EBool true, S [A "-thread"])]);
+          ([
+              "oasis_executable_echoserver_native";
+              "ocaml";
+              "ocamldep";
+              "native"
+           ],
+            [(OASISExpr.EBool true, S [A "-thread"])]);
+          (["oasis_executable_echoserver_byte"; "ocaml"; "compile"; "byte"],
+            [(OASISExpr.EBool true, S [A "-thread"])]);
+          ([
+              "oasis_executable_echoserver_native";
+              "ocaml";
+              "compile";
+              "native"
+           ],
+            [(OASISExpr.EBool true, S [A "-thread"])]);
+          (["oasis_executable_echoclient_byte"; "ocaml"; "link"; "byte"],
+            [(OASISExpr.EBool true, S [A "-thread"])]);
+          (["oasis_executable_echoclient_native"; "ocaml"; "link"; "native"],
+            [(OASISExpr.EBool true, S [A "-thread"])]);
+          (["oasis_executable_echoclient_byte"; "ocaml"; "ocamldep"; "byte"],
+            [(OASISExpr.EBool true, S [A "-thread"])]);
+          ([
+              "oasis_executable_echoclient_native";
+              "ocaml";
+              "ocamldep";
+              "native"
+           ],
+            [(OASISExpr.EBool true, S [A "-thread"])]);
+          (["oasis_executable_echoclient_byte"; "ocaml"; "compile"; "byte"],
+            [(OASISExpr.EBool true, S [A "-thread"])]);
+          ([
+              "oasis_executable_echoclient_native";
+              "ocaml";
+              "compile";
+              "native"
+           ],
             [(OASISExpr.EBool true, S [A "-thread"])])
        ];
      includes = [("test", ["src"]); ("examples", ["src"])]
@@ -1043,6 +1134,6 @@ let conf = {MyOCamlbuildFindlib.no_automatic_syntax = false}
 
 let dispatch_default = MyOCamlbuildBase.dispatch_default conf package_default;;
 
-# 1047 "myocamlbuild.ml"
+# 1138 "myocamlbuild.ml"
 (* OASIS_STOP *)
 Ocamlbuild_plugin.dispatch dispatch_default;;

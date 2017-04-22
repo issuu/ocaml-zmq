@@ -18,8 +18,10 @@ Library ZMQ
                   fail.h,
                   fail.c,
                   poll.h,
-                  poll.c
-  BuildDepends:   unix, stdint
+                  poll.c,
+                  msg.h,
+                  msg.c
+  BuildDepends:   unix, stdint, bigarray
   CCLib:          -L/usr/local/lib -lzmq
   CCOpt:          -I/usr/local/include -I. -I $pkg_stdint -Wall -Wextra -O2
   CompiledObject: best
@@ -121,6 +123,26 @@ Executable tasksink
 Executable threadedloopback
   Path:             examples
   MainIs:           threaded_loopback.ml
+  Install:          false
+  Build$:           flag(examples)
+  BuildDepends:     ZMQ
+  CompiledObject:   best
+  ByteOpt:          -thread
+  NativeOpt:        -thread
+
+Executable echoserver
+  Path:             examples
+  MainIs:           echoserver.ml
+  Install:          false
+  Build$:           flag(examples)
+  BuildDepends:     ZMQ
+  CompiledObject:   best
+  ByteOpt:          -thread
+  NativeOpt:        -thread
+
+Executable echoclient
+  Path:             examples
+  MainIs:           echoclient.ml
   Install:          false
   Build$:           flag(examples)
   BuildDepends:     ZMQ
