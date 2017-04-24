@@ -1,8 +1,8 @@
 # OASIS_START
-# DO NOT EDIT (digest: 3c3fa3471c0290ed44311a17afa74d2e)
+# DO NOT EDIT (digest: dd8b9f932547b4298fab36e14ff4a044)
 version = "4.0"
 description = "Bindings for the ZMQ library"
-requires = "unix stdint"
+requires = "unix stdint bigarray"
 archive(byte) = "ZMQ.cma"
 archive(byte, plugin) = "ZMQ.cma"
 archive(native) = "ZMQ.cmxa"

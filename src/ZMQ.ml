@@ -49,6 +49,37 @@ module Context = struct
 
 end
 
+module Msg = struct
+  open Bigarray
+
+  type t
+  type data = (char, int8_unsigned_elt, c_layout) Array1.t
+
+  external native_init_data : data -> int -> int -> t =
+    "caml_zmq_msg_init_data"
+
+  let init_data ?(offset = 0) ?length buf =
+    let length =
+      let max_possible = Array1.dim buf - offset in
+      match length with
+      | Some l -> min l max_possible
+      | None -> max_possible
+    in
+    native_init_data buf offset length
+
+  external size : t -> int = "caml_zmq_msg_size"
+
+  external unsafe_data : t -> data = "caml_zmq_msg_data"
+
+  let copy_data msg =
+    let data = unsafe_data msg in
+    let copy = Array1.create char c_layout (Array1.dim data) in
+    Array1.blit data copy;
+    copy
+
+  external close : t -> unit = "caml_zmq_msg_close"
+end
+
 module Socket = struct
   open Stdint
 
@@ -88,6 +119,12 @@ module Socket = struct
 
   external native_send : 'a t -> string -> bool -> bool -> unit = "caml_zmq_send"
   let send ?(block = true) ?(more = false) socket message = native_send socket message block more
+
+  external native_recv_msg : 'a t -> bool -> Msg.t = "caml_zmq_recv_msg"
+  let recv_msg ?(block = true) socket = native_recv_msg socket block
+
+  external native_send_msg : 'a t -> Msg.t -> bool -> bool -> unit = "caml_zmq_send_msg"
+  let send_msg ?(block = true) ?(more = false) socket message = native_send_msg socket message block more
 
   (** Native Option Setters (private) *)
   type int64_option =

@@ -1,8 +1,9 @@
 # OASIS_START
-# DO NOT EDIT (digest: 44517cee7b34ff0d3aa8d86fc953addd)
+# DO NOT EDIT (digest: 4cef696ed427cb2c5ec969b52a8277f3)
 caml_zmq_stubs.o
 socket.o
 context.o
 fail.o
 poll.o
+msg.o
 # OASIS_STOP
