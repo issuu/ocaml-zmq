@@ -1,8 +1,6 @@
 .DS_Store
 _build
 *.swp
-setup.data
-setup.log
 *.o
 *.so
 *.a
@@ -13,5 +11,5 @@ setup.log
 *.cmxa
 *.swo
 *.swn
-*.byte
-*.native
+.merlin
+*.install
