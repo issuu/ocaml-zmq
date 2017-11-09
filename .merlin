@@ -1,5 +1,0 @@
-S src
-S test
-S examples
-B _build
-PKG unix stdint
