@@ -1,41 +1,27 @@
-# OASIS_START
-# DO NOT EDIT (digest: a3c674b4239234cbbe53afe090018954)
+# add --dev flag here when warnings are fixed
+build:
+	jbuilder build @install @examples
 
-SETUP = ocaml setup.ml
+examples:
+	jbuilder build @examples
 
-build: setup.data
-	$(SETUP) -build $(BUILDFLAGS)
+# requires odoc
+doc:
+	jbuilder build @odoc
 
-doc: setup.data build
-	$(SETUP) -doc $(DOCFLAGS)
-
-test: setup.data build
-	$(SETUP) -test $(TESTFLAGS)
+test:
+	jbuilder runtest
 
 all:
-	$(SETUP) -all $(ALLFLAGS)
+	jbuilder build @install @examples
 
-install: setup.data
-	$(SETUP) -install $(INSTALLFLAGS)
+install:
+	jbuilder install
 
-uninstall: setup.data
-	$(SETUP) -uninstall $(UNINSTALLFLAGS)
-
-reinstall: setup.data
-	$(SETUP) -reinstall $(REINSTALLFLAGS)
+uninstall:
+	jbuilder uninstall
 
 clean:
-	$(SETUP) -clean $(CLEANFLAGS)
+	jbuilder clean
 
-distclean:
-	$(SETUP) -distclean $(DISTCLEANFLAGS)
-
-setup.data:
-	$(SETUP) -configure $(CONFIGUREFLAGS)
-
-configure:
-	$(SETUP) -configure $(CONFIGUREFLAGS)
-
-.PHONY: build doc test all install uninstall reinstall clean distclean configure
-
-# OASIS_STOP
+.PHONY: build doc test all install uninstall clean configure examples
