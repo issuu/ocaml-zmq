@@ -24,17 +24,14 @@ module Socket = struct
     { socket; fd }
 
   let zmq_event socket ~f =
-    let open ZMQ.Socket in
-    try begin match events socket with
-      | No_event -> raise Retry
-      | Poll_in
-      | Poll_out
-      | Poll_in_out -> f socket
-      | Poll_error -> assert false
-    end
-    with
-    | Unix.Unix_error (Unix.EAGAIN, _, _) -> raise Retry
-    | Unix.Unix_error (Unix.EINTR, _, _) -> raise Break_event_loop
+    match ZMQ.Socket.events socket with
+    | ZMQ.Socket.No_event -> raise Retry
+    | Poll_in
+    | Poll_out
+    | Poll_in_out -> f socket
+    | Poll_error -> assert false
+    | exception Unix.Unix_error (Unix.EAGAIN, _, _) -> raise Retry
+    | exception Unix.Unix_error (Unix.EINTR, _, _) -> raise Break_event_loop
 
   let wrap kind (f : _ ZMQ.Socket.t -> _) { socket ; fd } =
     let io_loop () =
@@ -43,21 +40,21 @@ module Socket = struct
       | `Closed -> failwith "fd is closed"
       | `Ready ->
         In_thread.syscall_exn ~name:"<wrap>" (fun () ->
-          try
             (* Check for zeromq events *)
             match ZMQ.Socket.events socket with
             | ZMQ.Socket.No_event -> raise Retry
-            | ZMQ.Socket.Poll_in
-            | ZMQ.Socket.Poll_out
-            | ZMQ.Socket.Poll_in_out -> f socket
+            | Poll_in
+            | Poll_out
+            | Poll_in_out -> f socket
             (* This should not happen as far as I understand *)
-            | ZMQ.Socket.Poll_error -> assert false
-          with
-          (* Not ready *)
-          | Unix.Unix_error (Unix.EAGAIN, _, _) -> raise Retry
-          (* We were interrupted so we need to start all over again *)
-          | Unix.Unix_error (Unix.EINTR, _, _) -> raise Break_event_loop
-        )
+            | Poll_error -> assert false
+            (* Not ready *)
+            | exception Unix.Unix_error (Unix.EAGAIN, _, _) ->
+              raise Retry
+            (* We were interrupted so we need to start all over again *)
+            | exception Unix.Unix_error (Unix.EINTR, _, _) ->
+              raise Break_event_loop
+          )
     in
     let rec idle_loop () =
       (* why are we running things in a monitor here? *)
@@ -66,10 +63,10 @@ module Socket = struct
       | Error (Unix.Unix_error (Unix.EINTR, _, _)) -> idle_loop ()
       | Error (Unix.Unix_error (Unix.EAGAIN, _, _)) ->
         begin try_with ~extract_exn:true io_loop >>= function
-        | Ok x -> return x
-        | Error Retry
-        | Error Break_event_loop -> idle_loop ()
-        | Error x -> raise x
+          | Ok x -> return x
+          | Error Retry
+          | Error Break_event_loop -> idle_loop ()
+          | Error x -> raise x
         end
       | Error x -> raise x
     in
