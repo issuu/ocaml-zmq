@@ -28,7 +28,6 @@
 #endif
 
 #include <zmq.h>
-#include <zmq_utils.h>
 
 #include "fail.h"
 #include "context.h"
