@@ -5,4 +5,4 @@
   (public_name zmq-async)
   (wrapped false)
   (preprocess (pps (ppx_sexp_conv)))
-  (libraries (zmq async core))))
+  (libraries (zmq async_unix async_kernel base))))

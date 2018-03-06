@@ -1,6 +1,3 @@
-open Core
-open Async
-
 (** This module is meant to be as compatible as possible with lwt-zmq. It
     should be straight forward to write a functor over Async_zmq.Socket and
     Lwt_zmq.Socket *)
@@ -16,19 +13,19 @@ module Socket : sig
 
   (** [recv socket] waits for a message on [socket] without blocking
       other Async threads *)
-  val recv : 'a t -> string Deferred.t
+  val recv : 'a t -> string Async_kernel.Deferred.t
 
   (** [send socket] sends a message on [socket] without blocking other
       Async threads *)
-  val send : 'a t -> string -> unit Deferred.t
+  val send : 'a t -> string -> unit Async_kernel.Deferred.t
 
   (** [recv_all socket] waits for a multi-part message on [socket] without
       blocking other Lwt threads *)
-  val recv_all : 'a t -> string list Deferred.t
+  val recv_all : 'a t -> string list Async_kernel.Deferred.t
 
   (** [send_all socket m] sends all parts of the multi-part message [m] on
       [socket] without blocking other Lwt threads *)
-  val send_all : 'a t -> string list -> unit Deferred.t
+  val send_all : 'a t -> string list -> unit Async_kernel.Deferred.t
 
-  val close : 'a t -> unit Deferred.t
+  val close : 'a t -> unit Async_kernel.Deferred.t
 end
