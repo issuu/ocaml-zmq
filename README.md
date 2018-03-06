@@ -7,7 +7,7 @@ Dependencies
 ------------
 
   * [OPAM](http://opam.ocaml.org/)
-  * OCaml >= 4.03
+  * OCaml >= 4.03 (>= 4.04.1 if you're async zmq-async)
 
 Install
 -------
