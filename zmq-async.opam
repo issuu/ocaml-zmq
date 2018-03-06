@@ -13,8 +13,8 @@ depends: [
   "zmq"
   "jbuilder" {build}
   "configurator" {build}
-  "ppx_sexp_conv" {build}
-  "async"
-  "core"
+  "ppx_sexp_conv" {build & >= "v0.9.0"}
+  "base" {>= "v0.10.0"}
+  "async_unix" {>= "v0.10.0"}
   "sexplib"
 ]

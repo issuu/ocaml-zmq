@@ -1,5 +1,6 @@
-open Core
-open Async
+open Base
+open Async_kernel
+open Async_unix
 
 module Socket = struct
   exception Break_event_loop [@@deriving sexp_of]
@@ -7,7 +8,9 @@ module Socket = struct
 
   type 'a t =
     { socket : 'a ZMQ.Socket.t sexp_opaque
-    ; fd : Fd.t } [@@deriving sexp_of]
+    ; fd : Fd.t
+    }
+  [@@deriving sexp_of]
 
   let to_socket t = t.socket
 
