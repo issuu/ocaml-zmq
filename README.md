@@ -1,27 +1,36 @@
 OCaml bindings for ZMQ 4.0
 ==========================
 
-Requirements
+[![Build Status](https://travis-ci.org/issuu/ocaml-zmq.svg?branch=master)](https://travis-ci.org/issuu/ocaml-zmq)
+
+Dependencies
 ------------
 
-* [OCaml >= 3.12](https://ocaml.org/)
-* [Findlib](http://projects.camlcity.org/projects/findlib.html)
-* [ocaml-uint](https://github.com/andrenth/ocaml-uint)
-* [ZMQ 4.0.*](http://www.zeromq.org/intro:get-the-software)
+  * [OPAM](http://opam.ocaml.org/)
+  * OCaml >= 4.03
 
 Install
 -------
 
 ```sh
-make
-make install
+opam install zmq
 ```
 
 Uninstall
 ---------
 
 ```sh
-make uninstall
+opam remove zmq
+```
+
+Development
+-----------
+
+With OPAM 2.x you can create a local switch which will install all dependencies automatically.
+
+```sh
+opam switch create ./ 4.06
+make
 ```
 
 License
@@ -32,4 +41,5 @@ See `LICENSE`.
 Thanks
 ------
 
-To the guys from the #ocaml channel, gildor, thelema, kaustuv and many others, and the ocaml-uint programmers.
+To the guys from the #ocaml channel, gildor, thelema, kaustuv and many others,
+wagerlabs, little-arhat and the ocaml-uint authors.
