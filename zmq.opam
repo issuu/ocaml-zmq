@@ -13,6 +13,7 @@ depends: [
   "conf-zmq"
   "jbuilder" {build}
   "configurator" {build}
+  "ounit" {build}
   "base-unix"
   "stdint"
 ]
