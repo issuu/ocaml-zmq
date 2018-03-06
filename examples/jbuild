@@ -1,0 +1,27 @@
+(jbuild_version 1)
+
+(executables
+ ((names
+   (hwserver
+    hwclient
+    wuserver
+    wuclient
+    wuproxy
+    taskvent
+    taskwork
+    tasksink
+    threaded_loopback))
+  (libraries (threads zmq str))))
+
+(alias
+ ((name examples)
+  (deps
+   (hwserver.exe
+    hwclient.exe
+    wuserver.exe
+    wuclient.exe
+    wuproxy.exe
+    taskvent.exe
+    taskwork.exe
+    tasksink.exe
+    threaded_loopback.exe))))

@@ -6,19 +6,15 @@ homepage: "https://github.com/issuu/ocaml-zmq"
 dev-repo: "git@github.com/issuu/ocaml-zmq.git"
 bug-reports: "https://github.com/issuu/ocaml-zmq/issues"
 build: [
-  ["ocaml" "setup.ml" "-configure" "--prefix" prefix]
-  ["ocaml" "setup.ml" "-build"]
+  ["jbuilder" "build" "-p" name "-j" jobs]
 ]
-install: ["ocaml" "setup.ml" "-install"]
-remove: [
-  ["ocamlfind" "remove" "ZMQ"]
-]
+build-test: [["jbuilder" "runtest" "-p" name "-j" jobs]]
 depends: [
   "conf-zmq"
-  "ocamlfind"
+  "jbuilder" {build}
+  "configurator" {build}
   "base-unix"
   "stdint"
-  "ocamlbuild" {build}
 ]
 conflicts: [
   "ocaml-zmq"
