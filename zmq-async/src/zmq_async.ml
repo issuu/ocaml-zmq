@@ -1,6 +1,7 @@
 open Base
 open Async_kernel
 open Async_unix
+open Sexplib.Conv
 
 module Socket = struct
   exception Break_event_loop [@@deriving sexp_of]
