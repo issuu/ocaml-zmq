@@ -15,7 +15,7 @@ depends: [
   "configurator" {build}
   "ounit" {test}
   "base-unix"
-  "stdint"
+  "stdint" { >= "0.4.2" }
 ]
 conflicts: [
   "ocaml-zmq"
