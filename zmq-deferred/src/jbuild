@@ -1,0 +1,6 @@
+(jbuild_version 1)
+
+(library
+ ((name zmq_deferred)
+  (wrapped true)
+  (libraries (zmq base))))
