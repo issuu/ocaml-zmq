@@ -1,1 +1,1 @@
-module Socket = Zmq_deferred.Socket.Make(Async)
+module Socket = Zmq_deferred.Socket.Make(Deferred)
