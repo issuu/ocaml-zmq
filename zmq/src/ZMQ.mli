@@ -26,6 +26,41 @@ module Context : sig
   val set_ipv6 : t -> bool -> unit
 end
 
+module Msg : sig
+  type t
+
+  type data =
+    (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t
+
+  (** Initialize a new message with the given data.  The data will be
+      kept alive for the lifetime of the message.
+
+      @param offset specifies an offset from the start of the given block
+             to use.  Defaults to [0].
+      @param length specifies the number of bytes, starting from [offset],
+             to use.  Defaults the [length of data - offset].
+  *)
+  val init_data : ?offset:int -> ?length:int -> data -> t
+
+  (** Size of the message in bytes *)
+  val size : t -> int
+
+  (** Retrieve a copy of the data contained in the message. *)
+  val copy_data : t -> data
+
+  (** Retrieve the data contained in the message.
+
+      This is considered {b unsafe} because the underly data may be freed
+      when the message's lifetime expires.
+  *)
+  val unsafe_data : t -> data
+
+  (** Free the message.  This will be done automatically when the message
+      is garbage collected.
+  *)
+  val close : t -> unit
+end
+
 module Socket : sig
 
   type 'a t
@@ -66,7 +101,6 @@ module Socket : sig
   *)
   val recv_all : ?block:bool -> 'a t -> string list
 
-
   (** Send a message to the socket.
       block indicates if the call should be blocking or non-blocking. Default true
       more is used for multipart messages, and indicates that the more message parts will follow. Default false
@@ -77,6 +111,22 @@ module Socket : sig
       block indicates if the call should be blocking or non-blocking. Default true
   *)
   val send_all : ?block:bool -> 'a t -> string list -> unit
+
+  (** Receive a {!Msg.t} on the socket.
+
+      @param block indicates if the call should be blocking or non-blocking.
+             Defaults to [true].
+  *)
+  val recv_msg : ?block:bool -> 'a t -> Msg.t
+
+  (** Send a {!Msg.t} to the socket.
+
+      @param block indicates if the call should be blocking or non-blocking.
+             Defaults to [true].
+      @param more is used for multipart messages  Set to [true] to indicate that
+             more message parts will follow.  Defaults to [false].
+  *)
+  val send_msg : ?block:bool -> ?more:bool -> 'a t -> Msg.t -> unit
 
   (** Option Getter and Setters *)
   val set_max_message_size : 'a t -> int -> unit
