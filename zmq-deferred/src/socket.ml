@@ -1,5 +1,3 @@
-open Base
-
 module Make(Deferred: Deferred.T) = struct
 
   open Deferred

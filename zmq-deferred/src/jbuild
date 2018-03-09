@@ -3,4 +3,4 @@
 (library
  ((name zmq_deferred)
   (wrapped true)
-  (libraries (zmq base))))
+  (libraries (zmq))))
