@@ -1,0 +1,16 @@
+opam-version: "1.2"
+maintainer: "Hezekiah M. Carty <hez@0ok.org>"
+authors: [ "Hezekiah M. Carty <hez@0ok.org>" ]
+license: "MIT"
+homepage: "https://github.com/issuu/ocaml-zmq"
+dev-repo: "git@github.com/issuu/ocaml-zmq.git"
+bug-reports: "https://github.com/issuu/ocaml-zmq/issues"
+build: [
+  ["jbuilder" "build" "-p" name "-j" jobs]
+]
+build-test: [["jbuilder" "runtest" "-p" name "-j" jobs]]
+depends: [
+  "zmq"
+  "jbuilder" {build}
+  "lwt"
+]
