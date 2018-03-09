@@ -21,20 +21,18 @@ module Socket = struct
     let io_loop () =
       Lwt_unix.wrap_syscall Lwt_unix.Read s.fd (
         fun () ->
-          try
-            (* Check for zeromq events *)
-            match ZMQ.Socket.events s.socket with
-            | ZMQ.Socket.No_event -> raise Lwt_unix.Retry
-            | ZMQ.Socket.Poll_in
-            | ZMQ.Socket.Poll_out
-            | ZMQ.Socket.Poll_in_out -> f s.socket
-            (* This should not happen as far as I understand *)
-            | ZMQ.Socket.Poll_error -> assert false
-          with
+          (* Check for zeromq events *)
+          match ZMQ.Socket.events s.socket with
+          | ZMQ.Socket.No_event -> raise Lwt_unix.Retry
+          | ZMQ.Socket.Poll_in
+          | ZMQ.Socket.Poll_out
+          | ZMQ.Socket.Poll_in_out -> f s.socket
+          (* This should not happen as far as I understand *)
+          | ZMQ.Socket.Poll_error -> assert false
           (* Not ready *)
-          | Unix.Unix_error (Unix.EAGAIN, _, _) -> raise Lwt_unix.Retry
+          | exception Unix.Unix_error (Unix.EAGAIN, _, _) -> raise Lwt_unix.Retry
           (* We were interrupted so we need to start all over again *)
-          | Unix.Unix_error (Unix.EINTR, _, _) -> raise Break_event_loop
+          | exception Unix.Unix_error (Unix.EINTR, _, _) -> raise Break_event_loop
       )
     in
     let rec idle_loop () =
