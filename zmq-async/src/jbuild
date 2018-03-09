@@ -4,4 +4,4 @@
  ((name zmq_async)
   (public_name zmq-async)
   (wrapped false)
-  (libraries (zmq_deferred async_unix async_kernel base))))
+  (libraries (zmq.deferred async_unix async_kernel base))))

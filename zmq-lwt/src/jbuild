@@ -4,4 +4,4 @@
  ((name zmq_lwt)
   (public_name zmq-lwt)
   (wrapped false)
-  (libraries (zmq_deferred lwt base))))
+  (libraries (zmq.deferred lwt base))))
