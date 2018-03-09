@@ -2,5 +2,6 @@
 
 (library
  ((name zmq_deferred)
+  (public_name zmq.deferred)
   (wrapped true)
   (libraries (zmq))))
