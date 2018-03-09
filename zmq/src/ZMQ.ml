@@ -491,39 +491,51 @@ module Socket = struct
   type event = No_event | Poll_in | Poll_out | Poll_in_out | Poll_error
   external events : 'a t -> event = "caml_zmq_get_events"
 
-  let recv_all =
+  let recv_all_wrapper (f : ?block:bool -> _ t -> _) =
     (* Once the first message part is received all remaining message parts can
        be received without blocking. *)
     let rec loop socket accu =
       if has_more socket then
-        loop socket (recv socket :: accu)
+        loop socket (f socket :: accu)
       else
         accu
     in
     fun ?block socket ->
-      let first = recv ?block socket in
+      let first = f ?block socket in
       List.rev (loop socket [first])
 
-  let send_all =
+  let send_all_wrapper (f : ?block:bool -> ?more:bool -> _ t -> _ -> unit) =
     (* Once the first message part is sent all remaining message parts can
        be sent without blocking. *)
     let rec send_all_inner_loop socket message =
       match message with
       | [] -> ()
       | hd :: [] ->
-        send socket hd
+        f socket hd
       | hd :: tl ->
-        send ~more:true socket hd;
+        f ~more:true socket hd;
         send_all_inner_loop socket tl
     in
     fun ?block socket message ->
       match message with
       | [] -> ()
       | hd :: [] ->
-        send ?block ~more:false socket hd
+        f ?block ~more:false socket hd
       | hd :: tl ->
-        send ?block ~more:true socket hd;
+        f ?block ~more:true socket hd;
         send_all_inner_loop socket tl
+
+  let recv_all ?block socket =
+    recv_all_wrapper recv ?block socket
+
+  let send_all ?block socket message =
+    send_all_wrapper send ?block socket message
+
+  let recv_msg_all ?block socket =
+    recv_all_wrapper recv_msg ?block socket
+
+  let send_msg_all ?block socket message =
+    send_all_wrapper send_msg ?block socket message
 end
 
 module Proxy = struct

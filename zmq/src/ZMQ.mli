@@ -119,6 +119,13 @@ module Socket : sig
   *)
   val recv_msg : ?block:bool -> 'a t -> Msg.t
 
+  (** Receive a multi-part message on the socket.
+
+      @param block indicates if the call should be blocking or non-blocking.
+             Defaults to [true].
+  *)
+  val recv_msg_all : ?block:bool -> 'a t -> Msg.t list
+
   (** Send a {!Msg.t} to the socket.
 
       @param block indicates if the call should be blocking or non-blocking.
@@ -127,6 +134,13 @@ module Socket : sig
              more message parts will follow.  Defaults to [false].
   *)
   val send_msg : ?block:bool -> ?more:bool -> 'a t -> Msg.t -> unit
+
+  (** Send a multi-part message to the socket.
+
+      @param block indicates if the call should be blocking or non-blocking.
+             Defaults to [true].
+  *)
+  val send_msg_all : ?block:bool -> 'a t -> Msg.t list -> unit
 
   (** Option Getter and Setters *)
   val set_max_message_size : 'a t -> int -> unit
