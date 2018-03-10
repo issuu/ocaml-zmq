@@ -5,7 +5,8 @@
 
     The functor allows abstraction of the concurrency monad
 *)
-module Make : functor (Deferred : Deferred.T) -> sig
+module Make : functor (T : Deferred.T) -> sig
+  open T
   (** An concurrent zeromq socket *)
   type 'a t
 

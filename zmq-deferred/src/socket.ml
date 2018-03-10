@@ -1,48 +1,95 @@
-module Make(Deferred: Deferred.T) = struct
-
-  open Deferred
-  exception Break_event_loop
+module Make(T: Deferred.T) = struct
+  open T
+  open Deferred.Infix
   exception Retry
-
   type 'a t =
     { socket : 'a ZMQ.Socket.t;
       fd : Fd.t;
+      senders : (unit -> unit) Queue.t;
+      receivers : (unit -> unit) Queue.t;
     }
+
+ let of_socket: 'a ZMQ.Socket.t -> 'a t = fun socket ->
+    let fd = Fd.create (ZMQ.Socket.get_fd socket) in
+    { socket; fd;
+      senders = Queue.create ();
+      receivers = Queue.create ();
+    }
+
+  (** The event loop repeats acting on events as long as there are
+      sends or receives to be processed.
+      According to the zmq specification, send and receive may update the event,
+      and the fd can only be trusted after reading the status of the socket.
+  *)
+  let rec event_loop t =
+    let open ZMQ.Socket in
+
+    let process queue =
+      let f = Queue.peek queue in
+      try
+        f ();
+        (* Success, pop the sender *)
+        Queue.pop t.senders |> ignore
+      with
+      | Retry ->
+        ()
+    in
+    match events t.socket, Queue.is_empty t.senders, Queue.is_empty t.receivers with
+    | _, true, true -> Deferred.return ()
+    | Poll_error, _, _ -> failwith "Cannot poll socket"
+    | Poll_in_out, false, _
+    | Poll_out, false, _ ->
+      (* Prioritize send's to keep network busy *)
+      process t.senders;
+      event_loop t
+    | Poll_in_out, _, false
+    | Poll_in, _, false ->
+      process t.senders;
+      event_loop t
+    | Poll_in, _, true
+    | Poll_out, true, _
+    | No_event, _, _ ->
+      Fd.wait_readable t.fd >>= fun () ->
+      event_loop t
+
+  type op = Send | Receive
+  let post: _ t -> op -> (_ ZMQ.Socket.t -> 'a) -> 'a Deferred.t = fun t op f ->
+    let is_running = Queue.is_empty t.senders && Queue.is_empty t.receivers in
+
+    let cond = Condition.create () in
+    let f' () =
+      let res = match f t.socket with
+        | v -> Ok v
+        | exception Unix.Unix_error (Unix.EAGAIN, _, _) ->
+          (* Signal try again *)
+          raise Retry
+        | exception exn -> Error exn
+      in
+      (* This may actually be a scheduling point *)
+      Condition.wakeup cond res
+    in
+    let queue = match op with
+      | Send -> t.senders
+      | Receive -> t.receivers
+    in
+    Queue.push f' queue;
+
+    (* Start a thread if none is running *)
+    begin
+      match is_running with
+      | false -> ()
+      | true -> Deferred.don't_wait_for (fun () -> event_loop t)
+    end;
+
+    (* Raise exceptions in callers context *)
+    Condition.wait cond >>= function
+    | Ok v -> Deferred.return v
+    | Error exn -> Deferred.fail exn
 
   let to_socket t = t.socket
 
-  let of_socket: 'a ZMQ.Socket.t -> 'a t = fun socket ->
-    let fd = Fd.create (ZMQ.Socket.get_fd socket) in
-    { socket; fd }
-
-  let rec wrap dir f t =
-    (* Reading Socket.events resets the fd, and
-       fd will become readable when Socket.events changes. *)
-
-    match ZMQ.Socket.events t.socket, dir with
-    | ZMQ.Socket.Poll_in_out, _
-    | Poll_out, `Write
-    | Poll_in, `Read ->
-      begin
-        try
-          f t.socket |> Deferred.return
-        with
-        | Unix.Unix_error (Unix.EAGAIN, _, _) ->
-          (* This should actually never happen, as we have just validated
-             that the operation would be non-blocking *)
-          wrap dir f t
-      end
-    | Poll_error, _ -> failwith "Cannot poll socket"
-    | Poll_in, `Write
-    | Poll_out, `Read
-    | No_event, _ ->
-      (* Wait for the fd to become readable *)
-      Fd.wait_readable t.fd >>= fun () ->
-      wrap dir f t
-
-
-  let recv s = wrap `Read (fun s -> ZMQ.Socket.recv ~block:false s) s
-  let send s m = wrap `Read (fun s -> ZMQ.Socket.send ~block:false s m) s
+  let recv s = post s Receive (fun s -> ZMQ.Socket.recv ~block:false s)
+  let send s m = post s Send (fun s -> ZMQ.Socket.send ~block:false s m)
 
   (** Recevie all message blocks. *)
 
@@ -59,17 +106,15 @@ module Make(Deferred: Deferred.T) = struct
        multipart messages.
 
     *)
-    wrap `Read (fun s -> ZMQ.Socket.recv_all ~block:false s) s
+    post s Receive (fun s -> ZMQ.Socket.recv_all ~block:false s)
 
   let send_all s parts =
     (* See the comment in recv_all. *)
-    wrap `Write (fun s -> ZMQ.Socket.send_all ~block:false s parts) s
+    post s Send (fun s -> ZMQ.Socket.send_all ~block:false s parts)
 
   let close { socket ; fd } =
     ZMQ.Socket.close socket;
-    Fd.release fd;
     Deferred.return ()
-
 
   module Router = struct
     type id_t = string
@@ -86,7 +131,7 @@ module Make(Deferred: Deferred.T) = struct
   end
 
   module Monitor = struct
-    let recv s = wrap `Read (fun s -> ZMQ.Monitor.recv ~block:false s) s
+    let recv s = post s Receive (fun s -> ZMQ.Monitor.recv ~block:false s)
   end
 
 end
