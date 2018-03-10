@@ -7,9 +7,20 @@ module type T = sig
   module Fd : sig
     type 'a t' = 'a t
     type t
-    val syscall_exn : t -> (unit -> 'a) -> 'a t'
-    val create : Unix.file_descr -> t
-    val ready_to : t -> [ `Read | `Write ] -> [ `Bad_fd | `Closed | `Ready ] t'
-    val close : t -> unit t'
+    (* Wrap the given unix file_deser *)
+    val create: Unix.file_descr -> t
+
+    (* Wait for the fd to become readable *)
+    val wait_readable: t -> unit t'
+
+    (** Release resources acquired for this fd
+        The Fd must _NOT_ be closed, as its owned by ZMQ.
+
+        "The returned file descriptor is intended for use with a poll
+        or similar system call only. Applications must never attempt to
+        read or write data to it directly, neither should they try to close
+        it." (http://api.zeromq.org/master:zmq-getsockopt#ZMQ_FD)
+    *)
+    val release: t -> unit
   end
 end

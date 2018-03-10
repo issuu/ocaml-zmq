@@ -15,66 +15,59 @@ module Make(Deferred: Deferred.T) = struct
     let fd = Fd.create (ZMQ.Socket.get_fd socket) in
     { socket; fd }
 
-  let zmq_event socket ~f =
-    match ZMQ.Socket.events socket with
-    | ZMQ.Socket.No_event -> raise Retry
-    | Poll_in
-    | Poll_out
-    | Poll_in_out -> f socket
-    | Poll_error -> assert false
-    | exception Unix.Unix_error (Unix.EAGAIN, _, _) -> raise Retry
-    | exception Unix.Unix_error (Unix.EINTR, _, _) -> raise Break_event_loop
+  let rec wrap dir f t =
+    match ZMQ.Socket.events t.socket, dir with
+    | ZMQ.Socket.Poll_in_out, _
+    | Poll_out, `Write
+    | Poll_in, `Read ->
+      begin
+        try
+          f t.socket |> Deferred.return
+        with
+        | Unix.Unix_error (Unix.EAGAIN, _, _) -> wrap dir f t
+        | Unix.Unix_error (Unix.EINTR, _, _) -> failwith "Break"
+      end
+    | Poll_error, _ -> failwith "Cannot poll socket"
+    | Poll_in, _
+    | Poll_out, _
+    | No_event, _ ->
+      (* Wait for the fd to become readable *)
+      Fd.wait_readable t.fd >>= fun () ->
+      wrap dir f t
 
-  let wrap kind (f : _ ZMQ.Socket.t -> 'a) { socket ; fd } =
-    let io_loop () =
-      Fd.ready_to fd kind >>= function
-      | `Bad_fd -> assert false (* It's an fd we created. shouldn't be bad *)
-      | `Closed -> failwith "fd is closed"
-      | `Ready ->
-        Fd.syscall_exn fd (fun () ->
-            (* Check for zeromq events *)
-            match ZMQ.Socket.events socket with
-            | ZMQ.Socket.No_event -> raise Retry
-            | Poll_in
-            | Poll_out
-            | Poll_in_out -> f socket
-            (* This should not happen as far as I understand *)
-            | Poll_error -> assert false
-            (* Not ready *)
-            | exception Unix.Unix_error (Unix.EAGAIN, _, _) ->
-              raise Retry
-            (* We were interrupted so we need to start all over again *)
-            | exception Unix.Unix_error (Unix.EINTR, _, _) ->
-              raise Break_event_loop
-          )
-    in
-    let rec idle_loop () =
-      (* why are we running things in a monitor here? *)
-      try_with (fun () -> Deferred.return (f socket)) >>= function
-      | Ok x -> Deferred.return x
-      | Error (Unix.Unix_error (Unix.EINTR, _, _)) -> idle_loop ()
-      | Error (Unix.Unix_error (Unix.EAGAIN, _, _)) ->
-        begin try_with io_loop >>= function
-          | Ok x -> Deferred.return x
-          | Error Retry
-          | Error Break_event_loop -> idle_loop ()
-          | Error x -> raise x
-        end
-      | Error x -> raise x
-    in
-    idle_loop ()
 
   let recv s = wrap `Read (fun s -> ZMQ.Socket.recv ~block:false s) s
+  let send s m = wrap `Read (fun s -> ZMQ.Socket.send ~block:false s m) s
 
-  let send s m = wrap `Write (fun s -> ZMQ.Socket.send ~block:false s m) s
+  (** Recevie all message blocks. *)
 
   let recv_all s =
+    (* The documentaton says that either all message parts are
+       transmitted, or none.  Therefore the receiver end cannot notify
+       userspace of a multipart message before all parts have been
+       received.
+
+       Also its not clear what the state of the socket would be after
+       reception of the first part of a multipart message. It would
+       not be unreasonable iff the state could change to No_event
+       after reading the first part of a multi_message since no new
+       messages are available.
+
+       Also message parts needs to be received in order, so we must
+       avoid interleaving here.
+    *)
     wrap `Read (fun s -> ZMQ.Socket.recv_all ~block:false s) s
 
   let send_all s parts =
+    (* See the comment on recv_all. Again, the state could change
+       from Poll_out to No_event, as we are just filling up the first
+       message, and according to the specification the message cannot
+       be sent before all parts have been delivered.
+    *)
     wrap `Write (fun s -> ZMQ.Socket.send_all ~block:false s parts) s
 
   let close { socket ; fd } =
     ZMQ.Socket.close socket;
-    Fd.close fd
+    Fd.release fd;
+    Deferred.return ()
 end
