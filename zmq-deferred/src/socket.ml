@@ -16,6 +16,9 @@ module Make(Deferred: Deferred.T) = struct
     { socket; fd }
 
   let rec wrap dir f t =
+    (* Reading Socket.events resets the fd, and
+       fd will become readable when Socket.events changes. *)
+
     match ZMQ.Socket.events t.socket, dir with
     | ZMQ.Socket.Poll_in_out, _
     | Poll_out, `Write
@@ -24,12 +27,14 @@ module Make(Deferred: Deferred.T) = struct
         try
           f t.socket |> Deferred.return
         with
-        | Unix.Unix_error (Unix.EAGAIN, _, _) -> wrap dir f t
-        | Unix.Unix_error (Unix.EINTR, _, _) -> failwith "Break"
+        | Unix.Unix_error (Unix.EAGAIN, _, _) ->
+          (* This should actually never happen, as we have just validated
+             that the operation would be non-blocking *)
+          wrap dir f t
       end
     | Poll_error, _ -> failwith "Cannot poll socket"
-    | Poll_in, _
-    | Poll_out, _
+    | Poll_in, `Write
+    | Poll_out, `Read
     | No_event, _ ->
       (* Wait for the fd to become readable *)
       Fd.wait_readable t.fd >>= fun () ->
@@ -43,27 +48,21 @@ module Make(Deferred: Deferred.T) = struct
 
   let recv_all s =
     (* The documentaton says that either all message parts are
-       transmitted, or none.  Therefore the receiver end cannot notify
-       userspace of a multipart message before all parts have been
-       received.
+       transmitted, or none. So once a message becomes available, all
+       parts can be read wothout blocking.
 
-       Also its not clear what the state of the socket would be after
-       reception of the first part of a multipart message. It would
-       not be unreasonable iff the state could change to No_event
-       after reading the first part of a multi_message since no new
-       messages are available.
+       Also receiving a multipart message must not be interleaved with
+       another receving thread on the same socket.
 
-       Also message parts needs to be received in order, so we must
-       avoid interleaving here.
+       We could have a read-mutex and a write mutex in order to limit
+       potential starvation of other threads while reading large
+       multipart messages.
+
     *)
     wrap `Read (fun s -> ZMQ.Socket.recv_all ~block:false s) s
 
   let send_all s parts =
-    (* See the comment on recv_all. Again, the state could change
-       from Poll_out to No_event, as we are just filling up the first
-       message, and according to the specification the message cannot
-       be sent before all parts have been delivered.
-    *)
+    (* See the comment in recv_all. *)
     wrap `Write (fun s -> ZMQ.Socket.send_all ~block:false s parts) s
 
   let close { socket ; fd } =

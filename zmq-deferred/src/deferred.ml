@@ -10,7 +10,10 @@ module type T = sig
     (* Wrap the given unix file_deser *)
     val create: Unix.file_descr -> t
 
-    (* Wait for the fd to become readable *)
+    (** Wait for the fd to become readable.
+        It is important that all waiters on the socket are woken up,
+        and not just one, as the fd is used as a broadcast mechanism
+    *)
     val wait_readable: t -> unit t'
 
     (** Release resources acquired for this fd
