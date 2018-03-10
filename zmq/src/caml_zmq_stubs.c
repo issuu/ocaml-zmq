@@ -60,8 +60,8 @@ CAMLprim value caml_zmq_version(value unit) {
  * Init
  */
 
-CAMLprim value caml_zmq_new(value num_threads) {
-    CAMLparam1 (num_threads);
+CAMLprim value caml_zmq_new(value unit) {
+    CAMLparam1 (unit);
     CAMLlocal1 (ctx_value);
 
     void *ctx = zmq_ctx_new();
