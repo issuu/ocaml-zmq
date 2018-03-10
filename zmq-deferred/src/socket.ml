@@ -70,4 +70,24 @@ module Make(Deferred: Deferred.T) = struct
     ZMQ.Socket.close socket;
     Fd.release fd;
     Deferred.return ()
+
+
+  module Router = struct
+    type id_t = string
+
+    let id_of_string t = t
+
+    let recv s =
+      recv_all s >>= function
+      | id :: message -> Deferred.return (id, message)
+      | _ -> assert false
+
+    let send s id message =
+      send_all s (id :: message)
+  end
+
+  module Monitor = struct
+    let recv s = wrap `Read (fun s -> ZMQ.Monitor.recv ~block:false s) s
+  end
+
 end
