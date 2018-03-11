@@ -10,7 +10,7 @@ ZMQ.Socket.subscribe subscriber filter;
 
 let total_temp = ref 0 in
 let update_nbr = 100 in
-for i = 0 to pred update_nbr do
+for _i = 0 to pred update_nbr do
   let str = ZMQ.Socket.recv subscriber in
   match List.map int_of_string (split str) with
   | [ _; temperature; _] -> total_temp := !total_temp + temperature;

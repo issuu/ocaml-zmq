@@ -4,6 +4,7 @@
  ((name zmq)
   (public_name zmq)
   (wrapped false)
+  (flags (:standard "-w" "-37"))
   (c_names (caml_zmq_stubs socket context fail poll msg))
   (c_flags ((:include c_flags.sexp) -Wall -Wextra -O2))
   (c_library_flags (:include c_library_flags.sexp))

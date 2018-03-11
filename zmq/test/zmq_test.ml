@@ -160,7 +160,7 @@ let test_proxy () =
   assert_equal msg1 (ZMQ.Socket.recv sub);
   assert_equal msg2 (ZMQ.Socket.recv sub);
 
-  (** Epilog *)
+  (* Epilog *)
   ZMQ.Socket.close sub;
   ZMQ.Socket.close push;
   ZMQ.Socket.close pull;

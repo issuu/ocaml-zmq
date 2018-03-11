@@ -1,4 +1,3 @@
-open Printf;;
 open ZMQ;;
 
 let randint a b = (Random.int (b - a + 1)) + a;;
