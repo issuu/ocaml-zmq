@@ -18,10 +18,9 @@ module Make(T: Zmq_deferred.Deferred.T) = struct
     let ctx = Zmq.Context.create () in
     let s1 = make ctx Zmq.Socket.pair in
     let s2 = make ctx Zmq.Socket.pair in
-    let endpoint = Printf.sprintf "inproc://test_%x" (Random.int 1_000_000) in
+    let endpoint = "inproc://test"  in
     Zmq.Socket.bind s1 endpoint;
     Zmq.Socket.connect s2 endpoint;
-    (* We need to release the socket without closing. *)
     Deferred.return (ctx, Socket.of_socket s1, Socket.of_socket s2)
 
   let teardown (ctx, s1, s2) =
@@ -29,7 +28,6 @@ module Make(T: Zmq_deferred.Deferred.T) = struct
     Socket.close s1 >>= fun () ->
     Zmq.Context.terminate ctx;
     Deferred.return ()
-
 
   let rec send ?delay s = function
     | 0 -> Deferred.return ()
@@ -93,6 +91,15 @@ module Make(T: Zmq_deferred.Deferred.T) = struct
       recv s1 20;
     ]
 
+  let test_multi (_, s1, s2) =
+    (* This must take no more that 0.1 sec in total *)
+    all_ok (
+      ((send ~delay:0.001 s1 100) :: (List.init 100 (fun _ -> Socket.recv s2 >>= fun _ -> Deferred.return ())))
+      (* @ ((send ~delay:0.001 s2 100) :: (List.init 100 (fun _ -> Socket.recv s1 >>= fun _ -> Deferred.return ()))) *)
+    )
+
+
+
   let test_slow_mix (_, s1, s2) =
     all_ok [
       send ~delay:0.001 s2 100; recv ~delay:0.001 s1 100;
@@ -121,6 +128,7 @@ module Make(T: Zmq_deferred.Deferred.T) = struct
       "test_slow_send"      >:: bracket setup test_slow_send teardown;
       "test_slow_receive"   >:: bracket setup test_slow_receive teardown;
       "test_slow_mix"       >:: bracket setup test_slow_mix teardown;
+      "test_multi"          >:: bracket setup test_multi teardown;
     ]
 
   let run exec =
