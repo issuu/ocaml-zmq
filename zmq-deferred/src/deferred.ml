@@ -3,8 +3,9 @@ module type T = sig
   module Deferred : sig
     type nonrec 'a t = 'a t
     val return: 'a -> 'a t
-    val try_with: (unit -> 'a t) -> ('a, exn) result t
+    val catch: (unit -> 'a t) -> ('a, exn) result t
     val don't_wait_for: (unit -> unit t) -> unit
+    val sleepf: float -> unit t
     val fail: exn -> 'a t
     module Infix : sig
       val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
@@ -30,6 +31,6 @@ module type T = sig
 
     *)
     val wait_readable: t -> unit Deferred.t
-
+    val release: t -> unit Deferred.t
   end
 end

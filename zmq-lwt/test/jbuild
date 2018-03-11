@@ -1,0 +1,12 @@
+(jbuild_version 1)
+
+(executable
+ ((name        test)
+  (libraries  (zmq.deferred.test zmq-lwt))))
+
+
+(alias
+  ((name   runtest)
+   (action (run ${exe:test.exe} -verbose))
+   (package zmq-lwt)
+))

@@ -29,7 +29,7 @@ module Make(T: Deferred.T) = struct
       try
         f ();
         (* Success, pop the sender *)
-        Queue.pop t.senders |> ignore
+        Queue.pop queue |> ignore
       with
       | Retry ->
         ()
@@ -44,13 +44,16 @@ module Make(T: Deferred.T) = struct
       event_loop t
     | Poll_in_out, _, false
     | Poll_in, _, false ->
-      process t.senders;
+      process t.receivers;
       event_loop t
     | Poll_in, _, true
     | Poll_out, true, _
     | No_event, _, _ ->
       Fd.wait_readable t.fd >>= fun () ->
       event_loop t
+    | exception Unix.Unix_error(Unix.ENOTSOCK, "zmq_getsockopt", "") ->
+      Deferred.return ()
+
 
   type op = Send | Receive
   let post: _ t -> op -> (_ ZMQ.Socket.t -> 'a) -> 'a Deferred.t = fun t op f ->
@@ -112,7 +115,8 @@ module Make(T: Deferred.T) = struct
     (* See the comment in recv_all. *)
     post s Send (fun s -> ZMQ.Socket.send_all ~block:false s parts)
 
-  let close { socket ; fd } =
+  let close { socket ; fd; _ } =
+    Fd.release fd >>= fun () ->
     ZMQ.Socket.close socket;
     Deferred.return ()
 

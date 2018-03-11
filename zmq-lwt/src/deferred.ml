@@ -2,8 +2,9 @@ type 'a t = 'a Lwt.t
 module Deferred = struct
   type 'a t = 'a Lwt.t
   let return a = Lwt.return a
-  let try_with f = Lwt_result.catch (f ())
+  let catch f = Lwt_result.catch (f ())
   let don't_wait_for = Lwt.async
+  let sleepf secs = Lwt_unix.sleep secs
   let fail exn = Lwt.fail exn
 
   module Infix = struct
@@ -24,4 +25,5 @@ module Fd = struct
 
   let create fd = Lwt_unix.of_unix_file_descr fd
   let wait_readable t = Lwt_unix.wait_read t
+  let release _ = Deferred.return ()
 end

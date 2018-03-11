@@ -5,8 +5,9 @@ type 'a t = 'a Deferred.t
 module Deferred = struct
   type 'a t = 'a Deferred.t
   let return a = Deferred.return a
-  let try_with f = try_with ~extract_exn:true f
+  let catch f = try_with ~extract_exn:true f
   let don't_wait_for f = don't_wait_for (f ())
+  let sleepf secs = Async_unix.Std.after (Core.Time.Span.of_sec secs)
   let fail exn = raise exn
 
   module Infix = struct
@@ -15,7 +16,6 @@ module Deferred = struct
 end
 
 module Condition = struct
-  type 'a deferred = 'a t
   type 'a t = 'a Ivar.t
   let create () = Ivar.create ()
   let wait t = Ivar.read t
@@ -34,5 +34,5 @@ module Fd = struct
     | `Closed -> failwith "Filedescr closed unexpectedly"
     | `Ready -> return ()
 
-  let release _ = ()
+  let release t = Fd.close ~file_descriptor_handling:Fd.Do_not_close_file_descriptor t
 end

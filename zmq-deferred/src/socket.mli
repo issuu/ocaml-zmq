@@ -7,6 +7,7 @@
 *)
 module Make : functor (T : Deferred.T) -> sig
   open T
+
   (** An concurrent zeromq socket *)
   type 'a t
 
