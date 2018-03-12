@@ -7,7 +7,7 @@ module Deferred = struct
   let return a = Deferred.return a
   let catch f = try_with ~extract_exn:true f
   let don't_wait_for f = don't_wait_for (f ())
-  let sleepf secs = Async_unix.Std.after (Core.Time.Span.of_sec secs)
+  let sleepf secs = Async_unix.after (Core.Time.Span.of_sec secs)
   let fail exn = raise exn
 
   module Infix = struct
