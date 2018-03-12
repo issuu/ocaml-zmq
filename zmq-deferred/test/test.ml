@@ -114,7 +114,7 @@ module Make(T: Zmq_deferred.Deferred.T) = struct
     all_ok (
       ((send ~delay:0.001 s1 100) :: (list_init 100 (fun _ -> Socket.recv s2 >>= fun _ -> Deferred.return ())))
       @
-      ((send ~delay:0.002 s2 100) :: (List.init 100 (fun _ -> Socket.recv s1 >>= fun _ -> Deferred.return ())))
+      ((send ~delay:0.002 s2 100) :: (list_init 100 (fun _ -> Socket.recv s1 >>= fun _ -> Deferred.return ())))
     )
 
   let test_slow_mix (_, s1, s2) =
