@@ -9,13 +9,15 @@ module type T = sig
     val fail: exn -> 'a t
     module Infix : sig
       val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+      (* Determined, whenever either of the deferred becomes determined *)
+      val (<?>): 'a t -> 'a t -> 'a t
     end
   end
   module Condition : sig
     type 'a t
     val create: unit -> 'a t
     val wait: 'a t -> 'a Deferred.t
-    val wakeup: 'a t -> 'a -> unit
+    val signal: 'a t -> 'a -> unit
   end
 
   module Fd : sig

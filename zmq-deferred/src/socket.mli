@@ -17,6 +17,9 @@ module Make : functor (T : Deferred.T) -> sig
   (** [to_socket s] extracts the raw zeromq socket from [s] *)
   val to_socket : 'a t -> 'a ZMQ.Socket.t
 
+  (** Internal statisitcs of the socket *)
+  val to_string_hum : 'a t -> string
+
   (** [recv socket] waits for a message on [socket] without blocking
       other concurrent threads *)
   val recv : 'a t -> string Deferred.t

@@ -7,14 +7,28 @@ module Make(T: Deferred.T) = struct
       fd : Fd.t;
       senders : (unit -> unit) Queue.t;
       receivers : (unit -> unit) Queue.t;
+      mutable iterations : int;
+      mutable sleeping : bool;
+      condition: unit Condition.t;
     }
 
- let of_socket: 'a ZMQ.Socket.t -> 'a t = fun socket ->
-    let fd = Fd.create (ZMQ.Socket.get_fd socket) in
-    { socket; fd;
-      senders = Queue.create ();
-      receivers = Queue.create ();
-    }
+  let to_string_hum t =
+    let state = match (ZMQ.Socket.events t.socket) with
+      | ZMQ.Socket.No_event -> "No_event"
+      | Poll_in -> "Poll_in"
+      | Poll_out -> "Poll_out"
+      | Poll_in_out -> "Poll_in_out"
+      | Poll_error -> "Poll_error"
+      | exception _ -> "Closed"
+    in
+    Printf.sprintf "State: %s, Senders #%d, Receivers #%d, Interations: %d Sleeping: %b"
+      state
+      (Queue.length t.senders)
+      (Queue.length t.receivers)
+      t.iterations
+      t.sleeping
+
+
 
   (** The event loop repeats acting on events as long as there are
       sends or receives to be processed.
@@ -22,8 +36,8 @@ module Make(T: Deferred.T) = struct
       and the fd can only be trusted after reading the status of the socket.
   *)
   let rec event_loop t =
+    t.iterations <- t.iterations + 1;
     let open ZMQ.Socket in
-
     let process queue =
       let f = Queue.peek queue in
       try
@@ -31,15 +45,17 @@ module Make(T: Deferred.T) = struct
         (* Success, pop the sender *)
         Queue.pop queue |> ignore
       with
-      | Retry ->
-        ()
+      | Retry -> (* If f raised EAGAIN, dont pop the message *) ()
     in
     match events t.socket, Queue.is_empty t.senders, Queue.is_empty t.receivers with
-    | _, true, true -> Deferred.return ()
+    | _, true, true ->
+      Condition.wait t.condition >>= fun () ->
+      event_loop t
     | Poll_error, _, _ -> failwith "Cannot poll socket"
+
+      (* Prioritize send's to keep network busy *)
     | Poll_in_out, false, _
     | Poll_out, false, _ ->
-      (* Prioritize send's to keep network busy *)
       process t.senders;
       event_loop t
     | Poll_in_out, _, false
@@ -49,18 +65,31 @@ module Make(T: Deferred.T) = struct
     | Poll_in, _, true
     | Poll_out, true, _
     | No_event, _, _ ->
-      Fd.wait_readable t.fd >>= fun () ->
+      t.sleeping <- true;
+      (Fd.wait_readable t.fd <?> Condition.wait t.condition) >>= fun () ->
+      Condition.signal t.condition ();
+      t.sleeping <- false;
       event_loop t
     | exception Unix.Unix_error(Unix.ENOTSOCK, "zmq_getsockopt", "") ->
       Deferred.return ()
 
+  let of_socket: 'a ZMQ.Socket.t -> 'a t = fun socket ->
+    let fd = Fd.create (ZMQ.Socket.get_fd socket) in
+    let t =
+      { socket; fd;
+        senders = Queue.create ();
+        receivers = Queue.create ();
+        iterations = 0;
+        sleeping = false;
+        condition = Condition.create ();
+      }
+    in
+    Deferred.don't_wait_for (fun () -> event_loop t);
+    t
 
   type op = Send | Receive
   let post: _ t -> op -> (_ ZMQ.Socket.t -> 'a) -> 'a Deferred.t = fun t op f ->
-    let is_running = Queue.is_empty t.senders && Queue.is_empty t.receivers in
-
-    let cond = Condition.create () in
-    let f' () =
+    let f' cond () =
       let res = match f t.socket with
         | v -> Ok v
         | exception Unix.Unix_error (Unix.EAGAIN, _, _) ->
@@ -68,23 +97,23 @@ module Make(T: Deferred.T) = struct
           raise Retry
         | exception exn -> Error exn
       in
-      (* This may actually be a scheduling point *)
-      Condition.wakeup cond res
+      Condition.signal cond res
     in
     let queue = match op with
       | Send -> t.senders
       | Receive -> t.receivers
     in
-    Queue.push f' queue;
+    let cond = Condition.create () in
+    let should_signal = Queue.is_empty queue in
+    Queue.push (f' cond) queue;
 
-    (* Start a thread if none is running *)
+    (* Wakeup the thread if the queue was empty *)
     begin
-      match is_running with
+      match should_signal with
+      | true -> Condition.signal t.condition ()
       | false -> ()
-      | true -> Deferred.don't_wait_for (fun () -> event_loop t)
     end;
 
-    (* Raise exceptions in callers context *)
     Condition.wait cond >>= function
     | Ok v -> Deferred.return v
     | Error exn -> Deferred.fail exn

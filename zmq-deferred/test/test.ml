@@ -1,11 +1,28 @@
 open OUnit
 module Zmq = ZMQ
 
+let verbose = false
+
+let list_init cnt f =
+  let rec loop = function
+    | n when n = cnt -> []
+    | n -> f n :: loop (n + 1)
+  in
+  loop 0 |> List.rev
+
 module Make(T: Zmq_deferred.Deferred.T) = struct
   open T
   open Deferred.Infix
 
   module Socket = Zmq_deferred.Socket.Make(T)
+
+  let rec monitor (s1, s2) () =
+    match verbose with
+    | true ->
+      Printf.eprintf "s1: %s\n%!" (Socket.to_string_hum s1);
+      Printf.eprintf "s2: %s\n%!" (Socket.to_string_hum s2);
+      Deferred.sleepf 1.0 >>= monitor (s1, s2)
+    | false -> Deferred.return ()
 
   let all_ok l =  List.fold_left (fun acc a -> acc >>= fun () -> a) (Deferred.return ()) l
   let setup () =
@@ -21,6 +38,7 @@ module Make(T: Zmq_deferred.Deferred.T) = struct
     let endpoint = "inproc://test"  in
     Zmq.Socket.bind s1 endpoint;
     Zmq.Socket.connect s2 endpoint;
+    Deferred.sleepf 1.0 >>= fun () ->
     Deferred.return (ctx, Socket.of_socket s1, Socket.of_socket s2)
 
   let teardown (ctx, s1, s2) =
@@ -92,15 +110,15 @@ module Make(T: Zmq_deferred.Deferred.T) = struct
     ]
 
   let test_multi (_, s1, s2) =
-    (* This must take no more that 0.1 sec in total *)
+    Deferred.don't_wait_for (monitor (s1, s2));
     all_ok (
-      ((send ~delay:0.001 s1 100) :: (List.init 100 (fun _ -> Socket.recv s2 >>= fun _ -> Deferred.return ())))
-      (* @ ((send ~delay:0.001 s2 100) :: (List.init 100 (fun _ -> Socket.recv s1 >>= fun _ -> Deferred.return ()))) *)
+      ((send ~delay:0.001 s1 100) :: (list_init 100 (fun _ -> Socket.recv s2 >>= fun _ -> Deferred.return ())))
+      @
+      ((send ~delay:0.002 s2 100) :: (List.init 100 (fun _ -> Socket.recv s1 >>= fun _ -> Deferred.return ())))
     )
 
-
-
   let test_slow_mix (_, s1, s2) =
+    Deferred.don't_wait_for (monitor (s1, s2));
     all_ok [
       send ~delay:0.001 s2 100; recv ~delay:0.001 s1 100;
       send ~delay:0.001 s1 100; recv ~delay:0.001 s2 100;
