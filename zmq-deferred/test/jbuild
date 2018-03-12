@@ -2,6 +2,5 @@
 
 (library
  ((name zmq_deferred_test)
-  (public_name zmq.deferred.test)
   (wrapped true)
   (libraries (zmq.deferred oUnit))))

@@ -2,11 +2,11 @@
 
 (executable
  ((name        test)
-  (libraries  (zmq.deferred.test zmq-async))))
+  (libraries  (zmq_deferred_test zmq-async))))
 
 
 (alias
   ((name   runtest)
-   (action (run ${exe:test.exe} -verbose))
+   (action (run ${exe:test.exe}))
    (package zmq-async)
 ))
