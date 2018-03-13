@@ -9,7 +9,9 @@ module Make(T: Deferred.T) = struct
       receivers : (unit -> unit) Queue.t;
       mutable iterations : int;
       mutable sleeping : bool;
-      condition: unit Condition.t;
+      condition : unit Condition.t;
+      fd_condition : unit Condition.t;
+      mutable closing : bool;
     }
 
   let to_string_hum t =
@@ -29,6 +31,18 @@ module Make(T: Deferred.T) = struct
       t.sleeping
 
 
+  (** Small process that will notify of the fd changes *)
+  let rec fd_monitor t =
+    Condition.wait t.fd_condition >>= fun () ->
+    match t.closing with
+    | true -> Deferred.return ()
+    | false -> begin
+        Fd.wait_readable t.fd >>= fun () ->
+        Condition.signal t.condition ();
+        match t.closing with
+        | true -> Deferred.return ()
+        | false -> fd_monitor t
+      end
 
   (** The event loop repeats acting on events as long as there are
       sends or receives to be processed.
@@ -36,42 +50,45 @@ module Make(T: Deferred.T) = struct
       and the fd can only be trusted after reading the status of the socket.
   *)
   let rec event_loop t =
-    t.iterations <- t.iterations + 1;
-    let open ZMQ.Socket in
-    let process queue =
-      let f = Queue.peek queue in
-      try
-        f ();
-        (* Success, pop the sender *)
-        Queue.pop queue |> ignore
-      with
-      | Retry -> (* If f raised EAGAIN, dont pop the message *) ()
-    in
-    match events t.socket, Queue.is_empty t.senders, Queue.is_empty t.receivers with
-    | _, true, true ->
-      Condition.wait t.condition >>= fun () ->
-      event_loop t
-    | Poll_error, _, _ -> failwith "Cannot poll socket"
-
-      (* Prioritize send's to keep network busy *)
-    | Poll_in_out, false, _
-    | Poll_out, false, _ ->
-      process t.senders;
-      event_loop t
-    | Poll_in_out, _, false
-    | Poll_in, _, false ->
-      process t.receivers;
-      event_loop t
-    | Poll_in, _, true
-    | Poll_out, true, _
-    | No_event, _, _ ->
-      t.sleeping <- true;
-      (Fd.wait_readable t.fd <?> Condition.wait t.condition) >>= fun () ->
-      Condition.signal t.condition ();
-      t.sleeping <- false;
-      event_loop t
-    | exception Unix.Unix_error(Unix.ENOTSOCK, "zmq_getsockopt", "") ->
-      Deferred.return ()
+    match t.closing with
+    | true -> Deferred.return ()
+    | false -> begin
+        t.iterations <- t.iterations + 1;
+        let open ZMQ.Socket in
+        let process queue =
+          let f = Queue.peek queue in
+          try
+            f ();
+            (* Success, pop the sender *)
+            Queue.pop queue |> ignore
+          with
+          | Retry -> (* If f raised EAGAIN, dont pop the message *) ()
+        in
+        match events t.socket, Queue.is_empty t.senders, Queue.is_empty t.receivers with
+        | _, true, true ->
+          Condition.wait t.condition >>= fun () ->
+          event_loop t
+        | Poll_error, _, _ -> failwith "Cannot poll socket"
+        (* Prioritize send's to keep network busy *)
+        | Poll_in_out, false, _
+        | Poll_out, false, _ ->
+          process t.senders;
+          event_loop t
+        | Poll_in_out, _, false
+        | Poll_in, _, false ->
+          process t.receivers;
+          event_loop t
+        | Poll_in, _, true
+        | Poll_out, true, _
+        | No_event, _, _ ->
+          t.sleeping <- true;
+          Condition.signal t.fd_condition ();
+          Condition.wait t.condition >>= fun () ->
+          t.sleeping <- false;
+          event_loop t
+        | exception Unix.Unix_error(Unix.ENOTSOCK, "zmq_getsockopt", "") ->
+          Deferred.return ()
+      end
 
   let of_socket: 'a ZMQ.Socket.t -> 'a t = fun socket ->
     let fd = Fd.create (ZMQ.Socket.get_fd socket) in
@@ -82,9 +99,12 @@ module Make(T: Deferred.T) = struct
         iterations = 0;
         sleeping = false;
         condition = Condition.create ();
+        fd_condition = Condition.create ();
+        closing = false;
       }
     in
     Deferred.don't_wait_for (fun () -> event_loop t);
+    Deferred.don't_wait_for (fun () -> fd_monitor t);
     t
 
   type op = Send | Receive
@@ -144,9 +164,12 @@ module Make(T: Deferred.T) = struct
     (* See the comment in recv_all. *)
     post s Send (fun s -> ZMQ.Socket.send_all ~block:false s parts)
 
-  let close { socket ; fd; _ } =
-    Fd.release fd >>= fun () ->
-    ZMQ.Socket.close socket;
+  let close t =
+    t.closing <- true;
+    Deferred.catch (fun () -> Fd.release t.fd) >>= fun _ ->
+    Condition.signal t.fd_condition ();
+    Condition.signal t.condition ();
+    ZMQ.Socket.close t.socket;
     Deferred.return ()
 
   module Router = struct
