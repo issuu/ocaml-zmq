@@ -27,7 +27,7 @@ module Fd = struct
   type 'a t' = 'a t
   type t = Fd.t
   let create fd =
-    Fd.create ~avoid_nonblock_if_possible:true (Fd.Kind.Socket `Active) fd (Base.Info.of_string "<zmq>")
+    Fd.create (Fd.Kind.Socket `Active) fd (Base.Info.of_string "<zmq>")
 
   let wait_readable: t -> unit t' = fun t ->
     Fd.ready_to t `Read >>= function

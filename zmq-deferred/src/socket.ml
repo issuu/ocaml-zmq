@@ -37,7 +37,7 @@ module Make(T: Deferred.T) = struct
     match t.closing with
     | true -> Deferred.return ()
     | false -> begin
-        Fd.wait_readable t.fd >>= fun () ->
+        Deferred.catch (fun () -> Fd.wait_readable t.fd) >>= fun _ ->
         Condition.signal t.condition ();
         match t.closing with
         | true -> Deferred.return ()
