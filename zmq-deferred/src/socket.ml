@@ -7,8 +7,6 @@ module Make(T: Deferred.T) = struct
       fd : Fd.t;
       senders : (unit -> unit) Queue.t;
       receivers : (unit -> unit) Queue.t;
-      mutable iterations : int;
-      mutable sleeping : bool;
       condition : unit Condition.t;
       fd_condition : unit Condition.t;
       mutable closing : bool;
@@ -23,12 +21,10 @@ module Make(T: Deferred.T) = struct
       | Poll_error -> "Poll_error"
       | exception _ -> "Closed"
     in
-    Printf.sprintf "State: %s, Senders #%d, Receivers #%d, Interations: %d Sleeping: %b"
+    Printf.sprintf "State: %s, Senders #%d, Receivers #%d"
       state
       (Queue.length t.senders)
       (Queue.length t.receivers)
-      t.iterations
-      t.sleeping
 
 
   (** Small process that will notify of the fd changes *)
@@ -53,7 +49,6 @@ module Make(T: Deferred.T) = struct
     match t.closing with
     | true -> Deferred.return ()
     | false -> begin
-        t.iterations <- t.iterations + 1;
         let open ZMQ.Socket in
         let process queue =
           let f = Queue.peek queue in
@@ -81,10 +76,8 @@ module Make(T: Deferred.T) = struct
         | Poll_in, _, true
         | Poll_out, true, _
         | No_event, _, _ ->
-          t.sleeping <- true;
           Condition.signal t.fd_condition ();
           Condition.wait t.condition >>= fun () ->
-          t.sleeping <- false;
           event_loop t
         | exception Unix.Unix_error(Unix.ENOTSOCK, "zmq_getsockopt", "") ->
           Deferred.return ()
@@ -96,8 +89,6 @@ module Make(T: Deferred.T) = struct
       { socket; fd;
         senders = Queue.create ();
         receivers = Queue.create ();
-        iterations = 0;
-        sleeping = false;
         condition = Condition.create ();
         fd_condition = Condition.create ();
         closing = false;
