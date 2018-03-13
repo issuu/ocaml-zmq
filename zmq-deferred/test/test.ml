@@ -38,7 +38,7 @@ module Make(T: Zmq_deferred.Deferred.T) = struct
     let endpoint = "inproc://test"  in
     Zmq.Socket.bind s1 endpoint;
     Zmq.Socket.connect s2 endpoint;
-    Deferred.sleepf 1.0 >>= fun () ->
+    Deferred.sleepf 0.0001 >>= fun () ->
     Deferred.return (ctx, Socket.of_socket s1, Socket.of_socket s2)
 
   let teardown (ctx, s1, s2) =
