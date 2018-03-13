@@ -1,0 +1,11 @@
+(jbuild_version 1)
+
+(executable
+ ((name        test)
+  (libraries  (async zmq_async oUnit))))
+
+
+(alias
+  ((name   runtest)
+   (action (run ${exe:test.exe}))
+))
