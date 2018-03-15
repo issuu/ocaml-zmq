@@ -2,6 +2,8 @@ open OUnit
 module Zmq = ZMQ
 
 let verbose = false
+let count = 1000
+
 
 let list_init cnt f =
   let rec loop = function
@@ -72,58 +74,59 @@ module Make(T: Zmq_deferred.Deferred.T) = struct
   (* Tests *)
   let test_send_receive (_, s1, s2) =
     all_ok [
-      send s2 100; recv s1 100
+      send s2 count; recv s1 count
     ]
 
   let test_msend_mreceive (_, s1, s2) =
     all_ok [
-      send s2 100; send s2 100; send s2 100; send s2 100;
-      recv s1 100; recv s1 100; recv s1 100; recv s1 100;
+      send s2 count; send s2 count; send s2 count; send s2 count;
+      recv s1 count; recv s1 count; recv s1 count; recv s1 count;
     ]
 
   let test_mix (_, s1, s2) =
     all_ok [
-      send s2 100; recv s1 100;
-      send s1 100; recv s2 100;
-      send s2 100; recv s1 100;
-      send s1 100; recv s2 100;
+      send s2 count; recv s1 count;
+      send s1 count; recv s2 count;
+      send s2 count; recv s1 count;
+      send s1 count; recv s2 count;
+      send s2 count; recv s1 count;
     ]
 
   let test_slow_send (_, s1, s2) =
     all_ok [
-      recv ~delay:0.001 s2 100;
-      send s1 20;
-      send s1 20;
-      send s1 20;
-      send s1 20;
-      send s1 20;
+      recv ~delay:0.001 s2 count;
+      send s1 (count / 5);
+      send s1 (count / 5);
+      send s1 (count / 5);
+      send s1 (count / 5);
+      send s1 (count / 5);
     ]
 
   let test_slow_receive (_, s1, s2) =
     all_ok [
-      send ~delay:0.001 s2 100;
-      recv s1 20;
-      recv s1 20;
-      recv s1 20;
-      recv s1 20;
-      recv s1 20;
+      send ~delay:0.001 s2 count;
+      recv s1 (count / 5);
+      recv s1 (count / 5);
+      recv s1 (count / 5);
+      recv s1 (count / 5);
+      recv s1 (count / 5);
     ]
 
   let test_multi (_, s1, s2) =
     Deferred.don't_wait_for (monitor (s1, s2));
     all_ok (
-      ((send ~delay:0.001 s1 100) :: (list_init 100 (fun _ -> Socket.recv s2 >>= fun _ -> Deferred.return ())))
+      ((send ~delay:0.001 s1 count) :: (list_init count (fun _ -> Socket.recv s2 >>= fun _ -> Deferred.return ())))
       @
-      ((send ~delay:0.002 s2 100) :: (list_init 100 (fun _ -> Socket.recv s1 >>= fun _ -> Deferred.return ())))
+      ((send ~delay:0.002 s2 count) :: (list_init count (fun _ -> Socket.recv s1 >>= fun _ -> Deferred.return ())))
     )
 
   let test_slow_mix (_, s1, s2) =
     Deferred.don't_wait_for (monitor (s1, s2));
     all_ok [
-      send ~delay:0.001 s2 100; recv ~delay:0.001 s1 100;
-      send ~delay:0.001 s1 100; recv ~delay:0.001 s2 100;
-      send ~delay:0.001 s2 100; recv ~delay:0.001 s1 100;
-      send ~delay:0.001 s1 100; recv ~delay:0.001 s2 100;
+      send ~delay:0.001 s2 count; recv ~delay:0.001 s1 count;
+      send ~delay:0.001 s1 count; recv ~delay:0.001 s2 count;
+      send ~delay:0.001 s2 count; recv ~delay:0.001 s1 count;
+      send ~delay:0.001 s1 count; recv ~delay:0.001 s2 count;
     ]
 
   let suite (exec : (unit -> unit Deferred.t) -> unit) =
