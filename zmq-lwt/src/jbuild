@@ -3,4 +3,4 @@
 (library
  ((name zmq_lwt)
   (public_name zmq-lwt)
-  (libraries (zmq lwt.unix))))
+  (libraries (zmq.deferred lwt lwt.unix base))))
