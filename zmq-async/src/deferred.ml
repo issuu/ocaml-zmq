@@ -23,6 +23,8 @@ module Condition = struct
   let signal t v = Condition.signal t v
 end
 
+module Ivar = Async_kernel.Ivar
+
 module Fd = struct
   type 'a t' = 'a t
   type t = Fd.t
