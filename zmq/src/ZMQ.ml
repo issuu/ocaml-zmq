@@ -166,6 +166,7 @@ module Socket = struct
   external get_bytes_option :
     'a t -> bytes_option -> string = "caml_zmq_get_bytes_option"
 
+  [@@@warning "-37"]
   type int_option =
   | ZMQ_RATE
   | ZMQ_RECOVERY_IVL
@@ -198,6 +199,7 @@ module Socket = struct
   | ZMQ_REQ_CORRELATE
   | ZMQ_REQ_RELAXED
   | ZMQ_CONFLATE
+  [@@@warning "+37"]
 
   external set_int_option :
     'a t -> int_option -> int -> unit = "caml_zmq_set_int_option"
@@ -660,6 +662,7 @@ end
 
 (* The following code is called by fail.c *)
 
+[@@@warning "-37"]
 type internal_error =
 (* zmq.h defines the following Unix error codes if they are not already defined
  * by the system headers *)
@@ -687,6 +690,7 @@ type internal_error =
 | I_ETERM
 | I_EMTHREAD
 | I_EUNKNOWN
+[@@@warning "+37"]
 
 (* All Unix-type errors are mapped to their corresponding constructor in
  * Unix -- except I_ENOTSUP, which is mapped to EOPNOTSUPP ("Operation not
