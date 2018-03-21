@@ -36,6 +36,22 @@ module Make : functor (T : Deferred.T) -> sig
       [socket] without blocking other concurrent threads *)
   val send_all : 'a t -> string list -> unit Deferred.t
 
+  (** [recv_msg socket] waits for a message on [socket] without blocking
+      other concurrent threads *)
+  val recv_msg : 'a t -> ZMQ.Msg.t Deferred.t
+
+  (** [send_msg socket] sends a message on [socket] without blocking other
+      concurrent threads *)
+  val send_msg : 'a t -> ZMQ.Msg.t -> unit Deferred.t
+
+  (** [recv_msg_all socket] waits for a multi-part message on [socket] without
+      blocking other concurrent threads *)
+  val recv_msg_all : 'a t -> ZMQ.Msg.t list Deferred.t
+
+  (** [send_msg_all socket m] sends all parts of the multi-part message [m] on
+      [socket] without blocking other concurrent threads *)
+  val send_msg_all : 'a t -> ZMQ.Msg.t list -> unit Deferred.t
+
   val close : 'a t -> unit Deferred.t
 
 

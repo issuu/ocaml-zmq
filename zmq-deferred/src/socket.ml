@@ -134,6 +134,10 @@ module Make(T: Deferred.T) = struct
   let recv s = post s Receive (fun s -> ZMQ.Socket.recv ~block:false s)
   let send s m = post s Send (fun s -> ZMQ.Socket.send ~block:false s m)
 
+  let recv_msg s = post s Receive (fun s -> ZMQ.Socket.recv_msg ~block:false s)
+  let send_msg s m =
+    post s Send (fun s -> ZMQ.Socket.send_msg ~block:false s m)
+
   (** Recevie all message blocks. *)
 
   let recv_all s =
@@ -154,6 +158,11 @@ module Make(T: Deferred.T) = struct
   let send_all s parts =
     (* See the comment in recv_all. *)
     post s Send (fun s -> ZMQ.Socket.send_all ~block:false s parts)
+
+  let recv_msg_all s =
+    post s Receive (fun s -> ZMQ.Socket.recv_msg_all ~block:false s)
+  let send_msg_all s parts =
+    post s Send (fun s -> ZMQ.Socket.send_msg_all ~block:false s parts)
 
   let close t =
     t.closing <- true;
