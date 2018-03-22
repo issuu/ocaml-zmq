@@ -108,13 +108,13 @@ module Make(T: Deferred.T) = struct
           raise Retry
         | exception exn -> Error exn
       in
-      Ivar.fill ivar res
+      Mailbox.send ivar res
     in
     let queue = match op with
       | Send -> t.senders
       | Receive -> t.receivers
     in
-    let ivar = Ivar.create () in
+    let ivar = Mailbox.create () in
     let should_signal = Queue.is_empty queue in
     Queue.push (f' ivar) queue;
 
@@ -125,7 +125,7 @@ module Make(T: Deferred.T) = struct
       | false -> ()
     end;
 
-    Ivar.read ivar >>= function
+    Mailbox.recv ivar >>= function
     | Ok v -> Deferred.return v
     | Error exn -> Deferred.fail exn
 

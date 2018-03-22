@@ -20,11 +20,11 @@ module Condition = struct
   let signal t v = Lwt_condition.signal t v
 end
 
-module Ivar = struct
+module Mailbox = struct
   type 'a t = ('a Lwt.t * 'a Lwt.u)
   let create () = Lwt.wait ()
-  let fill (_, u) v = Lwt.wakeup_later u v
-  let read (t, _) = t
+  let send (_, u) v = Lwt.wakeup_later u v
+  let recv (t, _) = t
 end
 
 module Fd = struct

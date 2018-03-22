@@ -20,11 +20,11 @@ module type T = sig
     val signal: 'a t -> 'a -> unit
   end
 
-  module Ivar : sig
+  module Mailbox : sig
     type 'a t
     val create: unit -> 'a t
-    val fill: 'a t -> 'a -> unit
-    val read: 'a t -> 'a Deferred.t
+    val send: 'a t -> 'a -> unit
+    val recv: 'a t -> 'a Deferred.t
   end
 
   module Fd : sig
