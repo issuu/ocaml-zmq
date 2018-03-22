@@ -23,6 +23,14 @@ module Condition = struct
   let signal t v = Condition.signal t v
 end
 
+module Mailbox = struct
+  type 'a t = 'a Async_kernel.Ivar.t
+  let create () = Async_kernel.Ivar.create ()
+  let send t v = Async_kernel.Ivar.fill t v
+  let recv t = Async_kernel.Ivar.read t
+end
+
+
 module Fd = struct
   type 'a t' = 'a t
   type t = Fd.t

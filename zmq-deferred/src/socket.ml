@@ -100,7 +100,7 @@ module Make(T: Deferred.T) = struct
 
   type op = Send | Receive
   let post: _ t -> op -> (_ ZMQ.Socket.t -> 'a) -> 'a Deferred.t = fun t op f ->
-    let f' cond () =
+    let f' mailbox () =
       let res = match f t.socket with
         | v -> Ok v
         | exception Unix.Unix_error (Unix.EAGAIN, _, _) ->
@@ -108,15 +108,15 @@ module Make(T: Deferred.T) = struct
           raise Retry
         | exception exn -> Error exn
       in
-      Condition.signal cond res
+      Mailbox.send mailbox res
     in
     let queue = match op with
       | Send -> t.senders
       | Receive -> t.receivers
     in
-    let cond = Condition.create () in
+    let mailbox = Mailbox.create () in
     let should_signal = Queue.is_empty queue in
-    Queue.push (f' cond) queue;
+    Queue.push (f' mailbox) queue;
 
     (* Wakeup the thread if the queue was empty *)
     begin
@@ -125,7 +125,7 @@ module Make(T: Deferred.T) = struct
       | false -> ()
     end;
 
-    Condition.wait cond >>= function
+    Mailbox.recv mailbox >>= function
     | Ok v -> Deferred.return v
     | Error exn -> Deferred.fail exn
 

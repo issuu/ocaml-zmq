@@ -20,6 +20,13 @@ module Condition = struct
   let signal t v = Lwt_condition.signal t v
 end
 
+module Mailbox = struct
+  type 'a t = ('a Lwt.t * 'a Lwt.u)
+  let create () = Lwt.wait ()
+  let send (_, u) v = Lwt.wakeup_later u v
+  let recv (t, _) = t
+end
+
 module Fd = struct
   type t = Lwt_unix.file_descr
 

@@ -20,6 +20,13 @@ module type T = sig
     val signal: 'a t -> 'a -> unit
   end
 
+  module Mailbox : sig
+    type 'a t
+    val create: unit -> 'a t
+    val send: 'a t -> 'a -> unit
+    val recv: 'a t -> 'a Deferred.t
+  end
+
   module Fd : sig
     type t
     (* Wrap the given unix file_deser *)
