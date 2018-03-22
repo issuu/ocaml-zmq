@@ -21,7 +21,7 @@ let can_read socket =
   | [], _, _ -> false
   | _, _, _ -> true
 
-let rec wait_readable socket =
+let wait_readable socket =
   let rec inner = function
     | 0 -> false
     | n -> begin
@@ -32,7 +32,7 @@ let rec wait_readable socket =
   in
   inner 10
 
-let rec wait_not_readable socket =
+let wait_not_readable socket =
   let rec inner = function
     | 0 -> false
     | n -> begin
@@ -118,7 +118,7 @@ let recv s () =
   Socket.recv s.socket |> ignore
 
 
-let test_unidir (ctx, push, pull) =
+let test_unidir (_ctx, push, pull) =
   assert_state push Socket.No_event;
   assert_state pull Socket.No_event;
 
@@ -181,7 +181,7 @@ let test_unidir (ctx, push, pull) =
 
   ()
 
-let test_bidir (ctx, s_a, s_b) =
+let test_bidir (_ctx, s_a, s_b) =
   (* Test how socket notifies state based on event avilability *)
   let endpoint = "inproc://fd_bidir_test" in
   ZMQ.Socket.bind s_a.socket endpoint;
