@@ -5,7 +5,10 @@ license: "MIT"
 homepage: "https://github.com/issuu/ocaml-zmq"
 dev-repo: "git@github.com/issuu/ocaml-zmq.git"
 bug-reports: "https://github.com/issuu/ocaml-zmq/issues"
-build: ["jbuilder" "build" "-p" name "-j" jobs]
+build: [
+  ["jbuilder" "subst" "-n" name] {pinned}
+  ["jbuilder" "build" "-p" name "-j" jobs]
+]
 build-test: ["jbuilder" "runtest" "-p" name "-j" jobs]
 depends: [
   "zmq"
