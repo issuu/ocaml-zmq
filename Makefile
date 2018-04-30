@@ -1,4 +1,3 @@
-# add --dev flag here when warnings are fixed
 build:
 	jbuilder build @install @examples --dev
 
