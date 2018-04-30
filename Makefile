@@ -1,4 +1,3 @@
-# add --dev flag here when warnings are fixed
 build:
 	jbuilder build @install @examples --dev
 
@@ -10,7 +9,7 @@ doc:
 	jbuilder build @doc
 
 test:
-	jbuilder runtest --dev
+	jbuilder runtest --dev --force
 
 repl:
 	jbuilder utop zmq/src

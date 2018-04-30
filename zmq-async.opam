@@ -12,7 +12,7 @@ build: [
 build-test: [["jbuilder" "runtest" "-p" name "-j" jobs]]
 depends: [
   "zmq"
-  "jbuilder" {build}
+  "jbuilder" {build & >= "1.0+beta17"}
   "async_unix" {>= "v0.9.0"}
   "async_kernel" {>= "v0.9.0"}
   "base" {>= "v0.9.0"}

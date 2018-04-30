@@ -12,6 +12,6 @@ build: [
 build-test: ["jbuilder" "runtest" "-p" name "-j" jobs]
 depends: [
   "zmq"
-  "jbuilder" {build}
+  "jbuilder" {build & >= "1.0+beta17"}
   "lwt"
 ]
