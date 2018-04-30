@@ -50,7 +50,7 @@ module Msg : sig
 
   (** Retrieve the data contained in the message.
 
-      This is considered {b unsafe} because the underly data may be freed
+      This is considered {b unsafe} because the underlying data may be freed
       when the message's lifetime expires.
   *)
   val unsafe_data : t -> data
