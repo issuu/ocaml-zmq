@@ -12,7 +12,7 @@ build: [
 build-test: [["jbuilder" "runtest" "-p" name "-j" jobs]]
 depends: [
   "conf-zmq"
-  "jbuilder" {build}
+  "jbuilder" {build & >= "1.0+beta17"}
   "configurator" {build}
   "ounit" {test}
   "base-unix"

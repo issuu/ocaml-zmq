@@ -10,7 +10,7 @@ doc:
 	jbuilder build @doc
 
 test:
-	jbuilder runtest --dev
+	jbuilder runtest --dev --force
 
 repl:
 	jbuilder utop zmq/src
