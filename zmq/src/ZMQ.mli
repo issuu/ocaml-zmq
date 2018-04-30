@@ -29,7 +29,7 @@ end
 module Msg : sig
   type t
 
-  type data =
+  type bigstring =
     (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t
 
   (** Initialize a new message with the given data.  The data will be
@@ -40,20 +40,20 @@ module Msg : sig
       @param length specifies the number of bytes, starting from [offset],
              to use.  Defaults the [length of data - offset].
   *)
-  val init_data : ?offset:int -> ?length:int -> data -> t
+  val init_data : ?offset:int -> ?length:int -> bigstring -> t
 
   (** Size of the message in bytes *)
   val size : t -> int
 
   (** Retrieve a copy of the data contained in the message. *)
-  val copy_data : t -> data
+  val copy_data : t -> bigstring
 
   (** Retrieve the data contained in the message.
 
       This is considered {b unsafe} because the underlying data may be freed
       when the message's lifetime expires.
   *)
-  val unsafe_data : t -> data
+  val unsafe_data : t -> bigstring
 
   (** Free the message.  This will be done automatically when the message
       is garbage collected.

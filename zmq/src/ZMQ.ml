@@ -53,9 +53,9 @@ module Msg = struct
   open Bigarray
 
   type t
-  type data = (char, int8_unsigned_elt, c_layout) Array1.t
+  type bigstring = (char, int8_unsigned_elt, c_layout) Array1.t
 
-  external native_init_data : data -> int -> int -> t =
+  external native_init_data : bigstring -> int -> int -> t =
     "caml_zmq_msg_init_data"
 
   let init_data ?(offset = 0) ?length buf =
@@ -69,7 +69,7 @@ module Msg = struct
 
   external size : t -> int = "caml_zmq_msg_size"
 
-  external unsafe_data : t -> data = "caml_zmq_msg_data"
+  external unsafe_data : t -> bigstring = "caml_zmq_msg_data"
 
   let copy_data msg =
     let data = unsafe_data msg in
