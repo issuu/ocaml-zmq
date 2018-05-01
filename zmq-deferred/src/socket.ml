@@ -3,7 +3,7 @@ module Make(T: Deferred.T) = struct
   open Deferred.Infix
   exception Retry
   type 'a t =
-    { socket : 'a ZMQ.Socket.t;
+    { socket : 'a Zmq.Socket.t;
       fd : Fd.t;
       senders : (unit -> unit) Queue.t;
       receivers : (unit -> unit) Queue.t;
@@ -13,8 +13,8 @@ module Make(T: Deferred.T) = struct
     }
 
   let to_string_hum t =
-    let state = match (ZMQ.Socket.events t.socket) with
-      | ZMQ.Socket.No_event -> "No_event"
+    let state = match (Zmq.Socket.events t.socket) with
+      | Zmq.Socket.No_event -> "No_event"
       | Poll_in -> "Poll_in"
       | Poll_out -> "Poll_out"
       | Poll_in_out -> "Poll_in_out"
@@ -49,7 +49,7 @@ module Make(T: Deferred.T) = struct
     match t.closing with
     | true -> Deferred.return ()
     | false -> begin
-        let open ZMQ.Socket in
+        let open Zmq.Socket in
         let process queue =
           let f = Queue.peek queue in
           try
@@ -83,8 +83,8 @@ module Make(T: Deferred.T) = struct
           Deferred.return ()
       end
 
-  let of_socket: 'a ZMQ.Socket.t -> 'a t = fun socket ->
-    let fd = Fd.create (ZMQ.Socket.get_fd socket) in
+  let of_socket: 'a Zmq.Socket.t -> 'a t = fun socket ->
+    let fd = Fd.create (Zmq.Socket.get_fd socket) in
     let t =
       { socket; fd;
         senders = Queue.create ();
@@ -99,7 +99,7 @@ module Make(T: Deferred.T) = struct
     t
 
   type op = Send | Receive
-  let post: _ t -> op -> (_ ZMQ.Socket.t -> 'a) -> 'a Deferred.t = fun t op f ->
+  let post: _ t -> op -> (_ Zmq.Socket.t -> 'a) -> 'a Deferred.t = fun t op f ->
     let f' mailbox () =
       let res = match f t.socket with
         | v -> Ok v
@@ -131,12 +131,12 @@ module Make(T: Deferred.T) = struct
 
   let to_socket t = t.socket
 
-  let recv s = post s Receive (fun s -> ZMQ.Socket.recv ~block:false s)
-  let send s m = post s Send (fun s -> ZMQ.Socket.send ~block:false s m)
+  let recv s = post s Receive (fun s -> Zmq.Socket.recv ~block:false s)
+  let send s m = post s Send (fun s -> Zmq.Socket.send ~block:false s m)
 
-  let recv_msg s = post s Receive (fun s -> ZMQ.Socket.recv_msg ~block:false s)
+  let recv_msg s = post s Receive (fun s -> Zmq.Socket.recv_msg ~block:false s)
   let send_msg s m =
-    post s Send (fun s -> ZMQ.Socket.send_msg ~block:false s m)
+    post s Send (fun s -> Zmq.Socket.send_msg ~block:false s m)
 
   (** Recevie all message blocks. *)
 
@@ -153,23 +153,23 @@ module Make(T: Deferred.T) = struct
        multipart messages.
 
     *)
-    post s Receive (fun s -> ZMQ.Socket.recv_all ~block:false s)
+    post s Receive (fun s -> Zmq.Socket.recv_all ~block:false s)
 
   let send_all s parts =
     (* See the comment in recv_all. *)
-    post s Send (fun s -> ZMQ.Socket.send_all ~block:false s parts)
+    post s Send (fun s -> Zmq.Socket.send_all ~block:false s parts)
 
   let recv_msg_all s =
-    post s Receive (fun s -> ZMQ.Socket.recv_msg_all ~block:false s)
+    post s Receive (fun s -> Zmq.Socket.recv_msg_all ~block:false s)
   let send_msg_all s parts =
-    post s Send (fun s -> ZMQ.Socket.send_msg_all ~block:false s parts)
+    post s Send (fun s -> Zmq.Socket.send_msg_all ~block:false s parts)
 
   let close t =
     t.closing <- true;
     Deferred.catch (fun () -> Fd.release t.fd) >>= fun _ ->
     Condition.signal t.fd_condition ();
     Condition.signal t.condition ();
-    ZMQ.Socket.close t.socket;
+    Zmq.Socket.close t.socket;
     Deferred.return ()
 
   module Router = struct
@@ -187,7 +187,7 @@ module Make(T: Deferred.T) = struct
   end
 
   module Monitor = struct
-    let recv s = post s Receive (fun s -> ZMQ.Monitor.recv ~block:false s)
+    let recv s = post s Receive (fun s -> Zmq.Monitor.recv ~block:false s)
   end
 
 end

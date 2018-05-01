@@ -1,10 +1,10 @@
-open ZMQ;;
+open Zmq
 
 let randint a b = (Random.int (b - a + 1)) + a;;
 
-let context = ZMQ.Context.create () in
-let publisher = ZMQ.Socket.create context ZMQ.Socket.pub in
-ZMQ.Socket.bind publisher "tcp://*:5556";
+let context = Zmq.Context.create () in
+let publisher = Zmq.Socket.create context Zmq.Socket.pub in
+Zmq.Socket.bind publisher "tcp://*:5556";
 
 while true do
   let zipcode = (randint 1 10001) in
@@ -13,5 +13,5 @@ while true do
   Socket.send publisher (Printf.sprintf "%05d %d %d" zipcode temperature relhumidity)
 done;
 
-ZMQ.Socket.close publisher;
-ZMQ.Context.terminate context;
+Zmq.Socket.close publisher;
+Zmq.Context.terminate context;

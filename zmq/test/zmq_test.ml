@@ -1,9 +1,9 @@
 open OUnit
 
-open ZMQ
-open ZMQ.Context
-open ZMQ.Socket
-open ZMQ.Poll
+open Zmq
+open Zmq.Context
+open Zmq.Socket
+open Zmq.Poll
 
 let debug fmt =
   Printf.ksprintf (fun s -> print_endline s; flush stdout) fmt
@@ -82,20 +82,20 @@ let test_socket_options () =
 let test_monitor () =
   let ctx = Context.create () in
   let endpoint = "tcp://127.0.0.1:51234" in
-  let s1 = ZMQ.Socket.create ctx ZMQ.Socket.pair
-  and s2 = ZMQ.Socket.create ctx ZMQ.Socket.pair in
-  let m1 = let mon_t = ZMQ.Monitor.create s1 in
-           ZMQ.Monitor.connect ctx mon_t
-  and m2 = let mon_t = ZMQ.Monitor.create s2 in
-           ZMQ.Monitor.connect ctx mon_t
+  let s1 = Zmq.Socket.create ctx Zmq.Socket.pair
+  and s2 = Zmq.Socket.create ctx Zmq.Socket.pair in
+  let m1 = let mon_t = Zmq.Monitor.create s1 in
+           Zmq.Monitor.connect ctx mon_t
+  and m2 = let mon_t = Zmq.Monitor.create s2 in
+           Zmq.Monitor.connect ctx mon_t
   in
   (* Start generating events *)
-  ZMQ.Socket.bind s1 endpoint;
-  ZMQ.Socket.connect s2 endpoint;
+  Zmq.Socket.bind s1 endpoint;
+  Zmq.Socket.connect s2 endpoint;
   sleep 100;
 
-  ZMQ.Socket.close s2;
-  ZMQ.Socket.close s1;
+  Zmq.Socket.close s2;
+  Zmq.Socket.close s1;
   sleep 100;
 
 
@@ -108,7 +108,7 @@ let test_monitor () =
     in
     let assert_event event =
       let received =
-        (ZMQ.Monitor.string_of_event (ZMQ.Monitor.recv ~block:false socket));
+        (Zmq.Monitor.string_of_event (Zmq.Monitor.recv ~block:false socket));
       in
       assert_equal ~msg:"Wrong event received" ~printer ~cmp
         (Printf.sprintf "%s: %s" event endpoint) received
@@ -118,24 +118,24 @@ let test_monitor () =
   assert_events m1 [ "Listening"; "Accepted"; "Closed" ];
   assert_events m2 [ "Connect delayed"; "Connect" ];
 
-  ZMQ.Socket.close m2;
-  ZMQ.Socket.close m1;
+  Zmq.Socket.close m2;
+  Zmq.Socket.close m1;
   Context.terminate ctx;
   ()
 
 let test_proxy () =
-  let ctx = ZMQ.Context.create () in
+  let ctx = Zmq.Context.create () in
   let pull_endpoint = "inproc://pull"
   and pub_endpoint = "inproc://pub"
-  and pull = ZMQ.Socket.create ctx pull
-  and pub = ZMQ.Socket.create ctx pub in
+  and pull = Zmq.Socket.create ctx pull
+  and pub = Zmq.Socket.create ctx pub in
 
   let proxy (pull, pub) =
-    ZMQ.Socket.bind pull pull_endpoint;
-    ZMQ.Socket.bind pub pub_endpoint;
+    Zmq.Socket.bind pull pull_endpoint;
+    Zmq.Socket.bind pub pub_endpoint;
     (* Start the proxy and start relaying messages *)
     try
-      ZMQ.Proxy.create pull pub;
+      Zmq.Proxy.create pull pub;
       assert_failure "Proxy.create must raise an exception when completed"
     with
       Unix.Unix_error (Unix.ENOTSOCK, _, _) -> ()
@@ -144,90 +144,90 @@ let test_proxy () =
   let _thread = Thread.create proxy (pull, pub) in
   sleep 10;
   let sub =
-    let s = ZMQ.Socket.create ctx sub in
-    ZMQ.Socket.connect s pub_endpoint;
-    ZMQ.Socket.subscribe s "";
+    let s = Zmq.Socket.create ctx sub in
+    Zmq.Socket.connect s pub_endpoint;
+    Zmq.Socket.subscribe s "";
     s
   and push =
-    let s = ZMQ.Socket.create ctx push in
-    ZMQ.Socket.connect s pull_endpoint;
+    let s = Zmq.Socket.create ctx push in
+    Zmq.Socket.connect s pull_endpoint;
     s
   in
   let msg1 = "Message1"
   and msg2 = "Message2" in
-  ZMQ.Socket.send push msg1;
-  ZMQ.Socket.send push msg2;
-  assert_equal msg1 (ZMQ.Socket.recv sub);
-  assert_equal msg2 (ZMQ.Socket.recv sub);
+  Zmq.Socket.send push msg1;
+  Zmq.Socket.send push msg2;
+  assert_equal msg1 (Zmq.Socket.recv sub);
+  assert_equal msg2 (Zmq.Socket.recv sub);
 
   (* Epilog *)
-  ZMQ.Socket.close sub;
-  ZMQ.Socket.close push;
-  ZMQ.Socket.close pull;
-  ZMQ.Socket.close pub;
-  ZMQ.Context.terminate ctx;
+  Zmq.Socket.close sub;
+  Zmq.Socket.close push;
+  Zmq.Socket.close pull;
+  Zmq.Socket.close pub;
+  Zmq.Context.terminate ctx;
   ()
 
 (** Simple test to test interrupted exception, while in the C lib. *)
 let test_unix_exceptions = bracket
     (fun () ->
-       let ctx = ZMQ.Context.create () in
-       let s = ZMQ.Socket.create ctx pull in
+       let ctx = Zmq.Context.create () in
+       let s = Zmq.Socket.create ctx pull in
        (ctx, s)
     )
     (fun (_, s) ->
 
-       let mask = ZMQ.Poll.mask_of [| s, ZMQ.Poll.In |] in
+       let mask = Zmq.Poll.mask_of [| s, Zmq.Poll.In |] in
        Sys.(set_signal sigalrm (Signal_handle (fun _ -> ())));
        ignore (Unix.alarm 1);
-       assert_raises ~msg:"Failed to raise EINTR" Unix.(Unix_error(EINTR, "zmq_poll", ""))  (fun _ -> ZMQ.Poll.poll ~timeout:2000 mask);
+       assert_raises ~msg:"Failed to raise EINTR" Unix.(Unix_error(EINTR, "zmq_poll", ""))  (fun _ -> Zmq.Poll.poll ~timeout:2000 mask);
        ()
     )
     (fun (ctx, s) ->
-       ZMQ.Socket.close s;
-       ZMQ.Context.terminate ctx
+       Zmq.Socket.close s;
+       Zmq.Context.terminate ctx
     )
 
 (** Test a ZMQ specific exception *)
 let test_zmq_exception = bracket
   (fun () ->
-    let ctx = ZMQ.Context.create () in
-    let socket = ZMQ.Socket.create ctx req in
+    let ctx = Zmq.Context.create () in
+    let socket = Zmq.Socket.create ctx req in
     (ctx, socket)
   )
   (fun (_, socket) ->
      assert_raises
-       (ZMQ.ZMQ_exception(ZMQ.EFSM, "Operation cannot be accomplished in current state"))
-       (fun () -> ZMQ.Socket.recv socket);
+       (Zmq.ZMQ_exception(Zmq.EFSM, "Operation cannot be accomplished in current state"))
+       (fun () -> Zmq.Socket.recv socket);
   )
   (fun (ctx, socket) ->
-     ZMQ.Socket.close socket;
-     ZMQ.Context.terminate ctx;
+     Zmq.Socket.close socket;
+     Zmq.Context.terminate ctx;
   )
 
 let test_socket_gc () =
   let sock =
-    let ctx = ZMQ.Context.create () in
-    ZMQ.Socket.create ctx ZMQ.Socket.req
+    let ctx = Zmq.Context.create () in
+    Zmq.Socket.create ctx Zmq.Socket.req
   in
   (* This will hang trying to terminate the context if socket doesn't keep it alive *)
   Gc.compact ();
-  ZMQ.Socket.close sock;
+  Zmq.Socket.close sock;
   Gc.compact () (* Clean up the context.*)
 
 let test_context_gc () =
   let ctx =
-    let ctx = ZMQ.Context.create () in
-    let sock = ZMQ.Socket.create ctx ZMQ.Socket.pair in
-    ZMQ.Socket.connect sock "tcp://127.0.0.1:9999";
-    ZMQ.Socket.send sock "test";
+    let ctx = Zmq.Context.create () in
+    let sock = Zmq.Socket.create ctx Zmq.Socket.pair in
+    Zmq.Socket.connect sock "tcp://127.0.0.1:9999";
+    Zmq.Socket.send sock "test";
     ctx
   in
   (* At this point, ctx is alive. The garbage collector needs to set
      so_linger when closing the socket, or it the system will hang when
      trying to terminate the context. *)
   Gc.compact ();
-  ZMQ.Context.terminate ctx;
+  Zmq.Context.terminate ctx;
   ()
 
 let test_z85 () =
@@ -236,11 +236,11 @@ let test_z85 () =
                "\xAB\x2B\x70\xA3\x98\x64\x5C\x26" ^
                "\xDC\xA2\xB2\xFC\xB4\x3F\xC5\x18" in
   let ascii  = "Yne@$w-vo<fVvi]a<NY6T1ed:M$fCG*[IaLV{hID" in
-  assert_equal ~printer:(Printf.sprintf "%S") binary (ZMQ.Z85.decode ascii);
-  assert_equal ~printer:(Printf.sprintf "%S") ascii  (ZMQ.Z85.encode binary);
+  assert_equal ~printer:(Printf.sprintf "%S") binary (Zmq.Z85.decode ascii);
+  assert_equal ~printer:(Printf.sprintf "%S") ascii  (Zmq.Z85.encode binary);
 
-  assert_raises (Invalid_argument "zmq_z85_encode") (fun () -> ZMQ.Z85.encode "123");
-  assert_raises (Invalid_argument "zmq_z85_decode") (fun () -> ZMQ.Z85.decode "123");
+  assert_raises (Invalid_argument "zmq_z85_encode") (fun () -> Zmq.Z85.encode "123");
+  assert_raises (Invalid_argument "zmq_z85_decode") (fun () -> Zmq.Z85.decode "123");
   ()
 
 let suite =
@@ -249,7 +249,7 @@ let suite =
       "request reply" >::
         (bracket
            (fun () ->
-             let ctx = ZMQ.Context.create () in
+             let ctx = Zmq.Context.create () in
              let req = create ctx req
              and rep = create ctx rep in
              ctx, req, rep
@@ -268,13 +268,13 @@ let suite =
            (fun (ctx, req, rep) ->
              close req;
              close rep;
-             ZMQ.Context.terminate ctx
+             Zmq.Context.terminate ctx
            ));
 
       "request reply (multi-part)" >::
         (bracket
            (fun () ->
-             let ctx = ZMQ.Context.create () in
+             let ctx = Zmq.Context.create () in
              let req = create ctx req
              and rep = create ctx rep in
              ctx, req, rep
@@ -293,13 +293,13 @@ let suite =
            (fun (ctx, req, rep) ->
              close req;
              close rep;
-             ZMQ.Context.terminate ctx
+             Zmq.Context.terminate ctx
            ));
 
       "poll" >::
         (bracket
            (fun () ->
-             let ctx = ZMQ.Context.create () in
+             let ctx = Zmq.Context.create () in
              let req = create ctx req
              and rep = create ctx rep
              and sub = create ctx sub in
@@ -326,7 +326,7 @@ let suite =
              close req;
              close rep;
              close sub;
-             ZMQ.Context.terminate ctx;
+             Zmq.Context.terminate ctx;
            ));
       "get/set context options" >:: test_ctx_options;
       "get/set socket options" >:: test_socket_options;

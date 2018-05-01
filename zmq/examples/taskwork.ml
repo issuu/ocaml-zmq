@@ -10,8 +10,8 @@ let ms_sleep msec =
   ignore (Unix.select [] [] [] (msec /. 1000.0))
 
 let () =
-  let module Socket = ZMQ.Socket in
-  let context = ZMQ.Context.create () in
+  let module Socket = Zmq.Socket in
+  let context = Zmq.Context.create () in
 
   (* Socket to receive messages on *)
   let receiver = Socket.create context Socket.pull in
@@ -37,4 +37,4 @@ let () =
 
   Socket.close receiver;
   Socket.close sender;
-  ZMQ.Context.terminate context
+  Zmq.Context.terminate context

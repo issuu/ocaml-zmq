@@ -12,8 +12,8 @@ let random_list bound size =
   loop 0 []
 
 let () =
-  let module Socket = ZMQ.Socket in
-  let context = ZMQ.Context.create () in
+  let module Socket = Zmq.Socket in
+  let context = Zmq.Context.create () in
 
     (* Socket to send messages on *)
   let sender = Socket.create context Socket.push in
@@ -43,4 +43,4 @@ let () =
 
   Socket.close sink;
   Socket.close sender;
-  ZMQ.Context.terminate context
+  Zmq.Context.terminate context

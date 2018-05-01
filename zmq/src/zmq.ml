@@ -707,7 +707,7 @@ type internal_error =
 (* All Unix-type errors are mapped to their corresponding constructor in
  * Unix -- except I_ENOTSUP, which is mapped to EOPNOTSUPP ("Operation not
  * supported on socket") since there is no Unix.ENOTSUP.
- * ZMQ-specific errors are mapped to the constructors of ZMQ.error. *)
+ * ZMQ-specific errors are mapped to the constructors of Zmq.error. *)
 let zmq_raise e str func_name =
   let exn = match e with
   | I_ENOTSUP         -> Unix.(Unix_error (EOPNOTSUPP     , func_name, ""))
@@ -738,4 +738,4 @@ let zmq_raise e str func_name =
   raise exn
 
 
-let () = Callback.register "ZMQ.zmq_raise" zmq_raise
+let () = Callback.register "Zmq.zmq_raise" zmq_raise

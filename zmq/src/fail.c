@@ -12,7 +12,7 @@
 #include <caml/memory.h>
 #include <caml/unixsupport.h>
 
-/* This table must be synchronized with ZMQ.internal_error. */
+/* This table must be synchronized with Zmq.internal_error. */
 static int const caml_zmq_error_table[] = {
     ENOTSUP,
     EPROTONOSUPPORT,
@@ -74,7 +74,7 @@ void caml_zmq_raise(int err_no, const char *err_str, const char *name) {
             into f.
         */
 
-        caml_callback3(*caml_named_value("ZMQ.zmq_raise"),
+        caml_callback3(*caml_named_value("Zmq.zmq_raise"),
                        Val_int(error_to_raise),
                        caml_copy_string(err_str),
                        caml_copy_string(name)
