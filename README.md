@@ -25,6 +25,10 @@ Uninstall
 opam remove zmq
 ```
 
+Documentation
+-------------
+API documentation can be found [here](https://issuu.github.io/ocaml-zmq)
+
 Development
 -----------
 
