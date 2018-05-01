@@ -42,7 +42,7 @@ make
 License
 -------
 
-See `LICENSE`.
+See `LICENSE.md`.
 
 Thanks
 ------
