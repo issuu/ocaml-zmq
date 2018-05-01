@@ -188,7 +188,7 @@ let test_unix_exceptions = bracket
        Zmq.Context.terminate ctx
     )
 
-(** Test a ZMQ specific exception *)
+(** Test a Zmq specific exception *)
 let test_zmq_exception = bracket
   (fun () ->
     let ctx = Zmq.Context.create () in

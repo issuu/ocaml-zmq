@@ -1,1 +1,1 @@
-To compile the examples use ocamlfind ocamlopt -o <exe_name> <source_name> -linkpkg -package ZMQ,str
+To compile the examples use ocamlfind ocamlopt -o <exe_name> <source_name> -linkpkg -package zmq,str

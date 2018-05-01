@@ -1,6 +1,4 @@
 open OUnit
-module Zmq = ZMQ
-
 let verbose = false
 let count = 1000
 

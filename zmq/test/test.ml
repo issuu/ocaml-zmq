@@ -1,6 +1,6 @@
 open OUnit
 
-let suite = "ZMQ" >:::
+let suite = "Zmq" >:::
   [
     Zmq_test.suite;
     Fd_usage.suite;
