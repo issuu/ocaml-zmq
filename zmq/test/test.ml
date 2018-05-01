@@ -1,4 +1,4 @@
-open OUnit;;
+open OUnit
 
 let suite = "ZMQ" >:::
   [
