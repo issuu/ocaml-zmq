@@ -82,12 +82,15 @@ let test_socket_options () =
 let test_monitor () =
   let ctx = Context.create () in
   let endpoint = "tcp://127.0.0.1:51234" in
-  let s1 = Zmq.Socket.create ctx Zmq.Socket.pair
-  and s2 = Zmq.Socket.create ctx Zmq.Socket.pair in
-  let m1 = let mon_t = Zmq.Monitor.create s1 in
-           Zmq.Monitor.connect ctx mon_t
-  and m2 = let mon_t = Zmq.Monitor.create s2 in
-           Zmq.Monitor.connect ctx mon_t
+  let s1 = Zmq.Socket.create ctx Zmq.Socket.pair in
+  let s2 = Zmq.Socket.create ctx Zmq.Socket.pair in
+  let m1 =
+    let mon_t = Zmq.Monitor.create s1 in
+    Zmq.Monitor.connect ctx mon_t
+  in
+  let m2 =
+    let mon_t = Zmq.Monitor.create s2 in
+    Zmq.Monitor.connect ctx mon_t
   in
   (* Start generating events *)
   Zmq.Socket.bind s1 endpoint;
@@ -125,10 +128,10 @@ let test_monitor () =
 
 let test_proxy () =
   let ctx = Zmq.Context.create () in
-  let pull_endpoint = "inproc://pull"
-  and pub_endpoint = "inproc://pub"
-  and pull = Zmq.Socket.create ctx pull
-  and pub = Zmq.Socket.create ctx pub in
+  let pull_endpoint = "inproc://pull" in
+  let pub_endpoint = "inproc://pub" in
+  let pull = Zmq.Socket.create ctx pull in
+  let pub = Zmq.Socket.create ctx pub in
 
   let proxy (pull, pub) =
     Zmq.Socket.bind pull pull_endpoint;
@@ -148,13 +151,14 @@ let test_proxy () =
     Zmq.Socket.connect s pub_endpoint;
     Zmq.Socket.subscribe s "";
     s
-  and push =
+  in
+  let push =
     let s = Zmq.Socket.create ctx push in
     Zmq.Socket.connect s pull_endpoint;
     s
   in
-  let msg1 = "Message1"
-  and msg2 = "Message2" in
+  let msg1 = "Message1" in
+  let msg2 = "Message2" in
   Zmq.Socket.send push msg1;
   Zmq.Socket.send push msg2;
   assert_equal msg1 (Zmq.Socket.recv sub);
@@ -250,8 +254,8 @@ let suite =
         (bracket
            (fun () ->
              let ctx = Zmq.Context.create () in
-             let req = create ctx req
-             and rep = create ctx rep in
+             let req = create ctx req in
+             let rep = create ctx rep in
              ctx, req, rep
            )
            (fun (_, req, rep) ->
@@ -275,8 +279,8 @@ let suite =
         (bracket
            (fun () ->
              let ctx = Zmq.Context.create () in
-             let req = create ctx req
-             and rep = create ctx rep in
+             let req = create ctx req in
+             let rep = create ctx rep in
              ctx, req, rep
            )
            (fun (_, req, rep) ->
@@ -300,9 +304,9 @@ let suite =
         (bracket
            (fun () ->
              let ctx = Zmq.Context.create () in
-             let req = create ctx req
-             and rep = create ctx rep
-             and sub = create ctx sub in
+             let req = create ctx req in
+             let rep = create ctx rep in
+             let sub = create ctx sub in
              ctx, req, rep, sub
            )
            (fun (_, req, rep, sub) ->
