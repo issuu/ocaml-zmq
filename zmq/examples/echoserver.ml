@@ -1,20 +1,20 @@
 (* Simple echo server with no copying of the received message
    content *)
 
-let ctx = ZMQ.Context.create () in
-let socket = ZMQ.Socket.create ctx ZMQ.Socket.router in
-ZMQ.Socket.bind socket "tcp://*:5555";
+let ctx = Zmq.Context.create () in
+let socket = Zmq.Socket.create ctx Zmq.Socket.router in
+Zmq.Socket.bind socket "tcp://*:5555";
 
 let counter = ref 0 in
 
 while true do
   incr counter;
   Printf.printf "Round %d\n%!" !counter;
-  let sender = ZMQ.Socket.recv_msg socket in
-  let msg = ZMQ.Socket.recv_msg socket in
-  ZMQ.Socket.send_msg ~more:true socket sender;
-  ZMQ.Socket.send_msg socket msg;
+  let sender = Zmq.Socket.recv_msg socket in
+  let msg = Zmq.Socket.recv_msg socket in
+  Zmq.Socket.send_msg ~more:true socket sender;
+  Zmq.Socket.send_msg socket msg;
 done;
 
-ZMQ.Socket.close socket;
-ZMQ.Context.terminate ctx
+Zmq.Socket.close socket;
+Zmq.Context.terminate ctx

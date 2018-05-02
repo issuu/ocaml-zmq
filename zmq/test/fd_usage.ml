@@ -1,5 +1,5 @@
 open OUnit
-open ZMQ
+open Zmq
 
 
 let string_of_event = function
@@ -93,7 +93,7 @@ let assert_state ?msg ?f socket state =
 let setup typ_a typ_b _ =
   let ctx = Context.create () in
   let create typ =
-    let socket = ZMQ.Socket.create ctx typ in
+    let socket = Zmq.Socket.create ctx typ in
     let fd = Socket.get_fd socket in
     Socket.set_send_high_water_mark socket 1;
     Socket.set_receive_high_water_mark socket 1;
@@ -109,7 +109,7 @@ let setup typ_a typ_b _ =
 let teardown (ctx, push, pull) =
   Socket.close pull.socket;
   Socket.close push.socket;
-  ZMQ.Context.terminate ctx
+  Zmq.Context.terminate ctx
 
 let send ?more s () =
   Socket.send ?more s.socket ~block:false "test msg"
@@ -124,7 +124,7 @@ let test_unidir (_ctx, push, pull) =
 
   (* Bind to an endpoint*)
   let endpoint = "inproc://fd_bidir_test" in
-  ZMQ.Socket.bind push.socket endpoint;
+  Zmq.Socket.bind push.socket endpoint;
 
   (* I would have expected the socket to go into a Pull_out state *)
   assert_state push Socket.No_event;
@@ -184,8 +184,8 @@ let test_unidir (_ctx, push, pull) =
 let test_bidir (_ctx, s_a, s_b) =
   (* Test how socket notifies state based on event avilability *)
   let endpoint = "inproc://fd_bidir_test" in
-  ZMQ.Socket.bind s_a.socket endpoint;
-  ZMQ.Socket.connect s_b.socket endpoint;
+  Zmq.Socket.bind s_a.socket endpoint;
+  Zmq.Socket.connect s_b.socket endpoint;
 
   (* all buffers are empty, all can send *)
   assert_state s_a Socket.Poll_out;
@@ -215,11 +215,11 @@ let test_bidir (_ctx, s_a, s_b) =
 let suite =
   "zmq" >:::
   [
-    "unidir" >:: bracket (setup ZMQ.Socket.push ZMQ.Socket.pull)
+    "unidir" >:: bracket (setup Zmq.Socket.push Zmq.Socket.pull)
       test_unidir
       teardown;
 
-    "bidir" >:: bracket (setup ZMQ.Socket.pair ZMQ.Socket.pair)
+    "bidir" >:: bracket (setup Zmq.Socket.pair Zmq.Socket.pair)
       test_bidir
       teardown;
   ]

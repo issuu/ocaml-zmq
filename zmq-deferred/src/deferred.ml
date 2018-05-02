@@ -36,7 +36,7 @@ module type T = sig
         It is important that all waiters on the socket are woken up,
         and not just one, as the fd is used as a broadcast mechanism.
 
-        The Fd must _NOT_ be closed, as its owned by ZMQ.
+        The Fd must _NOT_ be closed, as its owned by Zmq.
 
     *)
     val wait_readable: t -> unit Deferred.t

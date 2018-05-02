@@ -12,10 +12,10 @@ module Make : functor (T : Deferred.T) -> sig
   type 'a t
 
   (** [of_socket s] wraps the zeromq socket [s]*)
-  val of_socket : 'a ZMQ.Socket.t -> 'a t
+  val of_socket : 'a Zmq.Socket.t -> 'a t
 
   (** [to_socket s] extracts the raw zeromq socket from [s] *)
-  val to_socket : 'a t -> 'a ZMQ.Socket.t
+  val to_socket : 'a t -> 'a Zmq.Socket.t
 
   (** Internal statisitcs of the socket *)
   val to_string_hum : 'a t -> string
@@ -38,19 +38,19 @@ module Make : functor (T : Deferred.T) -> sig
 
   (** [recv_msg socket] waits for a message on [socket] without blocking
       other concurrent threads *)
-  val recv_msg : 'a t -> ZMQ.Msg.t Deferred.t
+  val recv_msg : 'a t -> Zmq.Msg.t Deferred.t
 
   (** [send_msg socket] sends a message on [socket] without blocking other
       concurrent threads *)
-  val send_msg : 'a t -> ZMQ.Msg.t -> unit Deferred.t
+  val send_msg : 'a t -> Zmq.Msg.t -> unit Deferred.t
 
   (** [recv_msg_all socket] waits for a multi-part message on [socket] without
       blocking other concurrent threads *)
-  val recv_msg_all : 'a t -> ZMQ.Msg.t list Deferred.t
+  val recv_msg_all : 'a t -> Zmq.Msg.t list Deferred.t
 
   (** [send_msg_all socket m] sends all parts of the multi-part message [m] on
       [socket] without blocking other concurrent threads *)
-  val send_msg_all : 'a t -> ZMQ.Msg.t list -> unit Deferred.t
+  val send_msg_all : 'a t -> Zmq.Msg.t list -> unit Deferred.t
 
   val close : 'a t -> unit Deferred.t
 
@@ -74,7 +74,7 @@ module Make : functor (T : Deferred.T) -> sig
 
   module Monitor : sig
     (** [recv socket] waits for a monitoring event on [socket] without blocking other concurrent threads. *)
-    val recv : [ `Monitor ] t -> ZMQ.Monitor.event Deferred.t
+    val recv : [ `Monitor ] t -> Zmq.Monitor.event Deferred.t
   end
 
 end

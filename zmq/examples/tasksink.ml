@@ -8,10 +8,10 @@ let time_diff_ms t1 t2 =
   truncate ((t2 -. t1) *. 1000.0)
 
 let () =
-  let module Socket = ZMQ.Socket in
+  let module Socket = Zmq.Socket in
 
   (* Prepare our context and socket *)
-  let context = ZMQ.Context.create () in
+  let context = Zmq.Context.create () in
   let receiver = Socket.create context Socket.pull in
   Socket.bind receiver "tcp://*:5558";
 
@@ -36,4 +36,4 @@ let () =
   Printf.printf "Total elapsed time: %d msec \n" elapsed;
 
   Socket.close receiver;
-  ZMQ.Context.terminate context
+  Zmq.Context.terminate context
