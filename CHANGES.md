@@ -13,6 +13,7 @@
 * Add support for and reading & writing bigarrays. This interfaces allows the
   user to reduce needless copying of packets sent by the bindings.
 
+* Rename module ZMQ to Zmq.
 
 4.0-8
 -----
