@@ -1,0 +1,8 @@
+(executable
+ (name test)
+ (libraries oUnit zmq threads))
+
+(alias
+ (name runtest)
+ (deps (:test test.exe))
+ (action (run %{test})))

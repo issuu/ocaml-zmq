@@ -1,36 +1,36 @@
 build:
-	jbuilder build @install @examples --dev
+	dune build @install @examples
 
 examples:
-	jbuilder build @examples
+	dune build @examples
 
 # requires odoc
 doc:
-	jbuilder build @doc
+	dune build @doc
 
 test:
-	jbuilder runtest --dev --force
+	dune runtest --force
 
 repl:
-	jbuilder utop zmq/src
+	dune utop zmq/src
 
 repl-lwt:
-	jbuilder utop zmq-lwt/src
+	dune utop zmq-lwt/src
 
 repl-async:
-	jbuilder utop zmq-async/src
+	dune utop zmq-async/src
 
 all:
-	jbuilder build @install @examples
+	dune build @install @examples
 
 install:
-	jbuilder install
+	dune install
 
 uninstall:
-	jbuilder uninstall
+	dune uninstall
 
 clean:
-	jbuilder clean
+	dune clean
 
 gh-pages: doc
 	git clone `git config --get remote.origin.url` .gh-pages --reference .
