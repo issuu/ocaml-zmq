@@ -1,0 +1,4 @@
+(library
+ (name zmq_async)
+ (public_name zmq-async)
+ (libraries zmq.deferred async_unix async_kernel base))

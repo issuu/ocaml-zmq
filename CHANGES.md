@@ -1,3 +1,5 @@
+* Update build config to use new dune syntax
+
 5.0.0
 -----
 

@@ -1,6 +1,0 @@
-(jbuild_version 1)
-
-(library
- ((name zmq_deferred)
-  (public_name zmq.deferred)
-  (libraries (zmq))))

@@ -1,8 +1,6 @@
-(jbuild_version 1)
-
 (executables
- ((names
-   (hwserver
+  (names
+    hwserver
     hwclient
     wuserver
     wuclient
@@ -12,13 +10,13 @@
     tasksink
     threaded_loopback
     echoserver
-    echoclient))
-  (libraries (threads zmq str))))
+    echoclient)
+  (libraries threads zmq str))
 
 (alias
- ((name examples)
+  (name examples)
   (deps
-   (hwserver.exe
+    hwserver.exe
     hwclient.exe
     wuserver.exe
     wuclient.exe
@@ -28,4 +26,4 @@
     tasksink.exe
     threaded_loopback.exe
     echoserver.exe
-    echoclient.exe))))
+    echoclient.exe))

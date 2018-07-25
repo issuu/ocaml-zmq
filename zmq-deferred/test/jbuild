@@ -1,6 +1,0 @@
-(jbuild_version 1)
-
-(library
- ((name zmq_deferred_test)
-  (wrapped true)
-  (libraries (zmq.deferred oUnit))))
