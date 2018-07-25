@@ -1,5 +1,8 @@
 * Update build config to use new dune syntax
 
+* Remove configurator in favor of dune.configurator. This removes the build time
+  dependency on the configurator and base packages.
+
 5.0.0
 -----
 
