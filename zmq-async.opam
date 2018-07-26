@@ -5,6 +5,7 @@ license: "MIT"
 homepage: "https://github.com/issuu/ocaml-zmq"
 dev-repo: "git@github.com/issuu/ocaml-zmq.git"
 bug-reports: "https://github.com/issuu/ocaml-zmq/issues"
+doc: "https://issuu.github.io/ocaml-zmq/"
 build: [
   ["dune" "subst"] {pinned}
   ["dune" "build" "-p" name "-j" jobs]
