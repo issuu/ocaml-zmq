@@ -27,6 +27,9 @@ static struct custom_operations caml_zmq_msg_ops = {
 #ifdef custom_compare_ext_default
     , custom_compare_ext_default
 #endif
+#ifdef custom_fixed_length_default
+    , custom_fixed_length_default
+#endif
 };
 
 value caml_zmq_copy_msg(void *zmq_msg) {
@@ -36,4 +39,3 @@ value caml_zmq_copy_msg(void *zmq_msg) {
     CAML_ZMQ_Msg_val(msg) = zmq_msg;
     CAMLreturn (msg);
 }
-
