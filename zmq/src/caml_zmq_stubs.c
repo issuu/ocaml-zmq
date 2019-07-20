@@ -7,6 +7,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <assert.h>
 
 #include <caml/mlvalues.h>
 #include <caml/alloc.h>
@@ -304,10 +305,11 @@ CAMLprim value caml_zmq_get_int64_option(value socket, value option_name) {
     CAMLreturn (caml_copy_int64(mark));
 }
 
-CAMLprim value caml_zmq_get_bytes_option(value socket, value option_name) {
-    CAMLparam2 (socket, option_name);
+CAMLprim value caml_zmq_get_bytes_option(value socket, value option_name, value option_maxlen) {
+    CAMLparam3 (socket, option_name, option_maxlen);
     char buffer[256];
-    size_t buffer_size = sizeof (buffer) - 1;
+    size_t buffer_size = 1 + Unsigned_long_val(option_maxlen);
+    assert(buffer_size < sizeof (buffer));
     int result = zmq_getsockopt (CAML_ZMQ_Socket_val(socket),
                                  native_bytes_option_for[Int_val(option_name)],
                                  buffer,
