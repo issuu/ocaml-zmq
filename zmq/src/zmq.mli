@@ -59,6 +59,12 @@ module Msg : sig
       is garbage collected.
   *)
   val close : t -> unit
+
+  (** Retrieve a property attached to a message. Property are simple strings.
+      Example of properties include: "Socket-Type", "Identity", "Resource",
+      but underlying transport and security mechanism may add more.
+  *)
+  val gets : t -> string -> string
 end
 
 module Socket : sig
