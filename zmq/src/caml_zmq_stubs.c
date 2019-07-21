@@ -593,6 +593,15 @@ CAMLprim value caml_zmq_msg_close(value msg) {
     CAMLreturn(Val_unit);
 }
 
+CAMLprim value caml_zmq_msg_gets(value msg, value property) {
+    CAMLparam2(msg, property);
+    CAMLlocal1(result);
+    const char *r = zmq_msg_gets(CAML_ZMQ_Msg_val(msg), String_val(property));
+    caml_zmq_raise_if(!r, "zmq_msg_gets");
+    result = caml_copy_string(r);
+    CAMLreturn(result);
+}
+
 
 /**
  * Devices
