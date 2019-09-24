@@ -649,6 +649,11 @@ enum event_type {
     CLOSED,
     CLOSE_FAILED,
     DISCONNECTED,
+    MONITOR_STOPPED,
+    HANDSHAKE_FAILED_NO_DETAIL,
+    HANDSHAKE_SUCCEEDED,
+    HANDSHAKE_FAILED_PROTOCOL,
+    HANDSHAKE_FAILED_AUTH
 };
 
 /** Decode monitor event */
@@ -685,7 +690,7 @@ CAMLprim value caml_decode_monitor_event(value event_val, value addr) {
         break;
 
     case ZMQ_EVENT_BIND_FAILED:
-        result = caml_alloc(2, BIND_FAILED);
+        result = caml_alloc(3, BIND_FAILED);
         Store_field(result, 0, addr);
         Store_field(result, 1, Val_int(*param));
         Store_field(result, 2, caml_copy_string(zmq_strerror(*param)));
@@ -698,7 +703,7 @@ CAMLprim value caml_decode_monitor_event(value event_val, value addr) {
         break;
 
     case ZMQ_EVENT_ACCEPT_FAILED:
-        result = caml_alloc(2, ACCEPT_FAILED);
+        result = caml_alloc(3, ACCEPT_FAILED);
         Store_field(result, 0, addr);
         Store_field(result, 1, Val_int(*param));
         Store_field(result, 2, caml_copy_string(zmq_strerror(*param)));
@@ -711,16 +716,44 @@ CAMLprim value caml_decode_monitor_event(value event_val, value addr) {
         break;
 
     case ZMQ_EVENT_CLOSE_FAILED:
-        result = caml_alloc(2, CLOSE_FAILED);
+        result = caml_alloc(3, CLOSE_FAILED);
         Store_field(result, 0, addr);
         Store_field(result, 1, Val_int(*param));
         Store_field(result, 2, caml_copy_string(zmq_strerror(*param)));
         break;
+
     case ZMQ_EVENT_DISCONNECTED:
         result = caml_alloc(2, DISCONNECTED);
         Store_field(result, 0, addr);
         Store_field(result, 1, Val_fd(*param));
         break;
+
+    case ZMQ_EVENT_MONITOR_STOPPED:
+        result = caml_alloc(1, MONITOR_STOPPED);
+        Store_field(result, 0, addr);
+        break;
+
+    case ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL:
+        result = caml_alloc(1, HANDSHAKE_FAILED_NO_DETAIL);
+        Store_field(result, 0, addr);
+        break;
+
+    case ZMQ_EVENT_HANDSHAKE_SUCCEEDED:
+        result = caml_alloc(1, HANDSHAKE_SUCCEEDED);
+        Store_field(result, 0, addr);
+        break;
+
+    case ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL:
+        result = caml_alloc(2, HANDSHAKE_FAILED_PROTOCOL);
+        Store_field(result, 0, addr);
+        Store_field(result, 1, Val_fd(*param));
+        break;
+
+    case ZMQ_EVENT_HANDSHAKE_FAILED_AUTH:
+        result = caml_alloc(2, HANDSHAKE_FAILED_AUTH);
+        Store_field(result, 0, addr);
+        Store_field(result, 1, Val_fd(*param));
+
     default:
         caml_invalid_argument("Unknown event type");
         break;

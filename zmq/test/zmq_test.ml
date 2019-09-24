@@ -118,7 +118,7 @@ let test_monitor () =
       in
     List.iter assert_event events
   in
-  assert_events m1 [ "Listening"; "Accepted"; "Closed" ];
+  assert_events m1 [ "Listening"; "Accepted"; "Handshake_succeeded"; "Closed" ];
   assert_events m2 [ "Connect delayed"; "Connect" ];
 
   Zmq.Socket.close m2;
