@@ -7,14 +7,13 @@ dev-repo:
   "git+https://github.com/issuu/ocaml-zmq.git"
 bug-reports: "https://github.com/issuu/ocaml-zmq/issues"
 build: [
-  ["dune" "subst" "-p" name] {pinned}
   ["dune" "build" "-p" name "-j" jobs]
   ["dune" "runtest" "-p" name "-j" jobs] {with-test}
 ]
 depends: [
   "ocaml" {>= "4.03"}
   "conf-zmq"
-  "dune" {build}
+  "dune"
   "configurator" {build & < "v0.13"}
   "ounit" {with-test}
   "base-unix"
