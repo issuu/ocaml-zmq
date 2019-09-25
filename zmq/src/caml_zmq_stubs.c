@@ -29,6 +29,9 @@
 #endif
 
 #include <zmq.h>
+#if ZMQ_VERSION_MAJOR != 4
+    #error "This library requires libzmq 4.x"
+#endif
 
 #include "fail.h"
 #include "context.h"
@@ -728,6 +731,7 @@ CAMLprim value caml_decode_monitor_event(value event_val, value addr) {
         Store_field(result, 1, Val_fd(*param));
         break;
 
+#if ZMQ_VERSION_MINOR >= 3
     case ZMQ_EVENT_MONITOR_STOPPED:
         result = caml_alloc(1, MONITOR_STOPPED);
         Store_field(result, 0, addr);
@@ -753,7 +757,8 @@ CAMLprim value caml_decode_monitor_event(value event_val, value addr) {
         result = caml_alloc(2, HANDSHAKE_FAILED_AUTH);
         Store_field(result, 0, addr);
         Store_field(result, 1, Val_fd(*param));
-
+        break;
+#endif
     default:
         caml_invalid_argument("Unknown event type");
         break;
