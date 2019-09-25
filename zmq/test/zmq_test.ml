@@ -118,7 +118,13 @@ let test_monitor () =
       in
     List.iter assert_event events
   in
-  assert_events m1 [ "Listening"; "Accepted"; "Handshake_succeeded"; "Closed" ];
+  let expected_m1_events =
+    match Zmq.version () with
+      | (4, minor, _) when minor >= 3 -> [ "Listening"; "Accepted"; "Handshake_succeeded"; "Closed" ]
+      | (4, _, _) -> [ "Listening"; "Accepted"; "Closed" ]
+      | _ -> failwith "Only zmq version 4.x is supported"
+  in
+  assert_events m1 expected_m1_events;
   assert_events m2 [ "Connect delayed"; "Connect" ];
 
   Zmq.Socket.close m2;
