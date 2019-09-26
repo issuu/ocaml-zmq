@@ -12,7 +12,7 @@ build: [
   ["dune" "runtest" "-p" name "-j" jobs] {with-test}
 ]
 depends: [
-  "ocaml" {>= "4.03"}
+  "ocaml" {>= "4.04.1"}
   "conf-zmq"
   "dune"
   "configurator" {build & < "v0.13"}
