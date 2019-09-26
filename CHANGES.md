@@ -1,3 +1,6 @@
+5.1.0
+-----
+
 * Implement `Msg.gets` (#87, #90)
 
 * Improve support for OCaml 4.08+ (#83, #89)

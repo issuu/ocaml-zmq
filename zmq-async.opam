@@ -3,6 +3,7 @@ maintainer: "anders@fugmann.net"
 authors: ["Rudi Grinberg"]
 license: "MIT"
 homepage: "https://github.com/issuu/ocaml-zmq"
+doc: "https://issuu.github.io/ocaml-zmq/"
 dev-repo:
   "git+https://github.com/issuu/ocaml-zmq.git"
 bug-reports: "https://github.com/issuu/ocaml-zmq/issues"
@@ -12,7 +13,7 @@ build: [
 ]
 depends: [
   "ocaml"
-  "zmq" {>= "5.0.0"}
+  "zmq" {>= "5.1.0"}
   "dune"
   "async_unix" {>= "v0.9.0" & < "v0.13"}
   "async_kernel" {>= "v0.9.0" & < "v0.13"}

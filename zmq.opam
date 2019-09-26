@@ -3,6 +3,7 @@ maintainer: "anders@fugmann.net"
 authors: [ "Anders Fugmann" "Pedro Borges" "Peter Zotov" ]
 license: "MIT"
 homepage: "https://github.com/issuu/ocaml-zmq"
+doc: "https://issuu.github.io/ocaml-zmq/"
 dev-repo:
   "git+https://github.com/issuu/ocaml-zmq.git"
 bug-reports: "https://github.com/issuu/ocaml-zmq/issues"
