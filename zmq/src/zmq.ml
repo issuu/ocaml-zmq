@@ -78,6 +78,8 @@ module Msg = struct
     copy
 
   external close : t -> unit = "caml_zmq_msg_close"
+
+  external gets : t -> string -> string = "caml_zmq_msg_gets"
 end
 
 module Socket = struct
