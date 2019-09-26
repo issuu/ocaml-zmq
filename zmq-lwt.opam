@@ -13,7 +13,7 @@ build: [
 ]
 depends: [
   "ocaml" {>= "4.03"}
-  "zmq" {>= "5.1.0"}
+  "zmq" {= version}
   "ounit" {with-test}
   "dune"
   "lwt"
