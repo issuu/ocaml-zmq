@@ -9,9 +9,9 @@ env:
     - TESTS=true
     - DISTRO=ubuntu-18.04
   matrix:
-    - OCAML_VERSION=4.03 PACKAGE="zmq"       PINS="zmq:."
-    - OCAML_VERSION=4.03 PACKAGE="zmq-async" PINS="zmq:. zmq-async:."
-    - OCAML_VERSION=4.03 PACKAGE="zmq-lwt"   PINS="zmq:. zmq-lwt:."
+    - OCAML_VERSION=4.04 PACKAGE="zmq"       PINS="zmq:."
+    - OCAML_VERSION=4.04 PACKAGE="zmq-async" PINS="zmq:. zmq-async:."
+    - OCAML_VERSION=4.04 PACKAGE="zmq-lwt"   PINS="zmq:. zmq-lwt:."
     - OCAML_VERSION=4.08 PACKAGE="zmq"       PINS="zmq:."
     - OCAML_VERSION=4.08 PACKAGE="zmq-async" PINS="zmq:. zmq-async:."
     - OCAML_VERSION=4.08 PACKAGE="zmq-lwt"   PINS="zmq:. zmq-lwt:."

@@ -7,8 +7,8 @@ Dependencies
 ------------
 
   * [OPAM](http://opam.ocaml.org/)
-  * OCaml >= 4.03
-  * Async >= v0.9.0 for zmq-async
+  * OCaml >= 4.04.1
+  * Async >= v0.11.0 for zmq-async
   * Lwt for zmq-lwt
   * libzmq (c lib) >= 4.x
 

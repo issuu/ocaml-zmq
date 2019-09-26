@@ -1,3 +1,6 @@
+* Depend on v0.11 versions of Jane Street packages to not fail on `makedev`
+  issue. This requires us to drop support for OCaml 4.03 (#93)
+
 5.1.0
 -----
 
