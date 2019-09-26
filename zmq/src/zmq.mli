@@ -256,6 +256,12 @@ module Monitor : sig
   | Closed of address * Unix.file_descr
   | Close_failed of address * error_no * error_text
   | Disconnected of address * Unix.file_descr
+  | Monitor_stopped of address
+  | Handshake_failed_no_detail of address
+  | Handshake_succeeded of address
+  | Handshake_failed_protocol of address * int
+  | Handshake_failed_auth of address * int
+
 
   val create: 'a Socket.t -> t
   val connect: Context.t -> t -> [>`Monitor] Socket.t

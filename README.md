@@ -1,4 +1,4 @@
-OCaml bindings for ZMQ 4.0
+OCaml bindings for ZMQ 4.x
 ==========================
 
 [![Build Status](https://travis-ci.org/issuu/ocaml-zmq.svg?branch=master)](https://travis-ci.org/issuu/ocaml-zmq)
@@ -10,6 +10,7 @@ Dependencies
   * OCaml >= 4.03
   * Async >= v0.9.0 for zmq-async
   * Lwt for zmq-lwt
+  * libzmq (c lib) >= 4.x
 
 Install
 -------

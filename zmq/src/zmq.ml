@@ -585,6 +585,11 @@ module Monitor = struct
   | Closed of address * Unix.file_descr
   | Close_failed of address * error_no * error_text
   | Disconnected of address * Unix.file_descr
+  | Monitor_stopped of address
+  | Handshake_failed_no_detail of address
+  | Handshake_succeeded of address
+  | Handshake_failed_protocol of address * int
+  | Handshake_failed_auth of address * int
 
   external socket_monitor: 'a Socket.t -> string -> unit = "caml_zmq_socket_monitor"
 
@@ -637,6 +642,11 @@ module Monitor = struct
     | Closed (addr, fd) -> Printf.sprintf "Closed: %s. peer %s" addr (pop_address fd)
     | Close_failed (addr, error_no, error_text) -> Printf.sprintf "Close failed: %s. %d:%s" addr error_no error_text
     | Disconnected (addr, fd) -> Printf.sprintf "Disconnect: %s. peer %s" addr (pop_address fd)
+    | Monitor_stopped addr -> Printf.sprintf "Monitor_stopped: %s" addr
+    | Handshake_failed_no_detail addr -> Printf.sprintf "Handshake_failed_no_detail: %s" addr
+    | Handshake_succeeded addr -> Printf.sprintf "Handshake_succeeded: %s" addr
+    | Handshake_failed_protocol (addr, code) -> Printf.sprintf "Handshake_failed_protocol: %s - %d" addr code
+    | Handshake_failed_auth (addr, code) -> Printf.sprintf "Handshake_failed_auth: %s - %d" addr code
 
   let string_of_event event = internal_string_of_event get_peer_address get_peer_address event
 
