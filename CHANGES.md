@@ -1,3 +1,9 @@
+* Implement `Msg.gets` (#87, #90)
+
+* Improve support for OCaml 4.08+ (#83, #89)
+
+* Properly allocate right size of caml block (#88)
+
 * Update build config to use new dune syntax
 
 * Remove configurator in favor of dune.configurator. This removes the build time
