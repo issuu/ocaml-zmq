@@ -1,47 +1,61 @@
+.PHONY: build
 build:
 	dune build @install @examples
 
+.PHONY: examples
 examples:
 	dune build @examples
 
 # requires odoc
+.PHONY: doc
 doc:
 	dune build @doc
 
+.PHONY: test
 test:
 	dune runtest --force
 
+.PHONY: repl
 repl:
 	dune utop zmq/src
 
+.PHONY: repl-lwt
 repl-lwt:
 	dune utop zmq-lwt/src
 
+.PHONY: repl-async
 repl-async:
 	dune utop zmq-async/src
 
+.PHONY: all
 all:
 	dune build @install @examples
 
+.PHONY: install
 install:
 	dune install
 
+.PHONY: uninstall
 uninstall:
 	dune uninstall
 
+.PHONY: clean
 clean:
 	dune clean
 
-gh-pages: doc
-	git clone `git config --get remote.origin.url` .gh-pages --reference .
-	git -C .gh-pages checkout --orphan gh-pages
-	git -C .gh-pages reset
-	git -C .gh-pages clean -dxf
-	cp  -r _build/default/_doc/* .gh-pages
-	git -C .gh-pages add .
-	git -C .gh-pages config user.email 'docs@ocaml-zmq'
-	git -C .gh-pages commit -m "Update Pages"
-	git -C .gh-pages push origin gh-pages -f
-	rm -rf .gh-pages
+# requires dune-release
+.PHONY: tag
+tag:
+	dune-release tag
 
-.PHONY: build doc test all install uninstall clean configure examples repl repl-lwt repl-async gh-pages
+.PHONY: distrib
+distrib:
+	dune-release distrib
+
+.PHONY: publish
+publish:
+	dune-release publish
+
+.PHONY: opam-pkg
+opam-pkg:
+	dune-release opam pkg
