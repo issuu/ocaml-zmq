@@ -26,6 +26,9 @@ static struct custom_operations caml_zmq_socket_ops = {
 #ifdef custom_compare_ext_default
     , custom_compare_ext_default
 #endif
+#ifdef custom_fixed_length_default
+    , custom_fixed_length_default
+#endif
 };
 
 /* Captures a reference to the context to avoid collecting it prematurely */
