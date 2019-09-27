@@ -15,7 +15,6 @@ depends: [
   "ocaml" {>= "4.04.1"}
   "conf-zmq"
   "dune"
-  "configurator" {build & < "v0.13"}
   "ounit" {with-test}
   "base-unix"
   "stdint" {>= "0.4.2"}
