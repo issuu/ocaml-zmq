@@ -232,8 +232,11 @@ module Socket = struct
     validate_string_length 1 255 identity "set_identity";
     set_bytes_option socket ZMQ_IDENTITY identity
 
+  let maximal_buffer_length = 255
+  let curve_z85_buffer_length = 40
+
   let get_identity socket =
-    get_bytes_option socket ZMQ_IDENTITY 255
+    get_bytes_option socket ZMQ_IDENTITY maximal_buffer_length
 
   let subscribe socket topic =
     set_bytes_option socket ZMQ_SUBSCRIBE topic
@@ -242,7 +245,7 @@ module Socket = struct
     set_bytes_option socket ZMQ_UNSUBSCRIBE topic
 
   let get_last_endpoint socket =
-    get_bytes_option socket ZMQ_LAST_ENDPOINT 255
+    get_bytes_option socket ZMQ_LAST_ENDPOINT maximal_buffer_length
 
   let set_tcp_accept_filter socket filter =
     set_bytes_option socket ZMQ_TCP_ACCEPT_FILTER filter
@@ -440,13 +443,13 @@ module Socket = struct
     set_bytes_option socket ZMQ_PLAIN_USERNAME
 
   let get_plain_username socket =
-    get_bytes_option socket ZMQ_PLAIN_USERNAME 255
+    get_bytes_option socket ZMQ_PLAIN_USERNAME maximal_buffer_length
 
   let set_plain_password socket =
     set_bytes_option socket ZMQ_PLAIN_PASSWORD
 
   let get_plain_password socket =
-    get_bytes_option socket ZMQ_PLAIN_PASSWORD 255
+    get_bytes_option socket ZMQ_PLAIN_PASSWORD maximal_buffer_length
 
   let validate_curve_key_length str msg =
     match String.length str with
@@ -454,21 +457,21 @@ module Socket = struct
     | _ -> invalid_arg msg
 
   let get_curve_publickey socket =
-    get_bytes_option socket ZMQ_CURVE_PUBLICKEY 40
+    get_bytes_option socket ZMQ_CURVE_PUBLICKEY curve_z85_buffer_length
 
   let set_curve_publickey socket str =
     validate_curve_key_length str "set_curve_publickey";
     set_bytes_option socket ZMQ_CURVE_PUBLICKEY str
 
   let get_curve_secretkey socket =
-    get_bytes_option socket ZMQ_CURVE_SECRETKEY 40
+    get_bytes_option socket ZMQ_CURVE_SECRETKEY curve_z85_buffer_length
 
   let set_curve_secretkey socket str =
     validate_curve_key_length str "set_curve_secretkey";
     set_bytes_option socket ZMQ_CURVE_SECRETKEY str
 
   let get_curve_serverkey socket =
-    get_bytes_option socket ZMQ_CURVE_SERVERKEY 40
+    get_bytes_option socket ZMQ_CURVE_SERVERKEY curve_z85_buffer_length
 
   let set_curve_serverkey socket str =
     validate_curve_key_length str "set_curve_serverkey";
@@ -485,7 +488,7 @@ module Socket = struct
     set_bytes_option socket ZMQ_ZAP_DOMAIN
 
   let get_zap_domain socket =
-    get_bytes_option socket ZMQ_ZAP_DOMAIN 255
+    get_bytes_option socket ZMQ_ZAP_DOMAIN maximal_buffer_length
 
   let set_conflate socket flag =
     set_int_option socket ZMQ_CONFLATE (if flag then 1 else 0)
