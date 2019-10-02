@@ -1,3 +1,6 @@
+5.1.1
+-----
+
 * Fix `EINVAL` when attempting to get the curve encryption keys (#85, #86, #91)
 
 * Do not depend on `configurator` anymore (#96)
