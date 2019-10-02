@@ -4,6 +4,7 @@ let suite = "Zmq" >:::
   [
     Zmq_test.suite;
     Fd_usage.suite;
+    Curve.suite;
   ]
 
 let _ =
