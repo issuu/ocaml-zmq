@@ -232,7 +232,7 @@ module Socket = struct
     validate_string_length 1 255 identity "set_identity";
     set_bytes_option socket ZMQ_IDENTITY identity
 
-  let maximal_buffer_length = 256
+  let maximal_buffer_length = 255
   let curve_z85_buffer_length = 41
 
   let get_identity socket =
