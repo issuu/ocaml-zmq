@@ -1,4 +1,3 @@
 (library
  (name zmq_deferred_test)
- (wrapped true)
- (libraries zmq.deferred oUnit))
+ (libraries zmq.deferred ounit2))

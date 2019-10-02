@@ -1,6 +1,6 @@
 (executable
  (name test)
- (libraries oUnit zmq threads))
+ (libraries ounit2 zmq threads))
 
 (alias
  (name runtest)
