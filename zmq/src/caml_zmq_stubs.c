@@ -216,7 +216,7 @@ static int const native_bytes_option_for[] = {
     ZMQ_ZAP_DOMAIN,
 };
 
-int caml_zmq_set_bytes_option(value socket, value option_name, value socket_option) {
+int caml_zmq_set_string_option(value socket, value option_name, value socket_option) {
     CAMLparam3 (socket, option_name, socket_option);
 
     char *option_value = String_val(socket_option);
@@ -305,7 +305,7 @@ CAMLprim value caml_zmq_get_int64_option(value socket, value option_name) {
     CAMLreturn (caml_copy_int64(mark));
 }
 
-CAMLprim value caml_zmq_get_bytes_option(value socket, value option_name, value option_maxlen) {
+CAMLprim value caml_zmq_get_string_option(value socket, value option_name, value option_maxlen) {
     CAMLparam3 (socket, option_name, option_maxlen);
     char buffer[256];
     size_t buffer_size = Unsigned_long_val(option_maxlen);
