@@ -149,7 +149,7 @@ module Socket = struct
     'a t -> uint64_option -> Uint64.t = "caml_zmq_get_uint64_option"
 
 
-  type bytes_option =
+  type string_option =
   | ZMQ_IDENTITY
   | ZMQ_SUBSCRIBE
   | ZMQ_UNSUBSCRIBE
@@ -162,11 +162,11 @@ module Socket = struct
   | ZMQ_CURVE_SERVERKEY
   | ZMQ_ZAP_DOMAIN
 
-  external set_bytes_option :
-    'a t -> bytes_option -> string -> unit = "caml_zmq_set_bytes_option"
+  external set_string_option :
+    'a t -> string_option -> string -> unit = "caml_zmq_set_string_option"
 
-  external get_bytes_option :
-    'a t -> bytes_option -> string = "caml_zmq_get_bytes_option"
+  external get_string_option :
+    'a t -> string_option -> int -> string = "caml_zmq_get_string_option"
 
   [@@@warning "-37"]
   type int_option =
@@ -230,22 +230,25 @@ module Socket = struct
 
   let set_identity socket identity =
     validate_string_length 1 255 identity "set_identity";
-    set_bytes_option socket ZMQ_IDENTITY identity
+    set_string_option socket ZMQ_IDENTITY identity
+
+  let maximal_buffer_length = 255
+  let curve_z85_buffer_length = 41
 
   let get_identity socket =
-    get_bytes_option socket ZMQ_IDENTITY
+    get_string_option socket ZMQ_IDENTITY maximal_buffer_length
 
   let subscribe socket topic =
-    set_bytes_option socket ZMQ_SUBSCRIBE topic
+    set_string_option socket ZMQ_SUBSCRIBE topic
 
   let unsubscribe socket topic =
-    set_bytes_option socket ZMQ_UNSUBSCRIBE topic
+    set_string_option socket ZMQ_UNSUBSCRIBE topic
 
   let get_last_endpoint socket =
-    get_bytes_option socket ZMQ_LAST_ENDPOINT
+    get_string_option socket ZMQ_LAST_ENDPOINT maximal_buffer_length
 
   let set_tcp_accept_filter socket filter =
-    set_bytes_option socket ZMQ_TCP_ACCEPT_FILTER filter
+    set_string_option socket ZMQ_TCP_ACCEPT_FILTER filter
 
   let set_rate socket rate =
     set_int_option socket ZMQ_RATE rate
@@ -437,16 +440,16 @@ module Socket = struct
     set_int_option socket ZMQ_CURVE_SERVER (if flag then 1 else 0)
 
   let set_plain_username socket =
-    set_bytes_option socket ZMQ_PLAIN_USERNAME
+    set_string_option socket ZMQ_PLAIN_USERNAME
 
   let get_plain_username socket =
-    get_bytes_option socket ZMQ_PLAIN_USERNAME
+    get_string_option socket ZMQ_PLAIN_USERNAME maximal_buffer_length
 
   let set_plain_password socket =
-    set_bytes_option socket ZMQ_PLAIN_PASSWORD
+    set_string_option socket ZMQ_PLAIN_PASSWORD
 
   let get_plain_password socket =
-    get_bytes_option socket ZMQ_PLAIN_PASSWORD
+    get_string_option socket ZMQ_PLAIN_PASSWORD maximal_buffer_length
 
   let validate_curve_key_length str msg =
     match String.length str with
@@ -454,25 +457,25 @@ module Socket = struct
     | _ -> invalid_arg msg
 
   let get_curve_publickey socket =
-    get_bytes_option socket ZMQ_CURVE_PUBLICKEY
+    get_string_option socket ZMQ_CURVE_PUBLICKEY curve_z85_buffer_length
 
   let set_curve_publickey socket str =
     validate_curve_key_length str "set_curve_publickey";
-    set_bytes_option socket ZMQ_CURVE_PUBLICKEY str
+    set_string_option socket ZMQ_CURVE_PUBLICKEY str
 
   let get_curve_secretkey socket =
-    get_bytes_option socket ZMQ_CURVE_SECRETKEY
+    get_string_option socket ZMQ_CURVE_SECRETKEY curve_z85_buffer_length
 
   let set_curve_secretkey socket str =
     validate_curve_key_length str "set_curve_secretkey";
-    set_bytes_option socket ZMQ_CURVE_SECRETKEY str
+    set_string_option socket ZMQ_CURVE_SECRETKEY str
 
   let get_curve_serverkey socket =
-    get_bytes_option socket ZMQ_CURVE_SERVERKEY
+    get_string_option socket ZMQ_CURVE_SERVERKEY curve_z85_buffer_length
 
   let set_curve_serverkey socket str =
     validate_curve_key_length str "set_curve_serverkey";
-    set_bytes_option socket ZMQ_CURVE_SERVERKEY str
+    set_string_option socket ZMQ_CURVE_SERVERKEY str
 
   let get_mechanism socket =
     match get_int_option socket ZMQ_MECHANISM with
@@ -482,10 +485,10 @@ module Socket = struct
     | _ -> assert false
 
   let set_zap_domain socket =
-    set_bytes_option socket ZMQ_ZAP_DOMAIN
+    set_string_option socket ZMQ_ZAP_DOMAIN
 
   let get_zap_domain socket =
-    get_bytes_option socket ZMQ_ZAP_DOMAIN
+    get_string_option socket ZMQ_ZAP_DOMAIN maximal_buffer_length
 
   let set_conflate socket flag =
     set_int_option socket ZMQ_CONFLATE (if flag then 1 else 0)
