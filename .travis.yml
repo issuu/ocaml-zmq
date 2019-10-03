@@ -8,15 +8,25 @@ env:
     - DEPOPTS="*"
     - TESTS=true
     - DISTRO=ubuntu-18.04
-  matrix:
-    - OCAML_VERSION=4.04 PACKAGE="zmq"       PINS="zmq:."
-    - OCAML_VERSION=4.04 PACKAGE="zmq-async" PINS="zmq:. zmq-async:."
-    - OCAML_VERSION=4.04 PACKAGE="zmq-lwt"   PINS="zmq:. zmq-lwt:."
-    - OCAML_VERSION=4.08 PACKAGE="zmq"       PINS="zmq:."
-    - OCAML_VERSION=4.08 PACKAGE="zmq-async" PINS="zmq:. zmq-async:."
-    - OCAML_VERSION=4.08 PACKAGE="zmq-lwt"   PINS="zmq:. zmq-lwt:."
-    - OCAML_VERSION=4.09 PACKAGE="zmq"       PINS="zmq:."
-    - OCAML_VERSION=4.09 PACKAGE="zmq-async" PINS="zmq:. zmq-async:."
-    - OCAML_VERSION=4.09 PACKAGE="zmq-lwt"   PINS="zmq:. zmq-lwt:."
-os:
-  - linux
+matrix:
+  include:
+  - os: linux
+    env: OCAML_VERSION=4.04 PACKAGE="zmq"       PINS="zmq:."
+  - os: linux
+    env: OCAML_VERSION=4.04 PACKAGE="zmq-async" PINS="zmq:. zmq-async:."
+  - os: linux
+    env: OCAML_VERSION=4.04 PACKAGE="zmq-lwt"   PINS="zmq:. zmq-lwt:."
+  - os: linux
+    env: OCAML_VERSION=4.08 PACKAGE="zmq"       PINS="zmq:."
+  - os: linux
+    env: OCAML_VERSION=4.08 PACKAGE="zmq-async" PINS="zmq:. zmq-async:."
+  - os: linux
+    env: OCAML_VERSION=4.08 PACKAGE="zmq-lwt"   PINS="zmq:. zmq-lwt:."
+  - os: linux
+    env: OCAML_VERSION=4.09 PACKAGE="zmq"       PINS="zmq:."
+  - os: linux
+    env: OCAML_VERSION=4.09 PACKAGE="zmq-async" PINS="zmq:. zmq-async:."
+  - os: linux
+    env: OCAML_VERSION=4.09 PACKAGE="zmq-lwt"   PINS="zmq:. zmq-lwt:."
+  - os: osx
+    env: OCAML_VERSION=4.09 PACKAGE="zmq"       PINS="zmq:."
