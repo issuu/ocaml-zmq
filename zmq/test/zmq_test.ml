@@ -94,6 +94,7 @@ let test_monitor () =
   in
   (* Start generating events *)
   Zmq.Socket.bind s1 endpoint;
+  sleep 100;
   Zmq.Socket.connect s2 endpoint;
   sleep 100;
 
