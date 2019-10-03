@@ -81,7 +81,7 @@ let test_socket_options () =
 
 let test_monitor () =
   let ctx = Context.create () in
-  let endpoint = "tcp://127.0.0.1:51234" in
+  let endpoint = "ipc://monitor_socket" in
   let s1 = Zmq.Socket.create ctx Zmq.Socket.pair in
   let s2 = Zmq.Socket.create ctx Zmq.Socket.pair in
   let m1 =
@@ -125,7 +125,7 @@ let test_monitor () =
       | _ -> failwith "Only zmq version 4.x is supported"
   in
   assert_events m1 expected_m1_events;
-  assert_events m2 [ "Connect delayed"; "Connect" ];
+  assert_events m2 [ "Connect" ];
 
   Zmq.Socket.close m2;
   Zmq.Socket.close m1;
@@ -229,7 +229,7 @@ let test_context_gc () =
   let ctx =
     let ctx = Zmq.Context.create () in
     let sock = Zmq.Socket.create ctx Zmq.Socket.pair in
-    Zmq.Socket.connect sock "tcp://127.0.0.1:9999";
+    Zmq.Socket.connect sock "ipc://context_gc_socket";
     Zmq.Socket.send sock "test";
     ctx
   in
