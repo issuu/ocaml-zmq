@@ -1,3 +1,11 @@
+Unreleased
+----
+* Use unix sockets in tests to aoivd permission problems when running
+  in a sandbox environment.
+
+* Make monitor test more reliable by expleictly wait for each event to
+  arrive.
+
 5.1.1
 -----
 
