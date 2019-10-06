@@ -80,8 +80,33 @@ let test_socket_options () =
   ()
 
 let test_monitor () =
-  let ctx = Context.create () in
   let endpoint = "ipc://monitor_socket" in
+  let expect_handshake = match Zmq.version () with
+    | (4, n, _) when n < 3 -> false
+    | (3, _, _) -> failwith "Only zmq version 4 or higher is supported"
+    | _ -> true
+  in
+
+  let assert_event name socket event =
+    let printer x = x in
+    let rec cmp str1 str2 =
+      match String.length str1 <= String.length str2 with
+      | true -> String.sub str2 0 (String.length str1) = str1
+      | false -> cmp str2 str1
+    in
+    let rec receive_event ~end_time =
+      match Zmq.Monitor.recv ~block:false socket with
+      | event -> Zmq.Monitor.string_of_event event
+      | exception Unix.Unix_error(Unix.EAGAIN, _, _) when end_time > (Unix.gettimeofday ()) ->
+        sleep 10;
+        receive_event ~end_time
+      | exception Unix.Unix_error(Unix.EAGAIN, _, _) -> "No event received"
+    in
+    let received = receive_event ~end_time:(Unix.gettimeofday () +. 1.0) in
+    assert_equal ~msg:(Printf.sprintf "Wrong event received on %s" name) ~printer ~cmp
+      (Printf.sprintf "%s: %s" event endpoint) received
+  in
+  let ctx = Context.create () in
   let s1 = Zmq.Socket.create ctx Zmq.Socket.pair in
   let s2 = Zmq.Socket.create ctx Zmq.Socket.pair in
   let m1 =
@@ -92,41 +117,19 @@ let test_monitor () =
     let mon_t = Zmq.Monitor.create s2 in
     Zmq.Monitor.connect ctx mon_t
   in
-  (* Start generating events *)
   Zmq.Socket.bind s1 endpoint;
-  sleep 100;
+  assert_event "m1" m1 "Listening";
   Zmq.Socket.connect s2 endpoint;
-  sleep 100;
-
-  Zmq.Socket.close s2;
+  assert_event "m1" m1 "Accepted";
+  assert_event "m2" m2 "Connect";
+  if (expect_handshake) then begin
+    assert_event "m1" m1 "Handshake_succeeded";
+    assert_event "m2" m2 "Handshake_succeeded"
+  end;
   Zmq.Socket.close s1;
-  sleep 100;
-
-
-  let assert_events socket events =
-    let printer x = x in
-    let rec cmp str1 str2 =
-      match String.length str1 <= String.length str2 with
-      | true -> String.sub str2 0 (String.length str1) = str1
-      | false -> cmp str2 str1
-    in
-    let assert_event event =
-      let received =
-        (Zmq.Monitor.string_of_event (Zmq.Monitor.recv ~block:false socket));
-      in
-      assert_equal ~msg:"Wrong event received" ~printer ~cmp
-        (Printf.sprintf "%s: %s" event endpoint) received
-      in
-    List.iter assert_event events
-  in
-  let expected_m1_events =
-    match Zmq.version () with
-      | (4, minor, _) when minor >= 3 -> [ "Listening"; "Accepted"; "Handshake_succeeded"; "Closed" ]
-      | (4, _, _) -> [ "Listening"; "Accepted"; "Closed" ]
-      | _ -> failwith "Only zmq version 4.x is supported"
-  in
-  assert_events m1 expected_m1_events;
-  assert_events m2 [ "Connect" ];
+  assert_event "m1" m1 "Closed";
+  Zmq.Socket.close s2;
+  assert_event "m2" m2 "Disconnect";
 
   Zmq.Socket.close m2;
   Zmq.Socket.close m1;
