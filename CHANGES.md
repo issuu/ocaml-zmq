@@ -1,5 +1,5 @@
-Unreleased
-----
+5.1.2
+-----
 * Use unix sockets in tests to aoivd permission problems when running
   in a sandbox environment.
 
