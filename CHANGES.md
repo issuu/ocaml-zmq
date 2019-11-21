@@ -1,4 +1,4 @@
-* Bring back support for OCaml 4.03 for `zmq` and `amq-lwt` (#101, #102)
+* Bring back support for OCaml 4.03 for `zmq` and `zmq-lwt` (#101, #102)
 
 5.1.2
 -----
