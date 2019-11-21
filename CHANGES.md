@@ -1,3 +1,5 @@
+* Bring back support for OCaml 4.03 for `zmq` and `amq-lwt` (#101, #102)
+
 5.1.2
 -----
 * Use unix sockets in tests to aoivd permission problems when running
