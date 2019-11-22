@@ -11,11 +11,11 @@ env:
 matrix:
   include:
   - os: linux
-    env: OCAML_VERSION=4.04 PACKAGE="zmq"       PINS="zmq:."
+    env: OCAML_VERSION=4.03 PACKAGE="zmq"       PINS="zmq:."
   - os: linux
     env: OCAML_VERSION=4.04 PACKAGE="zmq-async" PINS="zmq:. zmq-async:."
   - os: linux
-    env: OCAML_VERSION=4.04 PACKAGE="zmq-lwt"   PINS="zmq:. zmq-lwt:."
+    env: OCAML_VERSION=4.03 PACKAGE="zmq-lwt"   PINS="zmq:. zmq-lwt:."
   - os: linux
     env: OCAML_VERSION=4.08 PACKAGE="zmq"       PINS="zmq:."
   - os: linux
