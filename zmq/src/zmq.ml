@@ -85,7 +85,7 @@ end
 module Socket = struct
   open Stdint
 
-  type 'a t
+  type + 'a t
 
   (** This is an int so we know which socket we
     * are building inside the external functions *)

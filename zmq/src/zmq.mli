@@ -69,21 +69,21 @@ end
 
 module Socket : sig
 
-  type 'a t
+  type + 'a t
   type 'a kind
 
-  val pair   : [>`Pair] kind
-  val pub    : [>`Pub] kind
-  val sub    : [>`Sub] kind
-  val req    : [>`Req] kind
-  val rep    : [>`Rep] kind
-  val dealer : [>`Dealer] kind
-  val router : [>`Router] kind
-  val pull   : [>`Pull] kind
-  val push   : [>`Push] kind
-  val xsub   : [>`Xsub] kind
-  val xpub   : [>`Xpub] kind
-  val stream : [>`Stream] kind
+  val pair   : [`Pair] kind
+  val pub    : [`Pub] kind
+  val sub    : [`Sub] kind
+  val req    : [`Req] kind
+  val rep    : [`Rep] kind
+  val dealer : [`Dealer] kind
+  val router : [`Router] kind
+  val pull   : [`Pull] kind
+  val push   : [`Push] kind
+  val xsub   : [`Xsub] kind
+  val xpub   : [`Xpub] kind
+  val stream : [`Stream] kind
 
   (** Creation and Destruction *)
   val create : Context.t -> 'a kind -> 'a t
@@ -155,8 +155,8 @@ module Socket : sig
   val get_affinity : 'a t -> int
   val set_identity : 'a t -> string -> unit
   val get_identity : 'a t -> string
-  val subscribe : [> `Sub] t -> string -> unit
-  val unsubscribe : [> `Sub] t -> string -> unit
+  val subscribe : [< `Sub] t -> string -> unit
+  val unsubscribe : [< `Sub] t -> string -> unit
   val get_last_endpoint : 'a t -> string
   val set_tcp_accept_filter : 'a t -> string -> unit
   val set_rate : 'a t -> int -> unit
@@ -200,10 +200,10 @@ module Socket : sig
   val get_tcp_keepalive_interval : 'a t -> [ `Default | `Value of int ]
   val set_immediate : 'a t -> bool -> unit
   val get_immediate : 'a t -> bool
-  val set_xpub_verbose : [> `XPub] t -> bool -> unit
-  val set_probe_router : [> `Router | `Dealer | `Req ] t -> bool -> unit
-  val set_req_correlate : [> `Req ] t -> bool -> unit
-  val set_req_relaxed : [> `Req ] t -> bool -> unit
+  val set_xpub_verbose : [< `XPub] t -> bool -> unit
+  val set_probe_router : [< `Router | `Dealer | `Req ] t -> bool -> unit
+  val set_req_correlate : [< `Req ] t -> bool -> unit
+  val set_req_relaxed : [< `Req ] t -> bool -> unit
   val set_plain_server : 'a t -> bool -> unit
   val set_plain_username : 'a t -> string -> unit
   val get_plain_username : 'a t -> string
@@ -219,7 +219,7 @@ module Socket : sig
   val get_mechanism : 'a t -> [`Null | `Plain | `Curve]
   val set_zap_domain : 'a t -> string -> unit
   val get_zap_domain : 'a t -> string
-  val set_conflate : [> `Pull | `Push | `Sub | `Pub | `Dealer] t -> bool -> unit
+  val set_conflate : [< `Pull | `Push | `Sub | `Pub | `Dealer] t -> bool -> unit
 
   val get_fd : 'a t -> Unix.file_descr
 
@@ -229,7 +229,7 @@ module Socket : sig
 end
 
 module Proxy : sig
-  val create: ?capture:[> `Pub|`Dealer|`Push|`Pair] Socket.t -> 'a Socket.t -> 'b Socket.t -> unit
+  val create: ?capture:[< `Pub|`Dealer|`Push|`Pair] Socket.t -> 'a Socket.t -> 'b Socket.t -> unit
 end
 
 module Poll : sig
@@ -270,12 +270,12 @@ module Monitor : sig
 
 
   val create: 'a Socket.t -> t
-  val connect: Context.t -> t -> [>`Monitor] Socket.t
+  val connect: Context.t -> t -> [<`Monitor] Socket.t
 
   (** Receive an event from the monitor socket.
       block indicates if the call should be blocking or non-blocking. Default true
   *)
-  val recv: ?block:bool -> [> `Monitor ] Socket.t -> event
+  val recv: ?block:bool -> [< `Monitor ] Socket.t -> event
 
   val string_of_event: event -> string
 
