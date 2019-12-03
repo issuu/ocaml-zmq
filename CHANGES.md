@@ -1,3 +1,8 @@
+5.1.3
+-----
+
+* Support building with dune 1.x and 2.x (#104)
+
 * Bring back support for OCaml 4.03 for `zmq` and `zmq-lwt` (#101, #102)
 
 5.1.2
