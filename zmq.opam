@@ -18,6 +18,7 @@ depends: [
   "ounit2" {with-test}
   "base-unix"
   "stdint" {>= "0.4.2"}
+  "dune-configurator"
 ]
 conflicts: [
   "ocaml-zmq"
