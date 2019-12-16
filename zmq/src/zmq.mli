@@ -239,6 +239,32 @@ module Poll : sig
   type poll_event = In | Out | In_out
   type 'a poll_mask = ('a Socket.t * poll_event)
 
+
+
+  val mask_in_out :
+    [<`Pair|`Pub|`Sub|`Req|`Rep|`Dealer|`Router|`Pull|`Push|`Xsub|`Xpub|`Stream]
+      Socket.t
+    ->
+    [`Pair|`Pub|`Sub|`Req|`Rep|`Dealer|`Router|`Pull|`Push|`Xsub|`Xpub|`Stream]
+      Socket.t
+    * poll_event
+
+  val mask_in :
+    [<`Pair|`Pub|`Sub|`Req|`Rep|`Dealer|`Router|`Pull|`Push|`Xsub|`Xpub|`Stream]
+      Socket.t
+    ->
+    [`Pair|`Pub|`Sub|`Req|`Rep|`Dealer|`Router|`Pull|`Push|`Xsub|`Xpub|`Stream]
+      Socket.t
+    * poll_event
+
+  val mask_out :
+    [<`Pair|`Pub|`Sub|`Req|`Rep|`Dealer|`Router|`Pull|`Push|`Xsub|`Xpub|`Stream]
+      Socket.t
+    ->
+    [`Pair|`Pub|`Sub|`Req|`Rep|`Dealer|`Router|`Pull|`Push|`Xsub|`Xpub|`Stream]
+      Socket.t
+    * poll_event
+
   val mask_of : 'a poll_mask array -> t
   val poll : ?timeout: int -> t -> poll_event option array
 

@@ -87,6 +87,7 @@ module Socket = struct
 
   type + 'a t
 
+
   (** This is an int so we know which socket we
     * are building inside the external functions *)
 
@@ -564,6 +565,24 @@ module Poll = struct
 
   type poll_event = In | Out | In_out
   type 'a poll_mask = ('a Socket.t * poll_event)
+
+  let mask_in_out t =
+    (t:>
+       [`Pair|`Pub|`Sub|`Req|`Rep|`Dealer|`Router|`Pull|`Push|`Xsub|`Xpub|`Stream]
+         Socket.t
+    ), In_out
+
+  let mask_in t =
+    (t:>
+       [`Pair|`Pub|`Sub|`Req|`Rep|`Dealer|`Router|`Pull|`Push|`Xsub|`Xpub|`Stream]
+         Socket.t
+    ), In
+
+  let mask_out t =
+    (t:>
+       [`Pair|`Pub|`Sub|`Req|`Rep|`Dealer|`Router|`Pull|`Push|`Xsub|`Xpub|`Stream]
+         Socket.t
+    ), Out
 
   external mask_of : 'a poll_mask array -> t = "caml_zmq_poll_of_pollitem_array"
   external native_poll: t -> int -> poll_event option array = "caml_zmq_poll"
