@@ -188,8 +188,8 @@ module Socket : sig
   val get_send_timeout : 'a t -> int
   val set_ipv6 : 'a t -> bool -> unit
   val get_ipv6 : 'a t -> bool
-  val set_router_mandatory : [`Router] t -> bool -> unit
-  val get_router_mandatory : [`Router] t -> bool
+  val set_router_mandatory : [> `Router] t -> bool -> unit
+  val get_router_mandatory : [> `Router] t -> bool
   val set_tcp_keepalive : 'a t -> [ `Default | `Value of bool ] -> unit
   val get_tcp_keepalive : 'a t -> [ `Default | `Value of bool ]
   val set_tcp_keepalive_idle : 'a t -> [ `Default | `Value of int ] -> unit
