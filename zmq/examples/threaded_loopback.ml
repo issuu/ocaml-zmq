@@ -30,6 +30,6 @@ let () =
     Thread.create subscription subscribe_socket in
 
   List.iter Thread.join  [subscribe_thread; publish_thread];
-  List.iter Socket.close [subscribe_socket; publish_socket];
+  List.iter Socket.close [(subscribe_socket :> [`Sub | `Pub] Socket.t); (publish_socket :> [`Sub | `Pub] Socket.t)];
 
   Context.terminate context

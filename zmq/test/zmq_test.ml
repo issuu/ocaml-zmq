@@ -325,7 +325,7 @@ let suite =
              bind rep endpoint;
              connect req endpoint;
              subscribe sub "";
-             let mask = mask_of [| req, In_out; rep, In_out; sub, In_out |] in
+             let mask = mask_of [| Poll.mask_in_out req; Poll.mask_in_out rep; Poll.mask_in_out sub |] in
              assert_equal [| Some Out; None; None |] (poll ~timeout:1000 mask);
              send req "request";
              assert_equal [| None; Some In; None |] (poll ~timeout:1000 mask);
