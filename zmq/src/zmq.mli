@@ -200,7 +200,7 @@ module Socket : sig
   val get_tcp_keepalive_interval : 'a t -> [ `Default | `Value of int ]
   val set_immediate : 'a t -> bool -> unit
   val get_immediate : 'a t -> bool
-  val set_xpub_verbose : [< `XPub] t -> bool -> unit
+  val set_xpub_verbose : [< `Xpub] t -> bool -> unit
   val set_probe_router : [< `Router | `Dealer | `Req ] t -> bool -> unit
   val set_req_correlate : [< `Req ] t -> bool -> unit
   val set_req_relaxed : [< `Req ] t -> bool -> unit
