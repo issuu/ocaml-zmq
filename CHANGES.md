@@ -1,3 +1,5 @@
+* Fix build with OCaml 4.13 (#108, #110, @Leonidas-from-XIV)
+
 5.1.3
 -----
 

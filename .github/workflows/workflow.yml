@@ -10,9 +10,9 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - ubuntu-latest
+          - ubuntu-20.04
         ocaml-version:
-          - 4.11.1
+          - 4.13.1
           - 4.04.1
 
     runs-on: ${{ matrix.os }}

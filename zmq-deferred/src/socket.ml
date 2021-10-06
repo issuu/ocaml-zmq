@@ -55,7 +55,7 @@ module Make(T: Deferred.T) = struct
           try
             f ();
             (* Success, pop the sender *)
-            Queue.pop queue |> ignore
+            (Queue.pop queue : unit -> unit) |> ignore
           with
           | Retry -> (* If f raised EAGAIN, dont pop the message *) ()
         in
