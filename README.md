@@ -1,7 +1,7 @@
 OCaml bindings for ZMQ 4.x
 ==========================
 
-![Build Status](https://github.com/issuu/ocaml-zmq/actions/workflows/workflow.yml/badge.svg)
+[![Build Status](https://github.com/issuu/ocaml-zmq/actions/workflows/workflow.yml/badge.svg)](https://github.com/issuu/ocaml-zmq/actions/workflows/workflow.yml?query=branch%3Amaster)
 
 Dependencies
 ------------
