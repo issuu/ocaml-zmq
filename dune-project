@@ -1,4 +1,4 @@
-(lang dune 1.11)
+(lang dune 2.0)
 (name zmq)
 
 (generate_opam_files true)
@@ -7,10 +7,9 @@
 (license MIT)
 (maintainers "Anders Fugmann <anders@fugmann.net>")
 
-;; authors is commented out because that requires lang dune 2.0
 (package
  (name zmq)
- ;(authors "Anders Fugmann" "Pedro Borges" "Peter Zotov")
+ (authors "Anders Fugmann" "Pedro Borges" "Peter Zotov")
  (synopsis "OCaml bindings for ZeroMQ 4.x")
  (description "This library contains basic bindings for ZMQ.
 Lwt aware bindings to zmq are availble though package zmq-lwt
@@ -19,13 +18,14 @@ Async aware bindings to zmq are available though package zmq-async")
   (ocaml (>= 4.03.0))
   conf-zmq
   (ounit2 :with-test)
+  dune-configurator
   (stdint (>= 0.4.2)))
  (conflicts
   ocaml-zmq))
 
 (package
  (name zmq-async)
- ;(authors "Rudi Grinberg")
+ (authors "Rudi Grinberg")
  (synopsis "Async-aware bindings to ZMQ")
  (depends
   (ocaml (>= 4.04.1))
@@ -37,7 +37,7 @@ Async aware bindings to zmq are available though package zmq-async")
 
 (package
  (name zmq-lwt)
- ;(authors "Anders Fugmann <anders@fugmann.net>")
+ (authors "Anders Fugmann <anders@fugmann.net>")
  (synopsis "Lwt-aware bindings to ZMQ")
  (depends
   (ocaml (>= 4.03.0))

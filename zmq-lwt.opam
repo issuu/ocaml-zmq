@@ -2,11 +2,12 @@
 opam-version: "2.0"
 synopsis: "Lwt-aware bindings to ZMQ"
 maintainer: ["Anders Fugmann <anders@fugmann.net>"]
+authors: ["Anders Fugmann <anders@fugmann.net>"]
 license: "MIT"
 homepage: "https://github.com/issuu/ocaml-zmq"
 bug-reports: "https://github.com/issuu/ocaml-zmq/issues"
 depends: [
-  "dune" {>= "1.11"}
+  "dune" {>= "2.0"}
   "ocaml" {>= "4.03.0"}
   "zmq" {= version}
   "lwt"
@@ -27,4 +28,3 @@ build: [
   ]
 ]
 dev-repo: "git+https://github.com/issuu/ocaml-zmq.git"
-authors: ["Anders Fugmann <anders@fugmann.net>"]

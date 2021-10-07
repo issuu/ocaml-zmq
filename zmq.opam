@@ -6,14 +6,16 @@ This library contains basic bindings for ZMQ.
 Lwt aware bindings to zmq are availble though package zmq-lwt
 Async aware bindings to zmq are available though package zmq-async"""
 maintainer: ["Anders Fugmann <anders@fugmann.net>"]
+authors: ["Anders Fugmann" "Pedro Borges" "Peter Zotov"]
 license: "MIT"
 homepage: "https://github.com/issuu/ocaml-zmq"
 bug-reports: "https://github.com/issuu/ocaml-zmq/issues"
 depends: [
-  "dune" {>= "1.11"}
+  "dune" {>= "2.0"}
   "ocaml" {>= "4.03.0"}
   "conf-zmq"
   "ounit2" {with-test}
+  "dune-configurator"
   "stdint" {>= "0.4.2"}
 ]
 conflicts: ["ocaml-zmq"]
@@ -32,4 +34,3 @@ build: [
   ]
 ]
 dev-repo: "git+https://github.com/issuu/ocaml-zmq.git"
-authors: ["Anders Fugmann" "Pedro Borges" "Peter Zotov"]

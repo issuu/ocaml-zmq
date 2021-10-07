@@ -2,7 +2,9 @@
  (name test)
  (libraries ounit2 zmq threads))
 
-(alias
- (name runtest)
- (deps (:test test.exe))
- (action (run %{test})))
+(rule
+ (alias runtest)
+ (deps
+  (:test test.exe))
+ (action
+  (run %{test})))

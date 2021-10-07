@@ -2,11 +2,12 @@
 opam-version: "2.0"
 synopsis: "Async-aware bindings to ZMQ"
 maintainer: ["Anders Fugmann <anders@fugmann.net>"]
+authors: ["Rudi Grinberg"]
 license: "MIT"
 homepage: "https://github.com/issuu/ocaml-zmq"
 bug-reports: "https://github.com/issuu/ocaml-zmq/issues"
 depends: [
-  "dune" {>= "1.11"}
+  "dune" {>= "2.0"}
   "ocaml" {>= "4.04.1"}
   "zmq" {= version}
   "async_unix" {>= "v0.11.0" & < "v0.15"}
@@ -29,4 +30,3 @@ build: [
   ]
 ]
 dev-repo: "git+https://github.com/issuu/ocaml-zmq.git"
-authors: ["Rudi Grinberg"]
