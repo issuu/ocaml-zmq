@@ -1,29 +1,10 @@
 (executables
-  (names
-    hwserver
-    hwclient
-    wuserver
-    wuclient
-    wuproxy
-    taskvent
-    taskwork
-    tasksink
-    threaded_loopback
-    echoserver
-    echoclient)
-  (libraries threads zmq str))
+ (names hwserver hwclient wuserver wuclient wuproxy taskvent taskwork
+   tasksink threaded_loopback echoserver echoclient)
+ (libraries threads zmq str))
 
 (alias
-  (name examples)
-  (deps
-    hwserver.exe
-    hwclient.exe
-    wuserver.exe
-    wuclient.exe
-    wuproxy.exe
-    taskvent.exe
-    taskwork.exe
-    tasksink.exe
-    threaded_loopback.exe
-    echoserver.exe
-    echoclient.exe))
+ (name examples)
+ (deps hwserver.exe hwclient.exe wuserver.exe wuclient.exe wuproxy.exe
+   taskvent.exe taskwork.exe tasksink.exe threaded_loopback.exe
+   echoserver.exe echoclient.exe))
