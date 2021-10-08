@@ -1,4 +1,9 @@
+5.1.4
+-----
+
 * Fix build with OCaml 4.13 (#108, #110, @Leonidas-from-XIV)
+
+* Fix `Xpub` typo (#107, @roddyyaga)
 
 5.1.3
 -----
