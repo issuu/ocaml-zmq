@@ -248,6 +248,7 @@ module Poll : sig
     [`Pair|`Pub|`Sub|`Req|`Rep|`Dealer|`Router|`Pull|`Push|`Xsub|`Xpub|`Stream]
       Socket.t
     * poll_event
+  (** @since 5.1.4 *)
 
   val mask_in :
     [<`Pair|`Pub|`Sub|`Req|`Rep|`Dealer|`Router|`Pull|`Push|`Xsub|`Xpub|`Stream]
@@ -256,6 +257,7 @@ module Poll : sig
     [`Pair|`Pub|`Sub|`Req|`Rep|`Dealer|`Router|`Pull|`Push|`Xsub|`Xpub|`Stream]
       Socket.t
     * poll_event
+  (** @since 5.1.4 *)
 
   val mask_out :
     [<`Pair|`Pub|`Sub|`Req|`Rep|`Dealer|`Router|`Pull|`Push|`Xsub|`Xpub|`Stream]
@@ -264,6 +266,7 @@ module Poll : sig
     [`Pair|`Pub|`Sub|`Req|`Rep|`Dealer|`Router|`Pull|`Push|`Xsub|`Xpub|`Stream]
       Socket.t
     * poll_event
+  (** @since 5.1.4 *)
 
   val mask_of : 'a poll_mask array -> t
   val poll : ?timeout: int -> t -> poll_event option array

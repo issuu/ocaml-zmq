@@ -1,3 +1,10 @@
+5.1.4
+-----
+
+* Add poll helpers: `mask_in`, `mask_out`, `mask_in_out`
+
+* Fix Xpub typo (#107, @roddyyaga)
+
 * Fix build with OCaml 4.13 (#108, #110, @Leonidas-from-XIV)
 
 5.1.3
