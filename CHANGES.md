@@ -1,3 +1,10 @@
+
+5.1.5
+-----
+
+* fix bug in `STREAM` sockets
+
+
 5.1.4
 -----
 
