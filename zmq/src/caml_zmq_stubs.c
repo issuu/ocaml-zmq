@@ -138,7 +138,8 @@ static int const socket_type_for_kind[] =  {
     ZMQ_PULL,
     ZMQ_PUSH,
     ZMQ_XPUB,
-    ZMQ_XSUB
+    ZMQ_XSUB,
+    ZMQ_STREAM,
 };
 
 CAMLprim value caml_zmq_socket(value ctx, value socket_kind) {
@@ -146,7 +147,10 @@ CAMLprim value caml_zmq_socket(value ctx, value socket_kind) {
     CAMLlocal1 (sock_value);
     void *socket;
 
-    socket = zmq_socket(CAML_ZMQ_Context_val(ctx), socket_type_for_kind[Int_val(socket_kind)]);
+    int kind = Int_val(socket_kind);
+    assert (kind >= ZMQ_PAIR && kind <= ZMQ_STREAM);
+
+    socket = zmq_socket(CAML_ZMQ_Context_val(ctx), socket_type_for_kind[kind]);
     caml_zmq_raise_if(socket == NULL, "zmq_socket");
     sock_value = caml_zmq_copy_socket(socket);
     CAMLreturn (sock_value);
