@@ -148,7 +148,7 @@ CAMLprim value caml_zmq_socket(value ctx, value socket_kind) {
     void *socket;
 
     int kind = Int_val(socket_kind);
-    assert (kind <= ZMQ_STREAM);
+    assert (kind >= ZMQ_PAIR && kind <= ZMQ_STREAM);
 
     socket = zmq_socket(CAML_ZMQ_Context_val(ctx), socket_type_for_kind[kind]);
     caml_zmq_raise_if(socket == NULL, "zmq_socket");
