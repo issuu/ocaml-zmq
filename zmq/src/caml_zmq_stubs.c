@@ -223,7 +223,7 @@ static int const native_bytes_option_for[] = {
 int caml_zmq_set_string_option(value socket, value option_name, value socket_option) {
     CAMLparam3 (socket, option_name, socket_option);
 
-    char *option_value = String_val(socket_option);
+    const char *option_value = String_val(socket_option);
     size_t option_size = caml_string_length(socket_option);
     int result = zmq_setsockopt(CAML_ZMQ_Socket_val(socket),
                                 native_bytes_option_for[Int_val(option_name)],
@@ -476,8 +476,7 @@ CAMLprim value caml_zmq_recv(value socket, value block_flag) {
     }
 
     size_t size = zmq_msg_size (&msg);
-    message = caml_alloc_string(size);
-    memcpy (String_val(message), zmq_msg_data (&msg), size);
+    message = caml_alloc_initialized_string(size, zmq_msg_data (&msg));
     result = zmq_msg_close(&msg);
     caml_zmq_raise_if(result == -1, "zmq_msg_close");
     CAMLreturn (message);
@@ -801,7 +800,7 @@ CAMLprim value caml_z85_encode(value source) {
      */
     int length = caml_string_length(source);
     result = caml_alloc_string(length / 4 * 5);
-    if (zmq_z85_encode(String_val(result), (uint8_t*) String_val(source), length) == NULL)
+    if (zmq_z85_encode((char *)String_val(result), (uint8_t*) String_val(source), length) == NULL)
         caml_invalid_argument("zmq_z85_encode");
 
     CAMLreturn(result);
@@ -829,7 +828,7 @@ CAMLprim value caml_curve_keypair(value unit) {
     /* See the notice in caml_z85_encode. */
     public = caml_alloc_string(40);
     secret = caml_alloc_string(40);
-    int result = zmq_curve_keypair(String_val(public), String_val(secret));
+    int result = zmq_curve_keypair((char *)String_val(public), (char *)String_val(secret));
     caml_zmq_raise_if(result == -1, "zmq_curve_keypair");
 
     tuple = caml_alloc_tuple(2);
