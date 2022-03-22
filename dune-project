@@ -42,5 +42,5 @@ Async aware bindings to zmq are available though package zmq-async")
  (depends
   (ocaml (>= 4.03.0))
   (zmq (= :version))
-  lwt
+  (lwt (>= 2.6.0))
   (ounit2 :with-test)))
