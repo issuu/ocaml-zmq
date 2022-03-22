@@ -476,7 +476,14 @@ CAMLprim value caml_zmq_recv(value socket, value block_flag) {
     }
 
     size_t size = zmq_msg_size (&msg);
+    /* in the future (when we support a minimum of OCaml 4.06) this can be simplified to
+
     message = caml_alloc_initialized_string(size, zmq_msg_data (&msg));
+
+     * but in the meantime, we need to cast the pointer. This is legal because we control
+     * the string value. */
+    message = caml_alloc_string(size);
+    memcpy((char *)String_val(message), zmq_msg_data (&msg), size);
     result = zmq_msg_close(&msg);
     caml_zmq_raise_if(result == -1, "zmq_msg_close");
     CAMLreturn (message);
