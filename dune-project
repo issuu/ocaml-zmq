@@ -30,9 +30,9 @@ Async aware bindings to zmq are available though package zmq-async")
  (depends
   (ocaml (>= 4.04.1))
   (zmq (= :version))
-  (async_unix (and (>= v0.11.0) (< v0.15)))
-  (async_kernel (and (>= v0.11.0) (< v0.15)))
-  (base (and (>= v0.11.0) (< v0.15)))
+  (async_unix (and (>= v0.11.0) (< v0.16)))
+  (async_kernel (and (>= v0.11.0) (< v0.16)))
+  (base (and (>= v0.11.0) (< v0.16)))
   (ounit2 :with-test)))
 
 (package
