@@ -585,7 +585,7 @@ module Poll = struct
     ), Out
 
   external mask_of : 'a poll_mask array -> t = "caml_zmq_poll_of_pollitem_array"
-  external of_mask : 'a poll_mask array -> t = "caml_zmq_poll_of_pollitem_array"
+  external of_masks : 'a poll_mask array -> t = "caml_zmq_poll_of_pollitem_array"
   external native_poll: t -> int -> poll_event option array = "caml_zmq_poll"
 
   let poll ?(timeout = -1) items = native_poll items timeout
