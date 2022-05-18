@@ -268,7 +268,8 @@ module Poll : sig
     * poll_event
   (** @since 5.1.4 *)
 
-  val mask_of : 'a poll_mask array -> t
+  val mask_of : 'a poll_mask array -> t [@@ocaml.alert deprecated "Please use 'Zmq.Poll.of_mask' instead"]
+  val of_mask : 'a poll_mask array -> t
   val poll : ?timeout: int -> t -> poll_event option array
 
 end

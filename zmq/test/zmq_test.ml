@@ -191,7 +191,7 @@ let test_unix_exceptions = bracket
     )
     (fun (_, s) ->
 
-       let mask = Zmq.Poll.mask_of [| s, Zmq.Poll.In |] in
+       let mask = Zmq.Poll.of_mask [| s, Zmq.Poll.In |] in
        Sys.(set_signal sigalrm (Signal_handle (fun _ -> ())));
        ignore (Unix.alarm 1);
        assert_raises ~msg:"Failed to raise EINTR" Unix.(Unix_error(EINTR, "zmq_poll", ""))  (fun _ -> Zmq.Poll.poll ~timeout:2000 mask);
@@ -325,7 +325,7 @@ let suite =
              bind rep endpoint;
              connect req endpoint;
              subscribe sub "";
-             let mask = mask_of [| Poll.mask_in_out req; Poll.mask_in_out rep; Poll.mask_in_out sub |] in
+             let mask = of_mask [| Poll.mask_in_out req; Poll.mask_in_out rep; Poll.mask_in_out sub |] in
              assert_equal [| Some Out; None; None |] (poll ~timeout:1000 mask);
              send req "request";
              assert_equal [| None; Some In; None |] (poll ~timeout:1000 mask);
