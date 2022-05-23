@@ -239,15 +239,12 @@ module Poll : sig
   type poll_event = In | Out | In_out
   type 'a poll_mask = ('a Socket.t * poll_event)
 
-
-
   val mask_in_out :
     [<`Pair|`Pub|`Sub|`Req|`Rep|`Dealer|`Router|`Pull|`Push|`Xsub|`Xpub|`Stream]
       Socket.t
     ->
     [`Pair|`Pub|`Sub|`Req|`Rep|`Dealer|`Router|`Pull|`Push|`Xsub|`Xpub|`Stream]
-      Socket.t
-    * poll_event
+      poll_mask
   (** @since 5.1.4 *)
 
   val mask_in :
@@ -255,8 +252,7 @@ module Poll : sig
       Socket.t
     ->
     [`Pair|`Pub|`Sub|`Req|`Rep|`Dealer|`Router|`Pull|`Push|`Xsub|`Xpub|`Stream]
-      Socket.t
-    * poll_event
+      poll_mask
   (** @since 5.1.4 *)
 
   val mask_out :
@@ -264,13 +260,16 @@ module Poll : sig
       Socket.t
     ->
     [`Pair|`Pub|`Sub|`Req|`Rep|`Dealer|`Router|`Pull|`Push|`Xsub|`Xpub|`Stream]
-      Socket.t
-    * poll_event
+      poll_mask
   (** @since 5.1.4 *)
 
   val mask_of : 'a poll_mask array -> t
-  val poll : ?timeout: int -> t -> poll_event option array
+  (** This function will be deprecated in a future release.
+      Consider using the synonym function {!of_masks} instead. *)
 
+  val of_masks : 'a poll_mask array -> t
+
+  val poll : ?timeout:int -> t -> poll_event option array
 end
 
 module Monitor : sig
