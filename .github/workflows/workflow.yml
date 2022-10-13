@@ -12,6 +12,7 @@ jobs:
         os:
           - ubuntu-20.04
         ocaml-version:
+          - ocaml-base-compiler.5.0.0~beta1
           - 4.13.1
           - 4.04.1
 

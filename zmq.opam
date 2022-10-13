@@ -16,7 +16,6 @@ depends: [
   "conf-zmq"
   "ounit2" {with-test}
   "dune-configurator"
-  "stdint" {>= "0.5"}
 ]
 conflicts: ["ocaml-zmq"]
 build: [
