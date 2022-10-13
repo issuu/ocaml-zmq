@@ -13,7 +13,7 @@ jobs:
           - ubuntu-20.04
         ocaml-version:
           - ocaml-base-compiler.5.0.0~beta1
-          - 4.13.1
+          - 4.14.0
           - 4.04.1
 
     runs-on: ${{ matrix.os }}
@@ -26,7 +26,25 @@ jobs:
         uses: ocaml/setup-ocaml@v2
         with:
           ocaml-compiler: ${{ matrix.ocaml-version }}
+          opam-local-packages: zmq.opam
 
-      - run: opam install . --deps-only --with-doc --with-test
-      - run: opam exec -- dune build
-      - run: opam exec -- dune runtest
+      - name: zmq
+        run: |
+          opam install --deps-only --with-doc --with-test zmq
+          opam exec -- dune build zmq
+          opam exec -- dune runtest zmq
+
+      - name: zmq-lwt
+        run: |
+          opam pin add zmq-lwt.dev . --no-action
+          opam install --deps-only --with-doc --with-test zmq-lwt
+          opam exec -- dune build zmq-lwt
+          opam exec -- dune runtest zmq-lwt
+
+      - name: zmq-async
+        if: ${{ matrix.ocaml-version != 'ocaml-base-compiler.5.0.0~beta1' }}
+        run: |
+          opam pin add zmq-async.dev . --no-action
+          opam install --deps-only --with-doc --with-test zmq-async
+          opam exec -- dune build zmq-async
+          opam exec -- dune runtest zmq-async
