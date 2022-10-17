@@ -69,6 +69,8 @@ let test_socket_options () =
     ()
   in
 
+  (* Verify that the default max_message_size returns is -1 *)
+  assert_equal ~msg:"Default max message size" ~printer:string_of_int (get_max_message_size socket) (-1);
 
   test_set_get_int "Highwatermark" set_receive_high_water_mark get_receive_high_water_mark socket 1235;
   test_set_get_int "Affinity" set_affinity get_affinity socket 3;
