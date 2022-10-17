@@ -170,19 +170,20 @@ CAMLprim value caml_zmq_close(value socket) {
  * Set socket options
  */
 
-static int const native_uint64_option_for[] = {
+static int const native_int64_option_for[] = {
     ZMQ_AFFINITY,
     ZMQ_MAXMSGSIZE
 };
 
-CAMLprim value caml_zmq_set_uint64_option(value socket, value option_name, value socket_option) {
+CAMLprim value caml_zmq_set_int64_option(value socket, value option_name, value socket_option) {
     CAMLparam3 (socket, option_name, socket_option);
 
     int64_t val = Long_val(socket_option);
     int result = zmq_setsockopt(CAML_ZMQ_Socket_val(socket),
-                                native_uint64_option_for[Int_val(option_name)],
+                                native_int64_option_for[Int_val(option_name)],
                                 &val,
                                 sizeof(val));
+
 
     caml_zmq_raise_if(result == -1, "zmq_setsockopt");
     CAMLreturn (Val_unit);
@@ -267,12 +268,12 @@ CAMLprim value caml_zmq_set_int_option(value socket, value option_name, value so
  * Get socket options
  */
 
-CAMLprim value caml_zmq_get_uint64_option(value socket, value option_name) {
+CAMLprim value caml_zmq_get_int64_option(value socket, value option_name) {
     CAMLparam2 (socket, option_name);
-    uint64_t mark;
+    int64_t mark;
     size_t mark_size = sizeof (mark);
     int result = zmq_getsockopt (CAML_ZMQ_Socket_val(socket),
-                                 native_uint64_option_for[Int_val(option_name)],
+                                 native_int64_option_for[Int_val(option_name)],
                                  &mark,
                                  &mark_size);
     caml_zmq_raise_if(result == -1, "zmq_getsockopt");
