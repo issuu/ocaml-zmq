@@ -149,10 +149,22 @@ module Socket : sig
   val send_msg_all : ?block:bool -> 'a t -> Msg.t list -> unit
 
   (** Option Getter and Setters *)
+
+  (** Set the maximum message size of a message sent in this context,
+      represented as a signed integer. A value of -1 will set the max
+      message size to 2^64-1. *)
   val set_max_message_size : 'a t -> int -> unit
+
+  (** Get the maximum message size for this context represented as a signed integer.
+      A value of -1 equals to 2^64-1. *)
   val get_max_message_size : 'a t -> int
+
+  (** Set thread affinity. Affinity is represented as a bit vector *)
   val set_affinity : 'a t -> int -> unit
+
+  (** Get thread affinity, represented as a bit vector. *)
   val get_affinity : 'a t -> int
+
   val set_identity : 'a t -> string -> unit
   val get_identity : 'a t -> string
   val subscribe : [< `Sub] t -> string -> unit

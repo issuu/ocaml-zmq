@@ -1,3 +1,5 @@
+* Remove dependency on StdInt.
+
 * Silence warnings about `const char*` when writing to the inside of an
   allocated string value (#116, @Leonidas-from-XIV)
 

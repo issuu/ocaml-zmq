@@ -18,8 +18,7 @@ Async aware bindings to zmq are available though package zmq-async")
   (ocaml (>= 4.03.0))
   conf-zmq
   (ounit2 :with-test)
-  dune-configurator
-  (stdint (>= 0.4.2)))
+  dune-configurator)
  (conflicts
   ocaml-zmq))
 

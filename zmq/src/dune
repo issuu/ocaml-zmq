@@ -12,7 +12,7 @@
    -O2))
  (c_library_flags
   (:include c_library_flags.sexp))
- (libraries unix stdint bigarray))
+ (libraries unix bigarray))
 
 (rule
  (targets c_flags.sexp c_library_flags.sexp)

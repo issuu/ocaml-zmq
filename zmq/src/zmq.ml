@@ -83,7 +83,6 @@ module Msg = struct
 end
 
 module Socket = struct
-  open Stdint
 
   type + 'a t
 
@@ -129,25 +128,15 @@ module Socket = struct
   external native_send_msg : 'a t -> Msg.t -> bool -> bool -> unit = "caml_zmq_send_msg"
   let send_msg ?(block = true) ?(more = false) socket message = native_send_msg socket message block more
 
-  (** Native Option Setters (private) *)
   type int64_option =
+  | ZMQ_AFFINITY
   | ZMQ_MAXMSGSIZE
 
   external set_int64_option :
-    'a t -> int64_option -> int64 -> unit = "caml_zmq_set_int64_option"
+    'a t -> int64_option -> int -> unit = "caml_zmq_set_int64_option"
 
   external get_int64_option :
-    'a t -> int64_option -> int64 = "caml_zmq_get_int64_option"
-
-
-  type uint64_option =
-  | ZMQ_AFFINITY
-
-  external set_uint64_option :
-    'a t -> uint64_option -> Uint64.t -> unit = "caml_zmq_set_uint64_option"
-
-  external get_uint64_option :
-    'a t -> uint64_option -> Uint64.t = "caml_zmq_get_uint64_option"
+    'a t -> int64_option -> int = "caml_zmq_get_int64_option"
 
 
   type string_option =
@@ -218,16 +207,16 @@ module Socket = struct
     | _ -> ()
 
   let set_max_message_size socket size =
-    set_int64_option socket ZMQ_MAXMSGSIZE (Int64.of_int size)
+    set_int64_option socket ZMQ_MAXMSGSIZE size
 
   let get_max_message_size socket =
-    Int64.to_int (get_int64_option socket ZMQ_MAXMSGSIZE)
+    get_int64_option socket ZMQ_MAXMSGSIZE
 
   let set_affinity socket size =
-    set_uint64_option socket ZMQ_AFFINITY (Uint64.of_int size)
+    set_int64_option socket ZMQ_AFFINITY size
 
   let get_affinity socket =
-    Uint64.to_int (get_uint64_option socket ZMQ_AFFINITY)
+    get_int64_option socket ZMQ_AFFINITY
 
   let set_identity socket identity =
     validate_string_length 1 255 identity "set_identity";
