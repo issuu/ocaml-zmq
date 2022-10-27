@@ -1,4 +1,6 @@
-* Remove dependency on StdInt.
+5.2.0
+---
+* Remove dependency on StdInt (#121, @andersfugmann)
 
 * Silence warnings about `const char*` when writing to the inside of an
   allocated string value (#116, @Leonidas-from-XIV)
@@ -26,7 +28,7 @@
 
 5.1.2
 -----
-* Use unix sockets in tests to aoivd permission problems when running
+* Use unix sockets in tests to avoid permission problems when running
   in a sandbox environment.
 
 * Make monitor test more reliable by explictly waiting for each event to
