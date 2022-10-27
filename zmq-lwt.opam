@@ -7,14 +7,15 @@ license: "MIT"
 homepage: "https://github.com/issuu/ocaml-zmq"
 bug-reports: "https://github.com/issuu/ocaml-zmq/issues"
 depends: [
-  "dune" {>= "2.0"}
+  "dune" {>= "2.7"}
   "ocaml" {>= "4.03.0"}
   "zmq" {= version}
   "lwt" {>= "2.6.0"}
   "ounit2" {with-test}
+  "odoc" {with-doc}
 ]
 build: [
-  ["dune" "subst"] {pinned}
+  ["dune" "subst"] {dev}
   [
     "dune"
     "build"
