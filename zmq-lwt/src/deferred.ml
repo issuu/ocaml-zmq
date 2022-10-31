@@ -1,8 +1,17 @@
 type 'a t = 'a Lwt.t
+
+(* Define let_catch_result with the same signature as Lwt_result.catch
+   for lwt version >= 6.0. This function can be replaced by
+   Lwt_result.catch if/when we bump minimum required version of Lwt to >= 6.0.
+   See https://github.com/ocsigen/lwt/pull/965
+*)
+let lwt_result_catch f =
+  Lwt.catch (fun () -> Lwt_result.ok (f ())) Lwt_result.fail
+
 module Deferred = struct
   type 'a t = 'a Lwt.t
   let return a = Lwt.return a
-  let catch f = Lwt.catch (fun () -> Lwt_result.ok (f ())) Lwt_result.fail
+  let catch f = lwt_result_catch f
   let don't_wait_for = Lwt.async
   let sleepf secs = Lwt_unix.sleep secs
   let fail exn = Lwt.fail exn
