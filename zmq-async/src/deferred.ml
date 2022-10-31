@@ -35,6 +35,13 @@ module Fd = struct
   type 'a t' = 'a t
   type t = Fd.t
   let create fd =
+    (* The kind here seems not to matter much, but we should make sure
+       that the fd is not set into non-blocking mode, as this breaks
+       on s390x.
+       The 'File' kind avoids fd being set into non-blocking mode.
+       'Fd.create' also allows setting 'avoid_setting_nonblock', but
+       this option name is not stable across supported versions of
+       async_unix. *)
     Fd.create Fd.Kind.File fd (Base.Info.of_string "<zmq>")
 
   let wait_readable: t -> unit t' = fun t ->
