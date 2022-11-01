@@ -1,3 +1,5 @@
+* Forward compatibility with Lwt 5.7/6.0 (#122, @andersfugmann)
+
 5.2.0
 ---
 * Remove dependency on StdInt (#121, @andersfugmann)
