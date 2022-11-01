@@ -1,4 +1,7 @@
-* Forward compatibility with Lwt 5.7/6.0 (#122, @andersfugmann)
+5.2.1
+---
+* Forward compatibility with Lwt 6.0 (#122, @andersfugmann)
+* Fix wrong fd type for zmq-async, effecting s390x (#123, @andersfugmann)
 
 5.2.0
 ---
