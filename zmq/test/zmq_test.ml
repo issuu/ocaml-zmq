@@ -79,6 +79,13 @@ let test_socket_options () =
   test_set_get_value "Tcp keepalive interval" set_tcp_keepalive_interval get_tcp_keepalive_interval socket (`Value 1000);
 
   Socket.close socket;
+
+  (* Must be a `Stream. No getter so just test that it doesn't explode. *)
+  let stream_socket = create ctx stream in
+  set_stream_notify stream_socket true;
+  set_stream_notify stream_socket false;
+  Socket.close stream_socket;
+
   Context.terminate ctx;
   ()
 
