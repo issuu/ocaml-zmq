@@ -232,6 +232,7 @@ module Socket : sig
   val set_zap_domain : 'a t -> string -> unit
   val get_zap_domain : 'a t -> string
   val set_conflate : [< `Pull | `Push | `Sub | `Pub | `Dealer] t -> bool -> unit
+  val set_stream_notify : [< `Stream ] t -> bool -> unit
 
   val get_fd : 'a t -> Unix.file_descr
 

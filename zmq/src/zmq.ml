@@ -191,6 +191,7 @@ module Socket = struct
   | ZMQ_REQ_CORRELATE
   | ZMQ_REQ_RELAXED
   | ZMQ_CONFLATE
+  | ZMQ_STREAM_NOTIFY
   [@@@warning "+37"]
 
   external set_int_option :
@@ -482,6 +483,9 @@ module Socket = struct
 
   let set_conflate socket flag =
     set_int_option socket ZMQ_CONFLATE (if flag then 1 else 0)
+
+  let set_stream_notify socket stream_notify_flag =
+    set_int_option socket ZMQ_STREAM_NOTIFY (if stream_notify_flag then 1 else 0)
 
   external get_fd : 'a t -> Unix.file_descr = "caml_zmq_get_fd"
 

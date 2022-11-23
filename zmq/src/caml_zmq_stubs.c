@@ -249,6 +249,7 @@ static int const native_int_option_for[] = {
     ZMQ_REQ_CORRELATE,
     ZMQ_REQ_RELAXED,
     ZMQ_CONFLATE,
+    ZMQ_STREAM_NOTIFY
 };
 
 CAMLprim value caml_zmq_set_int_option(value socket, value option_name, value socket_option) {
