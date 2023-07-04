@@ -1,7 +1,5 @@
 open OUnit
-let verbose = false
 let count = 1000
-
 
 let list_init cnt f =
   let rec loop = function
@@ -16,15 +14,7 @@ module Make(T: Zmq_deferred.Deferred.T) = struct
 
   module Socket = Zmq_deferred.Socket.Make(T)
 
-  let rec monitor (s1, s2) () =
-    match verbose with
-    | true ->
-      Printf.eprintf "s1: %s\n%!" (Socket.to_string_hum s1);
-      Printf.eprintf "s2: %s\n%!" (Socket.to_string_hum s2);
-      Deferred.sleepf 1.0 >>= monitor (s1, s2)
-    | false -> Deferred.return ()
-
-  let all_ok l =  List.fold_left (fun acc a -> acc >>= fun () -> a) (Deferred.return ()) l
+  let all_ok l =  List.fold_left (fun acc a -> acc >>= fun () -> a) (T.Deferred.return ()) l
   let setup () =
     let make ctx tpe =
       let s = Zmq.Socket.create ctx tpe in
@@ -38,36 +28,28 @@ module Make(T: Zmq_deferred.Deferred.T) = struct
     let endpoint = "inproc://test"  in
     Zmq.Socket.bind s1 endpoint;
     Zmq.Socket.connect s2 endpoint;
-    Deferred.sleepf 0.0001 >>= fun () ->
-    Deferred.return (ctx, Socket.of_socket s1, Socket.of_socket s2)
+    T.Deferred.sleepf 0.0001 >>= fun () ->
+    T.Deferred.return (ctx, Socket.of_socket s1, Socket.of_socket s2)
 
   let teardown (ctx, s1, s2) =
     Socket.close s2 >>= fun () ->
     Socket.close s1 >>= fun () ->
     Zmq.Context.terminate ctx;
-    Deferred.return ()
+    T.Deferred.return ()
 
-  let rec send ?delay s = function
-    | 0 -> Deferred.return ()
+  let rec send ?(delay = 0.0) s = function
+    | 0 -> T.Deferred.return ()
     | n ->
-      Socket.send s "test" >>= fun _ ->
-      begin
-        match delay with
-        | None -> Deferred.return ()
-        | Some delay -> Deferred.sleepf delay
-      end >>= fun () ->
-      send s (n - 1)
+      Socket.send s "test" >>= fun () ->
+      T.Deferred.sleepf delay >>= fun () ->
+      send s ~delay (n - 1)
 
-  let rec recv ?delay s = function
-    | 0 -> Deferred.return ()
+  let rec recv ?(delay = 0.0) s = function
+    | 0 -> T.Deferred.return ()
     | n ->
       Socket.recv s >>= fun _ ->
-      begin
-        match delay with
-        | None -> Deferred.return ()
-        | Some delay -> Deferred.sleepf delay
-      end >>= fun () ->
-      recv s (n - 1)
+      T.Deferred.sleepf delay >>= fun () ->
+      recv s ~delay (n - 1)
 
   (* Tests *)
   let test_send_receive (_, s1, s2) =
@@ -92,7 +74,7 @@ module Make(T: Zmq_deferred.Deferred.T) = struct
 
   let test_slow_send (_, s1, s2) =
     all_ok [
-      recv ~delay:0.001 s2 count;
+      recv ~delay:0.0001 s2 count;
       send s1 (count / 5);
       send s1 (count / 5);
       send s1 (count / 5);
@@ -102,7 +84,7 @@ module Make(T: Zmq_deferred.Deferred.T) = struct
 
   let test_slow_receive (_, s1, s2) =
     all_ok [
-      send ~delay:0.001 s2 count;
+      send ~delay:0.0001 s2 count;
       recv s1 (count / 5);
       recv s1 (count / 5);
       recv s1 (count / 5);
@@ -111,20 +93,18 @@ module Make(T: Zmq_deferred.Deferred.T) = struct
     ]
 
   let test_multi (_, s1, s2) =
-    Deferred.don't_wait_for (monitor (s1, s2));
     all_ok (
-      ((send ~delay:0.001 s1 count) :: (list_init count (fun _ -> Socket.recv s2 >>= fun _ -> Deferred.return ())))
+      ((send ~delay:0.0001 s1 count) :: (list_init count (fun _ -> Socket.recv s2 >>= fun _ -> Deferred.return ())))
       @
-      ((send ~delay:0.002 s2 count) :: (list_init count (fun _ -> Socket.recv s1 >>= fun _ -> Deferred.return ())))
+      ((send ~delay:0.0002 s2 count) :: (list_init count (fun _ -> Socket.recv s1 >>= fun _ -> Deferred.return ())))
     )
 
   let test_slow_mix (_, s1, s2) =
-    Deferred.don't_wait_for (monitor (s1, s2));
     all_ok [
-      send ~delay:0.001 s2 count; recv ~delay:0.001 s1 count;
-      send ~delay:0.001 s1 count; recv ~delay:0.001 s2 count;
-      send ~delay:0.001 s2 count; recv ~delay:0.001 s1 count;
-      send ~delay:0.001 s1 count; recv ~delay:0.001 s2 count;
+      send ~delay:0.0001 s2 count; recv ~delay:0.0002 s1 count;
+      send ~delay:0.0001 s1 count; recv ~delay:0.0002 s2 count;
+      send ~delay:0.0001 s2 count; recv ~delay:0.0002 s1 count;
+      send ~delay:0.0001 s1 count; recv ~delay:0.0002 s2 count;
     ]
 
   let suite (exec : (unit -> unit Deferred.t) -> unit) =
