@@ -1,6 +1,81 @@
+module type Socket = sig
+  type 'a deferred
+
+  (** An concurrent zeromq socket *)
+  type 'a t
+
+  type 'a of_socket_args
+
+  (** [of_socket s] wraps the zeromq socket [s]*)
+  val of_socket : ('a Zmq.Socket.t -> 'a t) of_socket_args
+
+  (** [to_socket s] extracts the raw zeromq socket from [s] *)
+  val to_socket : 'a t -> 'a Zmq.Socket.t
+
+  (** [recv socket] waits for a message on [socket] without blocking
+      other concurrent threads *)
+  val recv : 'a t -> string deferred
+
+  (** [send socket] sends a message on [socket] without blocking other
+      concurrent threads *)
+  val send : 'a t -> string -> unit deferred
+
+  (** [recv_all socket] waits for a multi-part message on [socket] without
+      blocking other concurrent threads *)
+  val recv_all : 'a t -> string list deferred
+
+  (** [send_all socket m] sends all parts of the multi-part message [m] on
+      [socket] without blocking other concurrent threads *)
+  val send_all : 'a t -> string list -> unit deferred
+
+  (** [recv_msg socket] waits for a message on [socket] without blocking
+      other concurrent threads *)
+  val recv_msg : 'a t -> Zmq.Msg.t deferred
+
+  (** [send_msg socket] sends a message on [socket] without blocking other
+      concurrent threads *)
+  val send_msg : 'a t -> Zmq.Msg.t -> unit deferred
+
+  (** [recv_msg_all socket] waits for a multi-part message on [socket] without
+      blocking other concurrent threads *)
+  val recv_msg_all : 'a t -> Zmq.Msg.t list deferred
+
+  (** [send_msg_all socket m] sends all parts of the multi-part message [m] on
+      [socket] without blocking other concurrent threads *)
+  val send_msg_all : 'a t -> Zmq.Msg.t list -> unit deferred
+
+  val close : 'a t -> unit deferred
+
+
+  module Router : sig
+
+    (** Identity of a socket connected to the router. *)
+    type id_t
+
+    (** [id_of_string s] coerces [s] into an {!id_t}. *)
+    val id_of_string : string -> id_t
+
+    (** [recv socket] waits for a message on [socket] without blocking other Lwt
+        threads. *)
+    val recv : [ `Router ] t -> (id_t * string list) deferred
+
+    (** [send socket id message] sends [message] on [socket] to [id] without
+        blocking other Lwt threads. *)
+    val send : [ `Router ] t -> id_t -> string list -> unit deferred
+  end
+
+  module Monitor : sig
+    (** [recv socket] waits for a monitoring event on [socket] without blocking other concurrent threads. *)
+    val recv : [ `Monitor ] t -> Zmq.Monitor.event deferred
+  end
+
+end
+
 module Make(T: Deferred.T) = struct
   open T
   open Deferred.Infix
+  type 'a deferred = 'a T.t
+  type 'a of_socket_args = 'a
   exception Retry
   type 'a t =
     { socket : 'a Zmq.Socket.t;
@@ -11,21 +86,6 @@ module Make(T: Deferred.T) = struct
       fd_condition : unit Condition.t;
       mutable closing : bool;
     }
-
-  let to_string_hum t =
-    let state = match (Zmq.Socket.events t.socket) with
-      | Zmq.Socket.No_event -> "No_event"
-      | Poll_in -> "Poll_in"
-      | Poll_out -> "Poll_out"
-      | Poll_in_out -> "Poll_in_out"
-      | Poll_error -> "Poll_error"
-      | exception _ -> "Closed"
-    in
-    Printf.sprintf "State: %s, Senders #%d, Receivers #%d"
-      state
-      (Queue.length t.senders)
-      (Queue.length t.receivers)
-
 
   (** Small process that will notify of the fd changes *)
   let rec fd_monitor t =
@@ -83,7 +143,7 @@ module Make(T: Deferred.T) = struct
           Deferred.return ()
       end
 
-  let of_socket: 'a Zmq.Socket.t -> 'a t = fun socket ->
+  let of_socket: ('a Zmq.Socket.t -> 'a t) of_socket_args = fun socket ->
     let fd = Fd.create (Zmq.Socket.get_fd socket) in
     let t =
       { socket; fd;
