@@ -1,0 +1,11 @@
+(executable
+ (name test)
+ (libraries zmq-eio ounit2 eio eio_main))
+
+(rule
+ (alias runtest)
+ (deps
+  (:test test.exe))
+ (action
+  (run %{test}))
+ (package zmq-eio))

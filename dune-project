@@ -43,3 +43,15 @@ Async aware bindings to zmq are available though package zmq-async")
   (zmq (= :version))
   (lwt (>= 2.6.0))
   (ounit2 :with-test)))
+
+ (package
+ (name zmq-eio)
+ (authors "Anders Fugmann")
+ (synopsis "Eio aware bindings to ZMQ")
+ (depends
+  (ocaml (>= 4.04.1))
+  (zmq (= :version))
+  (eio (>= 0.10))
+  (eio_unix (>= 0.9))
+  (base (>= v0.11.0))
+  (ounit2 :with-test)))
