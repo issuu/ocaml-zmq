@@ -1,6 +1,5 @@
 open OUnit
 
-(** Sleep is horrible slow, or causing strange slowdowns *)
 let sleepf env secs = Eio.Time.sleep (Eio.Stdenv.clock env) secs
 
 let setup ~sw env =
