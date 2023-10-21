@@ -138,8 +138,9 @@ let test_monitor () =
   end;
   Zmq.Socket.close s1;
   assert_event "m1" m1 "Closed";
-  Zmq.Socket.close s2;
+  assert_event "m1" m1 "Monitor_stopped";
   assert_event "m2" m2 "Disconnect";
+  Zmq.Socket.close s2;
 
   Zmq.Socket.close m2;
   Zmq.Socket.close m1;
@@ -165,7 +166,7 @@ let test_proxy () =
   in
 
   let _thread = Thread.create proxy (pull, pub) in
-  sleep 10;
+  sleep 10; (* Wait until the proxy has been created *)
   let sub =
     let s = Zmq.Socket.create ctx sub in
     Zmq.Socket.connect s pub_endpoint;
