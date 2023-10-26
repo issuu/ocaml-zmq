@@ -1,3 +1,7 @@
+5.2.2
+---
+* Fix race in monitor test (#129, @andersfugmann)
+
 5.2.1
 ---
 * Forward compatibility with Lwt 6.0 (#122, @andersfugmann)
