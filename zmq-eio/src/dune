@@ -1,0 +1,4 @@
+(library
+ (name zmq_eio)
+ (public_name zmq-eio)
+ (libraries zmq.deferred eio eio_main base))
