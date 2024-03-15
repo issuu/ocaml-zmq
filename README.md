@@ -7,9 +7,10 @@ Dependencies
 ------------
 
   * [OPAM](http://opam.ocaml.org/)
-  * OCaml >= 4.03.0, OCaml >= 4.04.1 for zmq-async
-  * Async >= v0.11.0 for zmq-async
-  * Lwt for zmq-lwt
+  * OCaml >= 4.03.0
+  * OCaml >= 4.04.1, Async >= v0.11.0 for zmq-async
+  * Ocaml >= 5.0.0 for zmq-eio
+  * Lwt >= 2.6.0 for zmq-lwt
   * libzmq (c lib) >= 4.x
 
 Install
@@ -33,10 +34,10 @@ API documentation can be found [here](https://issuu.github.io/ocaml-zmq)
 Development
 -----------
 
-With OPAM 2.x you can create a local switch which will install all dependencies automatically.
+With OPAM you can create a local switch which will install all dependencies automatically.
 
 ```sh
-opam switch create ./ 4.06
+opam switch create ./ 5.1.1
 make
 ```
 

@@ -1,3 +1,7 @@
+5.3.0
+---
+* Add eio binding in zmq-eio (#126, @andersfugmann)
+
 5.2.2
 ---
 * Fix race in monitor test (#129, @andersfugmann)
