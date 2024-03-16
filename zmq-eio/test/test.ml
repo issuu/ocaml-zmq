@@ -119,7 +119,7 @@ let suite () =
       | v -> teardown ~sw env s; v
       | exception e -> teardown ~sw env s; raise e
     in
-    fun () -> Eio_linux.run (fun env ->
+    fun () -> Eio_main.run (fun env ->
       Eio.Switch.run (fun sw -> f sw env))
   in
 
