@@ -107,6 +107,9 @@ let test_monitor () =
     let rec receive_event ~end_time =
       match Zmq.Monitor.recv ~block:false socket with
       | event -> Zmq.Monitor.string_of_event event
+      | exception Invalid_argument(s) ->
+        Printf.eprintf "Warning: Invalid_argument: %s\n" s;
+        receive_event ~end_time
       | exception Unix.Unix_error(Unix.EAGAIN, _, _) when end_time > (Unix.gettimeofday ()) ->
         sleep 10;
         receive_event ~end_time
