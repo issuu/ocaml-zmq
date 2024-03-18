@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Poll (zmq.Zmq.Poll)</title><meta charset="utf-8"/><link rel="stylesheet" href="../../../odoc.support/odoc.css"/><meta name="generator" content="odoc 2.4.1"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script src="../../../odoc.support/highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script></head><body class="odoc"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">zmq</a> &#x00BB; <a href="../index.html">Zmq</a> &#x00BB; Poll</nav><header class="odoc-preamble"><h1>Module <code><span>Zmq.Poll</span></code></h1></header><div class="odoc-content"><div class="odoc-spec"><div class="spec type anchored" id="type-t"><a href="#type-t" class="anchor"></a><code><span><span class="keyword">type</span> t</span></code></div></div><div class="odoc-spec"><div class="spec type anchored" id="type-poll_event"><a href="#type-poll_event" class="anchor"></a><code><span><span class="keyword">type</span> poll_event</span><span> = </span></code><ol><li id="type-poll_event.In" class="def variant constructor anchored"><a href="#type-poll_event.In" class="anchor"></a><code><span>| </span><span><span class="constructor">In</span></span></code></li><li id="type-poll_event.Out" class="def variant constructor anchored"><a href="#type-poll_event.Out" class="anchor"></a><code><span>| </span><span><span class="constructor">Out</span></span></code></li><li id="type-poll_event.In_out" class="def variant constructor anchored"><a href="#type-poll_event.In_out" class="anchor"></a><code><span>| </span><span><span class="constructor">In_out</span></span></code></li></ol></div></div><div class="odoc-spec"><div class="spec type anchored" id="type-poll_mask"><a href="#type-poll_mask" class="anchor"></a><code><span><span class="keyword">type</span> <span>'a poll_mask</span></span><span> = <span><span class="type-var">'a</span> <a href="../Socket/index.html#type-t">Socket.t</a></span> * <a href="#type-poll_event">poll_event</a></span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-mask_in_out"><a href="#val-mask_in_out" class="anchor"></a><code><span><span class="keyword">val</span> mask_in_out : 
+  <span><span><span>[&lt; `Pair
+  <span>| `Pub</span>
+  <span>| `Sub</span>
+  <span>| `Req</span>
+  <span>| `Rep</span>
+  <span>| `Dealer</span>
+  <span>| `Router</span>
+  <span>| `Pull</span>
+  <span>| `Push</span>
+  <span>| `Xsub</span>
+  <span>| `Xpub</span>
+  <span>| `Stream</span> ]</span>
+    <a href="../Socket/index.html#type-t">Socket.t</a></span> <span class="arrow">&#45;&gt;</span></span>
+  <span><span>[ `Pair
+  <span>| `Pub</span>
+  <span>| `Sub</span>
+  <span>| `Req</span>
+  <span>| `Rep</span>
+  <span>| `Dealer</span>
+  <span>| `Router</span>
+  <span>| `Pull</span>
+  <span>| `Push</span>
+  <span>| `Xsub</span>
+  <span>| `Xpub</span>
+  <span>| `Stream</span> ]</span>
+    <a href="#type-poll_mask">poll_mask</a></span></span></code></div><div class="spec-doc"><ul class="at-tags"><li class="since"><span class="at-tag">since</span> 5.1.4</li></ul></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-mask_in"><a href="#val-mask_in" class="anchor"></a><code><span><span class="keyword">val</span> mask_in : 
+  <span><span><span>[&lt; `Pair
+  <span>| `Pub</span>
+  <span>| `Sub</span>
+  <span>| `Req</span>
+  <span>| `Rep</span>
+  <span>| `Dealer</span>
+  <span>| `Router</span>
+  <span>| `Pull</span>
+  <span>| `Push</span>
+  <span>| `Xsub</span>
+  <span>| `Xpub</span>
+  <span>| `Stream</span> ]</span>
+    <a href="../Socket/index.html#type-t">Socket.t</a></span> <span class="arrow">&#45;&gt;</span></span>
+  <span><span>[ `Pair
+  <span>| `Pub</span>
+  <span>| `Sub</span>
+  <span>| `Req</span>
+  <span>| `Rep</span>
+  <span>| `Dealer</span>
+  <span>| `Router</span>
+  <span>| `Pull</span>
+  <span>| `Push</span>
+  <span>| `Xsub</span>
+  <span>| `Xpub</span>
+  <span>| `Stream</span> ]</span>
+    <a href="#type-poll_mask">poll_mask</a></span></span></code></div><div class="spec-doc"><ul class="at-tags"><li class="since"><span class="at-tag">since</span> 5.1.4</li></ul></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-mask_out"><a href="#val-mask_out" class="anchor"></a><code><span><span class="keyword">val</span> mask_out : 
+  <span><span><span>[&lt; `Pair
+  <span>| `Pub</span>
+  <span>| `Sub</span>
+  <span>| `Req</span>
+  <span>| `Rep</span>
+  <span>| `Dealer</span>
+  <span>| `Router</span>
+  <span>| `Pull</span>
+  <span>| `Push</span>
+  <span>| `Xsub</span>
+  <span>| `Xpub</span>
+  <span>| `Stream</span> ]</span>
+    <a href="../Socket/index.html#type-t">Socket.t</a></span> <span class="arrow">&#45;&gt;</span></span>
+  <span><span>[ `Pair
+  <span>| `Pub</span>
+  <span>| `Sub</span>
+  <span>| `Req</span>
+  <span>| `Rep</span>
+  <span>| `Dealer</span>
+  <span>| `Router</span>
+  <span>| `Pull</span>
+  <span>| `Push</span>
+  <span>| `Xsub</span>
+  <span>| `Xpub</span>
+  <span>| `Stream</span> ]</span>
+    <a href="#type-poll_mask">poll_mask</a></span></span></code></div><div class="spec-doc"><ul class="at-tags"><li class="since"><span class="at-tag">since</span> 5.1.4</li></ul></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-mask_of"><a href="#val-mask_of" class="anchor"></a><code><span><span class="keyword">val</span> mask_of : <span><span><span><span class="type-var">'a</span> <a href="#type-poll_mask">poll_mask</a></span> array</span> <span class="arrow">&#45;&gt;</span></span> <a href="#type-t">t</a></span></code></div><div class="spec-doc"><p>This function will be deprecated in a future release. Consider using the synonym function <a href="#val-of_masks"><code>of_masks</code></a> instead.</p></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-of_masks"><a href="#val-of_masks" class="anchor"></a><code><span><span class="keyword">val</span> of_masks : <span><span><span><span class="type-var">'a</span> <a href="#type-poll_mask">poll_mask</a></span> array</span> <span class="arrow">&#45;&gt;</span></span> <a href="#type-t">t</a></span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-poll"><a href="#val-poll" class="anchor"></a><code><span><span class="keyword">val</span> poll : <span><span class="optlabel">?timeout</span>:int <span class="arrow">&#45;&gt;</span></span> <span><a href="#type-t">t</a> <span class="arrow">&#45;&gt;</span></span> <span><span><a href="#type-poll_event">poll_event</a> option</span> array</span></span></code></div></div></div></body></html>
