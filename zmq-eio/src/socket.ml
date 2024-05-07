@@ -122,11 +122,11 @@ let send t message =
 let send_msg t message =
   request t t.senders (fun () -> Zmq.Socket.send_msg ~block:false t.socket message)
 
-let send_all t =
-  request t t.senders (fun () -> Zmq.Socket.send_all ~block:false t.socket)
+let send_all t messages =
+  request t t.senders (fun () -> Zmq.Socket.send_all ~block:false t.socket messages)
 
-let send_msg_all t =
-  request t t.senders (fun () -> Zmq.Socket.send_msg_all ~block:false t.socket)
+let send_msg_all t messages =
+  request t t.senders (fun () -> Zmq.Socket.send_msg_all ~block:false t.socket messages)
 
 let recv t =
   request t t.receivers (fun () -> Zmq.Socket.recv ~block:false t.socket)
