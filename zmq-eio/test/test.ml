@@ -38,11 +38,31 @@ let send env ?(delay = 0.0) s count =
   in
   fun () -> inner count
 
+let send_all env ?(delay = 0.0) s count =
+  let rec inner = function
+    | 0 -> ()
+    | n ->
+      Zmq_eio.Socket.send_all s ["test1"; "test2"; "test3"];
+      sleepf env delay;
+      inner (n - 1)
+  in
+  fun () -> inner count
+
 let recv env ?(delay = 0.0) s count =
   let rec inner = function
     | 0 -> ()
     | n ->
       let _ = Zmq_eio.Socket.recv s in
+      sleepf env delay;
+      inner (n - 1)
+  in
+  fun () -> inner count
+
+let recv_all env ?(delay = 0.0) s count =
+  let rec inner = function
+    | 0 -> ()
+    | n ->
+      let _ = Zmq_eio.Socket.recv_all s in
       sleepf env delay;
       inner (n - 1)
   in
@@ -57,6 +77,12 @@ let test_send_receive ~sw:_ env (_, s1, s2) =
   all_ok [
     send env s2 count;
     recv env s1 count;
+  ]
+
+let test_send_receive_all ~sw:_ env (_, s1, s2) =
+  all_ok [
+    send_all env s2 count;
+    recv_all env s1 count;
   ]
 
 let test_msend_mreceive ~sw:_ env (_, s1, s2) =
@@ -124,15 +150,15 @@ let suite () =
   in
 
   __MODULE__ >::: [
-    "test_setup_teardown" >:: bracket test_setup_teardown;
-    "test_send_receive"   >:: bracket test_send_receive;
-    "test_msend_mreceive" >:: bracket test_msend_mreceive;
-    "test_mix"            >:: bracket test_mix;
-    "test_slow_send"      >:: bracket test_slow_send;
-    "test_slow_receive"   >:: bracket test_slow_receive;
-    "test_slow_mix"       >:: bracket test_slow_mix1;
-    "test_slow_mix"       >:: bracket test_slow_mix2;
-    "test_send_receive"   >:: bracket test_send_receive;
+    "test_setup_teardown"   >:: bracket test_setup_teardown;
+    "test_send_receive"     >:: bracket test_send_receive;
+    "test_msend_mreceive"   >:: bracket test_msend_mreceive;
+    "test_mix"              >:: bracket test_mix;
+    "test_slow_send"        >:: bracket test_slow_send;
+    "test_slow_receive"     >:: bracket test_slow_receive;
+    "test_slow_mix"         >:: bracket test_slow_mix1;
+    "test_slow_mix"         >:: bracket test_slow_mix2;
+    "test_send_receive_all" >:: bracket test_send_receive_all;
   ]
 
 
